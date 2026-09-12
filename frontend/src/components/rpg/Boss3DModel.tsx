@@ -88,14 +88,15 @@ export function Boss3DModel({
     const container = containerRef.current;
     if (!canvas || !container) return;
 
-    let width = container.clientWidth || 360;
-    let height = container.clientHeight || 420;
+    let width = container.clientWidth || 380;
+    let height = container.clientHeight || 440;
 
     const scene = new THREE.Scene();
 
-    const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100);
-    camera.position.set(0.15, 1.25, 5.0);
-    camera.lookAt(0, 1.02, 0);
+    // Generous FOV and distance so the boss stays 100% in-frame during all attacks & wing spans
+    const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 100);
+    camera.position.set(0.0, 1.25, 5.4);
+    camera.lookAt(0, 1.05, 0);
 
     const renderer = new THREE.WebGLRenderer({
       canvas,
@@ -108,69 +109,66 @@ export function Boss3DModel({
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-    // --- 1. CINEMATIC MULTI-TIER LIGHTING ---
-    // Ambient tone for rich shadow fills
-    const ambientLight = new THREE.AmbientLight(0x1e2238, 2.0);
+    // --- 1. CINEMATIC LIGHTING RIG ---
+    const ambientLight = new THREE.AmbientLight(0x1e243c, 2.2);
     scene.add(ambientLight);
 
-    // Warm Sun/Colosseum Key Light
-    const keyLight = new THREE.DirectionalLight(0xfff1db, 3.2);
+    const keyLight = new THREE.DirectionalLight(0xfff1db, 3.4);
     keyLight.position.set(-3.0, 5.5, 4.0);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.width = 1024;
     keyLight.shadow.mapSize.height = 1024;
     scene.add(keyLight);
 
-    // Dramatic Rim Light from behind
     const rimColor = new THREE.Color(archetypeRef.current.primaryColor);
-    const rimLight = new THREE.DirectionalLight(rimColor, 5.0);
+    const rimLight = new THREE.DirectionalLight(rimColor, 5.5);
     rimLight.position.set(3.5, 4.0, -3.5);
     scene.add(rimLight);
 
-    // DEDICATED ANGRY FACE SPOTLIGHT: ensures face, eyes, fangs are NEVER dark black!
-    const faceSpotLight = new THREE.SpotLight(0xfffaed, 4.2, 7.0, Math.PI / 4, 0.4, 1.0);
-    faceSpotLight.position.set(0.3, 2.2, 2.8);
+    // Dedicated Face Spotlight
+    const faceSpotLight = new THREE.SpotLight(0xfffaed, 4.5, 8.0, Math.PI / 4, 0.4, 1.0);
+    faceSpotLight.position.set(0.3, 2.3, 3.0);
     scene.add(faceSpotLight);
 
-    // Glowing Core & Jaw Under-Light
-    const coreLight = new THREE.PointLight(rimColor, 4.0, 4.5);
+    // Core & Throat Glow Light
+    const coreLight = new THREE.PointLight(rimColor, 4.2, 5.0);
     coreLight.position.set(0, 1.05, 0.4);
     scene.add(coreLight);
 
-    // Snarl Throat Glow Light (radiates from between the teeth)
-    const throatLight = new THREE.PointLight(rimColor, 2.5, 2.0);
+    const throatLight = new THREE.PointLight(rimColor, 3.0, 2.5);
     throatLight.position.set(0, 1.35, 0.55);
     scene.add(throatLight);
 
-    // --- 2. TEXTURES & REALISTIC MATERIALS ---
+    // Ocular Eye Laser Light (High-voltage flash during laser attack)
+    const eyeLaserLight = new THREE.PointLight(rimColor, 0, 8.0);
+    eyeLaserLight.position.set(0, 1.45, 0.65);
+    scene.add(eyeLaserLight);
+
+    // --- 2. MATERIALS ---
     const bumpMap = createChitinBumpTexture();
 
-    // Armored Alien Carapace (Realistic deep metallic slate with organic specular sheen)
     const carapaceMat = new THREE.MeshStandardMaterial({
-      color: 0x1f2330,
+      color: 0x222634,
       roughness: 0.35,
       metalness: 0.72,
       bumpMap: bumpMap,
       bumpScale: 0.04,
     });
 
-    // Angry Brow & Horn Material (Glossy, menacing weathered obsidian bone)
     const boneMat = new THREE.MeshStandardMaterial({
-      color: 0x2b3042,
+      color: 0x2e3448,
       roughness: 0.28,
       metalness: 0.85,
       bumpMap: bumpMap,
       bumpScale: 0.06,
     });
 
-    // Razor-Sharp Teeth / Fangs Material (Ivory Bone with realistic wet specular glint)
     const fangMat = new THREE.MeshStandardMaterial({
       color: 0xf5eedc,
       roughness: 0.18,
       metalness: 0.1,
     });
 
-    // Emissive Veins & Eyes
     const veinMat = new THREE.MeshStandardMaterial({
       color: rimColor,
       emissive: rimColor,
@@ -182,14 +180,25 @@ export function Boss3DModel({
       color: 0xffffff,
     });
 
-    // Glowing Inner Throat Cavity
     const throatMat = new THREE.MeshBasicMaterial({
       color: rimColor,
     });
 
-    // --- 3. THE 3D ALIEN RAID BOSS MESH HIERARCHY ---
+    // Laser Beam Materials (Pure blinding white core + colored plasma sheath)
+    const laserCoreMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+    });
+
+    const laserSheathMat = new THREE.MeshBasicMaterial({
+      color: rimColor,
+      transparent: true,
+      opacity: 0.75,
+      blending: THREE.AdditiveBlending,
+    });
+
+    // --- 3. HIERARCHICAL 3D ALIEN RAID BOSS MESH ---
     const bossRoot = new THREE.Group();
-    bossRoot.rotation.y = -0.28;
+    bossRoot.rotation.y = -0.26;
     scene.add(bossRoot);
 
     // (A) Torso & Muscular Alien Abdomen
@@ -197,19 +206,15 @@ export function Boss3DModel({
     torsoGroup.position.set(0, 0.75, 0);
     bossRoot.add(torsoGroup);
 
-    // Segmented Abdomen
-    const abdoGeo = new THREE.CylinderGeometry(0.34, 0.25, 0.42, 8);
-    const abdo = new THREE.Mesh(abdoGeo, carapaceMat);
+    const abdo = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.25, 0.42, 8), carapaceMat);
     abdo.position.set(0, 0.18, 0);
     torsoGroup.add(abdo);
 
-    // Glowing vein rings around abdomen
     const veinTorus = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.022, 6, 24), veinMat);
     veinTorus.rotation.x = Math.PI / 2;
     veinTorus.position.set(0, 0.18, 0);
     torsoGroup.add(veinTorus);
 
-    // Broad Armored Chest Carapace
     const chestGroup = new THREE.Group();
     chestGroup.position.set(0, 0.44, 0);
     torsoGroup.add(chestGroup);
@@ -217,7 +222,7 @@ export function Boss3DModel({
     const chestMesh = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.54, 0.52), carapaceMat);
     chestGroup.add(chestMesh);
 
-    // Ribcage Armor Flaps guarding the Core
+    // Ribcage Armor Flaps
     [-0.24, 0.24].forEach((rx) => {
       const rib = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.48, 4), boneMat);
       rib.position.set(rx, -0.06, 0.28);
@@ -225,12 +230,12 @@ export function Boss3DModel({
       chestGroup.add(rib);
     });
 
-    // The Glowing Power Core (Pulsating Dodecahedron)
+    // Glowing Power Core
     const coreMesh = new THREE.Mesh(new THREE.DodecahedronGeometry(0.16, 1), veinMat);
     coreMesh.position.set(0, 0.02, 0.24);
     chestGroup.add(coreMesh);
 
-    // (B) Broad Spiked Shoulders & Muscular Arms
+    // (B) Broad Spiked Shoulders & Arms
     const shoulderLeft = new THREE.Group();
     const shoulderRight = new THREE.Group();
     shoulderLeft.position.set(-0.55, 0.24, 0);
@@ -238,7 +243,7 @@ export function Boss3DModel({
     chestGroup.add(shoulderLeft);
     chestGroup.add(shoulderRight);
 
-    // Pauldrons with Jagged Horn Spikes
+    // Pauldrons with Horn Spikes
     [-1, 1].forEach((dir) => {
       const targetShoulder = dir === -1 ? shoulderLeft : shoulderRight;
       const pauldron = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.6, 5), boneMat);
@@ -252,31 +257,27 @@ export function Boss3DModel({
       targetShoulder.add(subSpike);
     });
 
-    // Arms & Razor Claws
+    // Articulated Arm Chains
     const armLeft = new THREE.Group();
     const armRight = new THREE.Group();
     shoulderLeft.add(armLeft);
     shoulderRight.add(armRight);
 
     const buildArm = (armGroup: THREE.Group, isLeft: boolean) => {
-      // Bicep
       const bicep = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.48, 6), carapaceMat);
       bicep.position.set(0, -0.24, 0);
       armGroup.add(bicep);
 
-      // Forearm
       const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.09, 0.5, 6), carapaceMat);
       forearm.position.set(isLeft ? 0.06 : -0.06, -0.62, 0.14);
       forearm.rotation.x = -0.58;
       armGroup.add(forearm);
 
-      // Chitin Arm Blade
       const blade = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.55, 3), boneMat);
       blade.position.set(isLeft ? -0.1 : 0.1, -0.62, 0.06);
       blade.rotation.x = 2.25;
       armGroup.add(blade);
 
-      // Hand & 4 Curved Razor Talons
       [-0.07, -0.02, 0.03, 0.08].forEach((cx) => {
         const claw = new THREE.Mesh(new THREE.ConeGeometry(0.038, 0.32, 4), fangMat);
         claw.position.set((isLeft ? 0.06 : -0.06) + cx, -0.88, 0.28);
@@ -288,26 +289,22 @@ export function Boss3DModel({
     buildArm(armLeft, true);
     buildArm(armRight, false);
 
-    // =========================================================================
-    // (C) THE ANGRY MENACING FACE (High Realism, Teeth, Brow, Glowing Eyes)
-    // =========================================================================
+    // (C) HEAD, ANGRY FACE, FANGS & EYE LASERS
     const headGroup = new THREE.Group();
     headGroup.position.set(0, 0.36, 0.3);
     chestGroup.add(headGroup);
 
-    // 1. Muscular Alien Neck with Striated Sinews
     const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.32, 6), carapaceMat);
     neck.position.set(0, -0.08, -0.08);
     neck.rotation.x = 0.35;
     headGroup.add(neck);
 
-    // 2. Sculpted Alien Skull / Cranium (Low-slung predatory head)
     const cranium = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.18, 0.52, 7), carapaceMat);
     cranium.position.set(0, 0.08, 0.04);
     cranium.rotation.x = -0.7;
     headGroup.add(cranium);
 
-    // 3. Menacing Swept-Back Horn Crests
+    // Horn Crests
     [-0.16, 0.16].forEach((hx) => {
       const crownHorn = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.65, 4), boneMat);
       crownHorn.position.set(hx, 0.26, -0.18);
@@ -315,7 +312,6 @@ export function Boss3DModel({
       crownHorn.rotation.z = hx < 0 ? -0.38 : 0.38;
       headGroup.add(crownHorn);
 
-      // Temporal Side Horn
       const sideHorn = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.42, 4), boneMat);
       sideHorn.position.set(hx * 1.6, 0.12, -0.12);
       sideHorn.rotation.x = -0.55;
@@ -323,7 +319,7 @@ export function Boss3DModel({
       headGroup.add(sideHorn);
     });
 
-    // 4. HEAVILY FURROWED ANGRY V-SHAPED BROW RIDGES (Creates the unmistakable furious expression)
+    // Angry Brow Ridges
     const browGroup = new THREE.Group();
     browGroup.position.set(0, 0.14, 0.26);
     headGroup.add(browGroup);
@@ -331,32 +327,22 @@ export function Boss3DModel({
     [-0.11, 0.11].forEach((bx) => {
       const browPlate = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.07, 0.14), boneMat);
       browPlate.position.set(bx, 0, 0);
-      // Slanted inward and down: angry frown angle!
       browPlate.rotation.z = bx < 0 ? -0.42 : 0.42;
       browPlate.rotation.y = bx < 0 ? 0.3 : -0.3;
       browGroup.add(browPlate);
     });
 
-    // Central Glabella Ridge (Forehead crease)
-    const glabella = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.2, 4), boneMat);
-    glabella.position.set(0, 0.06, 0.02);
-    glabella.rotation.x = 0.5;
-    browGroup.add(glabella);
-
-    // 5. SLANTED ANGRY GLOWING EYES (Fierce Demonic/Alien Gaze)
+    // Slanted Angry Eyes
     const eyeGroup = new THREE.Group();
     eyeGroup.position.set(0, 0.08, 0.28);
     headGroup.add(eyeGroup);
 
-    // Primary Furious Eyes (Slanted downward toward center)
     [-0.09, 0.09].forEach((ex) => {
-      // Eyeball socket cavity
       const socket = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.04, 0.04), boneMat);
       socket.position.set(ex, 0, 0);
       socket.rotation.z = ex < 0 ? -0.35 : 0.35;
       eyeGroup.add(socket);
 
-      // Glowing slit eye pupil
       const eyeSlit = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.08, 4), eyeMat);
       eyeSlit.position.set(ex, 0, 0.02);
       eyeSlit.rotation.z = ex < 0 ? -0.35 : 0.35;
@@ -364,14 +350,42 @@ export function Boss3DModel({
       eyeGroup.add(eyeSlit);
     });
 
-    // Secondary Predatory Sensory Pits (Flanking the brow)
-    [-0.15, 0.15].forEach((sx) => {
-      const sensoryPit = new THREE.Mesh(new THREE.SphereGeometry(0.022, 5, 5), veinMat);
-      sensoryPit.position.set(sx, 0.04, -0.02);
-      eyeGroup.add(sensoryPit);
+    // =========================================================================
+    // DUAL EYE LASER BEAM SYSTEM (Shoots directly from the glowing alien eyes)
+    // =========================================================================
+    const laserGroup = new THREE.Group();
+    laserGroup.position.set(0, 0.08, 0.32);
+    laserGroup.visible = false;
+    headGroup.add(laserGroup);
+
+    const laserBeams: THREE.Group[] = [];
+    [-0.09, 0.09].forEach((lx) => {
+      const beamUnit = new THREE.Group();
+      beamUnit.position.set(lx, 0, 0);
+      // Angle beam forward-left toward the player
+      beamUnit.rotation.y = 0.25;
+      beamUnit.rotation.x = Math.PI / 2;
+
+      // Inner intense core beam
+      const coreBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.025, 4.8, 8), laserCoreMat);
+      coreBeam.position.y = 2.4;
+      beamUnit.add(coreBeam);
+
+      // Outer glowing plasma sheath
+      const sheathBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.075, 4.8, 8), laserSheathMat);
+      sheathBeam.position.y = 2.4;
+      beamUnit.add(sheathBeam);
+
+      // Eye flare halo
+      const flare = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), laserCoreMat);
+      flare.position.y = 0.05;
+      beamUnit.add(flare);
+
+      laserGroup.add(beamUnit);
+      laserBeams.push(beamUnit);
     });
 
-    // 6. SNARLING UPPER JAW WITH INTERLOCKING FANGS
+    // Upper Jaw & Fangs
     const upperJaw = new THREE.Group();
     upperJaw.position.set(0, 0.01, 0.32);
     headGroup.add(upperJaw);
@@ -379,17 +393,16 @@ export function Boss3DModel({
     const snout = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.1, 0.2), boneMat);
     upperJaw.add(snout);
 
-    // Upper Razor Fangs (Pointing downward)
     [-0.09, -0.05, -0.015, 0.015, 0.05, 0.09].forEach((fx, idx) => {
       const isSaber = idx === 0 || idx === 5;
       const toothLength = isSaber ? 0.18 : 0.11;
       const fang = new THREE.Mesh(new THREE.ConeGeometry(0.024, toothLength, 4), fangMat);
       fang.position.set(fx, -0.06 - toothLength * 0.35, 0.06);
-      fang.rotation.x = Math.PI; // pointing straight down
+      fang.rotation.x = Math.PI;
       upperJaw.add(fang);
     });
 
-    // 7. ARTICULATED SNARLING LOWER JAW & GLOWING MOUTH INTERIOR
+    // Lower Jaw & Fangs
     const lowerJawGroup = new THREE.Group();
     lowerJawGroup.position.set(0, -0.1, 0.24);
     headGroup.add(lowerJawGroup);
@@ -399,22 +412,20 @@ export function Boss3DModel({
     jawBone.rotation.x = 1.35;
     lowerJawGroup.add(jawBone);
 
-    // Glowing Inner Throat Cavity (Illuminates from inside the mouth)
     const throatMesh = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), throatMat);
     throatMesh.position.set(0, 0.02, 0.02);
     lowerJawGroup.add(throatMesh);
 
-    // Lower Razor Fangs (Pointing upward, interlocking with upper teeth)
-    [-0.08, -0.04, 0.0, 0.04, 0.08].forEach((lx, idx) => {
+    [-0.08, -0.04, 0.0, 0.04, 0.08].forEach((fx, idx) => {
       const isBig = idx === 0 || idx === 4;
       const fangLength = isBig ? 0.16 : 0.1;
       const lowerFang = new THREE.Mesh(new THREE.ConeGeometry(0.022, fangLength, 4), fangMat);
-      lowerFang.position.set(lx, 0.03 + fangLength * 0.35, 0.14);
-      lowerFang.rotation.x = -0.2; // pointing upward into upper teeth
+      lowerFang.position.set(fx, 0.03 + fangLength * 0.35, 0.14);
+      lowerFang.rotation.x = -0.2;
       lowerJawGroup.add(lowerFang);
     });
 
-    // 8. Lateral Razor Mandibles (Snarl open during attacks and roars)
+    // Lateral Mandibles
     const mandibleLeft = new THREE.Group();
     const mandibleRight = new THREE.Group();
     mandibleLeft.position.set(-0.16, -0.05, 0.22);
@@ -429,17 +440,9 @@ export function Boss3DModel({
       mBlade.rotation.z = mDir * -0.55;
       mBlade.rotation.x = 0.75;
       mTarget.add(mBlade);
-
-      // Serrated inner teeth on mandibles
-      [-0.04, 0.04].forEach((sy) => {
-        const serration = new THREE.Mesh(new THREE.ConeGeometry(0.018, 0.08, 3), fangMat);
-        serration.position.set(mDir * 0.02, sy - 0.06, 0.08);
-        serration.rotation.z = mDir * 0.7;
-        mTarget.add(serration);
-      });
     });
 
-    // (D) 4 Biomechanical Arched Back Spines
+    // (D) 4 Biomechanical Back Spines
     const tendrilMeshes: THREE.Mesh[] = [];
     [-0.24, -0.08, 0.08, 0.24].forEach((tX, tIdx) => {
       const tendril = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.012, 0.8, 5), boneMat);
@@ -450,7 +453,7 @@ export function Boss3DModel({
       tendrilMeshes.push(tendril);
     });
 
-    // (E) Digitigrade Alien Legs & Talons
+    // (E) Digitigrade Legs & Talons
     const legLeft = new THREE.Group();
     const legRight = new THREE.Group();
 
@@ -467,7 +470,6 @@ export function Boss3DModel({
       shin.rotation.x = 0.55;
       legGroup.add(shin);
 
-      // Heavy Talons
       [-0.09, 0, 0.09].forEach((clawX) => {
         const talon = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.25, 4), fangMat);
         talon.position.set(clawX, -0.72, 0.1);
@@ -481,7 +483,7 @@ export function Boss3DModel({
     bossRoot.add(legLeft);
     bossRoot.add(legRight);
 
-    // (F) Dynamic Ground Shadow Plane
+    // Ground Shadow
     const groundShadow = new THREE.Mesh(
       new THREE.CircleGeometry(1.05, 32),
       new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.72 })
@@ -490,7 +492,7 @@ export function Boss3DModel({
     groundShadow.position.y = 0.02;
     scene.add(groundShadow);
 
-    // (G) Rising Plasma Particles
+    // Rising Particles
     const particleCount = 50;
     const particleGeo = new THREE.BufferGeometry();
     const particlePositions = new Float32Array(particleCount * 3);
@@ -525,23 +527,22 @@ export function Boss3DModel({
       const currentHp = hpRef.current;
       const currentState = stateRef.current;
 
-      // Update element colors dynamically
       const curColor = new THREE.Color(archetypeRef.current.primaryColor);
       rimLight.color.lerp(curColor, 0.1);
       coreLight.color.lerp(curColor, 0.1);
       throatLight.color.lerp(curColor, 0.1);
+      eyeLaserLight.color.lerp(curColor, 0.1);
       veinMat.emissive.lerp(curColor, 0.1);
       throatMat.color.lerp(curColor, 0.1);
+      laserSheathMat.color.lerp(curColor, 0.1);
       particleMat.color.lerp(curColor, 0.1);
 
-      // Core rotation & tendril sway
       coreMesh.rotation.y = elapsedTime * 1.6;
       coreMesh.rotation.x = elapsedTime * 0.9;
       tendrilMeshes.forEach((t, i) => {
         t.rotation.x = -0.7 + Math.sin(elapsedTime * 2.8 + i) * 0.14;
       });
 
-      // Particle floating
       const pos = particles.geometry.attributes.position.array as Float32Array;
       for (let i = 0; i < particleCount; i++) {
         pos[i * 3 + 1] += particleSpeeds[i] * 0.009;
@@ -553,80 +554,91 @@ export function Boss3DModel({
       }
       particles.geometry.attributes.position.needsUpdate = true;
 
-      // Breathing Cycle & Rage Frequency
       const breathSpeed = currentHp <= 25 ? 5.5 : currentHp <= 50 ? 3.6 : 2.2;
       const breathCycle = Math.sin(elapsedTime * breathSpeed);
 
-      // Core pulse & Throat fire
       coreLight.intensity = (currentHp <= 25 ? 5.0 : 3.5) + breathCycle * 1.4;
       throatLight.intensity = (currentHp <= 25 ? 3.8 : 2.0) + Math.abs(breathCycle) * 1.5;
-
-      // Ground shadow expands/contracts with breathing
       groundShadow.scale.set(1.0 + breathCycle * 0.07, 1.0 + breathCycle * 0.07, 1.0);
 
-      // --- ANGRY COMBAT STATE MACHINE ---
-      if (currentState === "DEFEATED" || currentHp <= 0) {
-        bossRoot.position.y = THREE.MathUtils.lerp(bossRoot.position.y, -0.4, 0.04);
-        bossRoot.rotation.x = THREE.MathUtils.lerp(bossRoot.rotation.x, 0.8, 0.05);
-        bossRoot.rotation.z = THREE.MathUtils.lerp(bossRoot.rotation.z, -0.35, 0.05);
-        headGroup.rotation.x = THREE.MathUtils.lerp(headGroup.rotation.x, 0.9, 0.06);
-        lowerJawGroup.rotation.x = THREE.MathUtils.lerp(lowerJawGroup.rotation.x, 0.85, 0.06);
-        coreLight.intensity = THREE.MathUtils.lerp(coreLight.intensity, 0.2, 0.05);
-        faceSpotLight.intensity = THREE.MathUtils.lerp(faceSpotLight.intensity, 1.0, 0.05);
-      } else if (currentState === "HIT") {
-        // Recoil back in fury
-        bossRoot.position.z = THREE.MathUtils.lerp(bossRoot.position.z, -0.5, 0.25);
-        bossRoot.position.x = THREE.MathUtils.lerp(bossRoot.position.x, 0.4, 0.25);
-        bossRoot.rotation.x = THREE.MathUtils.lerp(bossRoot.rotation.x, -0.28, 0.25);
-        headGroup.rotation.x = THREE.MathUtils.lerp(headGroup.rotation.x, -0.45, 0.3);
-        lowerJawGroup.rotation.x = THREE.MathUtils.lerp(lowerJawGroup.rotation.x, 0.65, 0.3); // Jaws gape open
-        mandibleLeft.rotation.z = 0.4;
-        mandibleRight.rotation.z = -0.4;
-      } else if (currentState === "ATTACK") {
-        // Furious lunge & jaw snap forward toward player
-        const attackCycle = (elapsedTime * 3.6) % Math.PI;
-        const lungeDist = Math.sin(attackCycle) * 1.35;
-        bossRoot.position.x = -lungeDist;
-        bossRoot.position.z = Math.sin(attackCycle) * 0.45;
-        bossRoot.rotation.x = 0.3;
+      // --- COMBAT ATTACK & LASER ANIMATION ---
+      if (currentState === "ATTACK") {
+        // 1. STAY IN FRAME: firmly planted, minor forward lean only (-0.15 max!)
+        bossRoot.position.x = THREE.MathUtils.lerp(bossRoot.position.x, -0.15, 0.15);
+        bossRoot.position.z = THREE.MathUtils.lerp(bossRoot.position.z, 0.12, 0.15);
+        bossRoot.rotation.x = 0.22;
 
-        // Mandibles flare open wide in roar
-        lowerJawGroup.rotation.x = 0.75;
+        // 2. FIERCE ANGRY JAW & ROARING MANDIBLES
+        lowerJawGroup.rotation.x = 0.65;
         mandibleLeft.rotation.z = 0.65;
         mandibleRight.rotation.z = -0.65;
 
-        // Claws slash forward
-        armLeft.rotation.x = -1.5 + Math.sin(attackCycle) * 0.9;
-        armRight.rotation.x = -1.5 + Math.sin(attackCycle) * 0.9;
-      } else if (currentState === "APPROACH") {
-        const stride = Math.sin(elapsedTime * 4.8);
-        bossRoot.position.x = THREE.MathUtils.lerp(bossRoot.position.x, -0.45, 0.08);
-        bossRoot.rotation.x = 0.22;
-        torsoGroup.rotation.z = stride * 0.09;
-        legLeft.rotation.x = stride * 0.4;
-        legRight.rotation.x = -stride * 0.4;
-        lowerJawGroup.rotation.x = 0.25 + Math.abs(stride) * 0.15; // Snarling steps
+        // 3. EYE LASER BEAM BLAST: visible, vibrating and illuminating the arena!
+        laserGroup.visible = true;
+        const laserVibe = 1.0 + Math.sin(elapsedTime * 35) * 0.35;
+        laserBeams.forEach((beam) => {
+          beam.scale.set(laserVibe, 1.0, laserVibe);
+        });
+        eyeLaserLight.intensity = 8.0 + Math.sin(elapsedTime * 30) * 4.0;
+
+        // 4. POWERFUL ARM MOVEMENT: Left Arm raises high and downward slashes, Right Arm cleaves across!
+        armLeft.rotation.x = -2.1 + Math.sin(elapsedTime * 12) * 0.7;
+        armLeft.rotation.z = 0.45 + Math.cos(elapsedTime * 12) * 0.3;
+        armRight.rotation.x = -1.9 - Math.sin(elapsedTime * 12) * 0.7;
+        armRight.rotation.z = -0.55 - Math.cos(elapsedTime * 12) * 0.3;
       } else {
-        // IDLE: Menacing posture, angry furrowed brow, predatory head twitch
-        bossRoot.position.x = THREE.MathUtils.lerp(bossRoot.position.x, 0, 0.08);
-        bossRoot.position.y = THREE.MathUtils.lerp(bossRoot.position.y, 0, 0.08);
-        bossRoot.position.z = THREE.MathUtils.lerp(bossRoot.position.z, 0, 0.08);
-        bossRoot.rotation.x = currentHp <= 25 ? 0.26 : 0.06;
+        // TURN OFF LASER when not attacking
+        laserGroup.visible = false;
+        eyeLaserLight.intensity = 0;
 
-        // Chest & shoulder heave
-        chestGroup.position.y = 0.44 + breathCycle * 0.045;
-        shoulderLeft.rotation.z = breathCycle * 0.065;
-        shoulderRight.rotation.z = -breathCycle * 0.065;
+        if (currentState === "DEFEATED" || currentHp <= 0) {
+          bossRoot.position.y = THREE.MathUtils.lerp(bossRoot.position.y, -0.4, 0.04);
+          bossRoot.rotation.x = THREE.MathUtils.lerp(bossRoot.rotation.x, 0.8, 0.05);
+          bossRoot.rotation.z = THREE.MathUtils.lerp(bossRoot.rotation.z, -0.35, 0.05);
+          headGroup.rotation.x = THREE.MathUtils.lerp(headGroup.rotation.x, 0.9, 0.06);
+          lowerJawGroup.rotation.x = THREE.MathUtils.lerp(lowerJawGroup.rotation.x, 0.85, 0.06);
+          coreLight.intensity = THREE.MathUtils.lerp(coreLight.intensity, 0.2, 0.05);
+          faceSpotLight.intensity = THREE.MathUtils.lerp(faceSpotLight.intensity, 1.0, 0.05);
+        } else if (currentState === "HIT") {
+          bossRoot.position.z = THREE.MathUtils.lerp(bossRoot.position.z, -0.4, 0.25);
+          bossRoot.position.x = THREE.MathUtils.lerp(bossRoot.position.x, 0.25, 0.25);
+          bossRoot.rotation.x = THREE.MathUtils.lerp(bossRoot.rotation.x, -0.25, 0.25);
+          headGroup.rotation.x = THREE.MathUtils.lerp(headGroup.rotation.x, -0.4, 0.3);
+          lowerJawGroup.rotation.x = THREE.MathUtils.lerp(lowerJawGroup.rotation.x, 0.6, 0.3);
+          mandibleLeft.rotation.z = 0.4;
+          mandibleRight.rotation.z = -0.4;
+        } else if (currentState === "APPROACH") {
+          const stride = Math.sin(elapsedTime * 4.8);
+          bossRoot.position.x = THREE.MathUtils.lerp(bossRoot.position.x, -0.15, 0.08);
+          bossRoot.rotation.x = 0.2;
+          torsoGroup.rotation.z = stride * 0.08;
+          legLeft.rotation.x = stride * 0.35;
+          legRight.rotation.x = -stride * 0.35;
+          lowerJawGroup.rotation.x = 0.2 + Math.abs(stride) * 0.12;
+        } else {
+          // IDLE: In-frame breathing, angry brow, head twitches
+          bossRoot.position.x = THREE.MathUtils.lerp(bossRoot.position.x, 0, 0.08);
+          bossRoot.position.y = THREE.MathUtils.lerp(bossRoot.position.y, 0, 0.08);
+          bossRoot.position.z = THREE.MathUtils.lerp(bossRoot.position.z, 0, 0.08);
+          bossRoot.rotation.x = currentHp <= 25 ? 0.24 : 0.06;
 
-        // Predatory Head glances with sudden angry lock-on twitches
-        const isTracking = Math.sin(elapsedTime * 0.9) > 0.8;
-        headGroup.rotation.y = isTracking ? Math.sin(elapsedTime * 6.5) * 0.2 : 0;
-        headGroup.rotation.x = -0.06 + breathCycle * 0.035;
+          chestGroup.position.y = 0.44 + breathCycle * 0.045;
+          shoulderLeft.rotation.z = breathCycle * 0.065;
+          shoulderRight.rotation.z = -breathCycle * 0.065;
 
-        // Snarl jaw breathing: mouth opens and closes revealing the sharp fangs!
-        lowerJawGroup.rotation.x = currentHp <= 25 ? 0.26 + Math.abs(breathCycle) * 0.18 : 0.12 + Math.abs(breathCycle) * 0.1;
-        mandibleLeft.rotation.z = Math.sin(elapsedTime * 2.0) * 0.12;
-        mandibleRight.rotation.z = -Math.sin(elapsedTime * 2.0) * 0.12;
+          const isTracking = Math.sin(elapsedTime * 0.9) > 0.8;
+          headGroup.rotation.y = isTracking ? Math.sin(elapsedTime * 6.5) * 0.2 : 0;
+          headGroup.rotation.x = -0.06 + breathCycle * 0.035;
+
+          lowerJawGroup.rotation.x = currentHp <= 25 ? 0.26 + Math.abs(breathCycle) * 0.18 : 0.12 + Math.abs(breathCycle) * 0.1;
+          mandibleLeft.rotation.z = Math.sin(elapsedTime * 2.0) * 0.12;
+          mandibleRight.rotation.z = -Math.sin(elapsedTime * 2.0) * 0.12;
+
+          armLeft.rotation.x = -0.1 + breathCycle * 0.08;
+          armRight.rotation.x = -0.1 + breathCycle * 0.08;
+          armLeft.rotation.z = 0;
+          armRight.rotation.z = 0;
+        }
       }
 
       renderer.render(scene, camera);
@@ -636,8 +648,8 @@ export function Boss3DModel({
 
     const handleResize = () => {
       if (!container) return;
-      width = container.clientWidth || 360;
-      height = container.clientHeight || 420;
+      width = container.clientWidth || 380;
+      height = container.clientHeight || 440;
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
@@ -657,6 +669,8 @@ export function Boss3DModel({
       veinMat.dispose();
       eyeMat.dispose();
       throatMat.dispose();
+      laserCoreMat.dispose();
+      laserSheathMat.dispose();
       particleGeo.dispose();
       particleMat.dispose();
     };
@@ -665,7 +679,7 @@ export function Boss3DModel({
   return (
     <div
       ref={containerRef}
-      className={`relative w-68 h-76 sm:w-84 sm:h-[400px] lg:w-[410px] lg:h-[450px] flex items-center justify-center select-none pointer-events-none ${className}`}
+      className={`relative w-72 h-80 sm:w-96 sm:h-[420px] lg:w-[440px] lg:h-[460px] flex items-center justify-center select-none pointer-events-none ${className}`}
     >
       <canvas ref={canvasRef} className="w-full h-full block" />
     </div>

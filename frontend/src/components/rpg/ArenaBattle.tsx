@@ -275,7 +275,9 @@ export function ArenaBattle({
     if (calculatedNewHp > 0) {
       t3 = setTimeout(() => {
         setEnemyState("ATTACK");
+        audioManager.playEnemyLaserBeam();
         audioManager.playEnemyCounterImpact();
+        setCombatAlert(`⚡ ${enemyInfo.name} UNLEASHES OCULAR DEATH BEAM & CLAW CLEAVE!`);
 
         const tRetaliate = setTimeout(() => {
           setHeroState("HIT");
@@ -819,6 +821,22 @@ export function ArenaBattle({
                   <line x1="15" y1="15" x2="85" y2="85" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
                   <line x1="85" y1="15" x2="15" y2="85" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
                 </svg>
+              </motion.div>
+            )}
+
+            {/* Boss Ocular Laser Beam Attack (Shoots across arena from eyes to player) */}
+            {enemyState === "ATTACK" && (
+              <motion.div
+                initial={{ opacity: 0, scaleY: 0.2 }}
+                animate={{ opacity: [0, 1, 1, 0.85, 0], scaleY: [0.2, 1.6, 1.0, 1.4, 0] }}
+                transition={{ duration: 1.2, times: [0, 0.15, 0.5, 0.8, 1] }}
+                className="absolute inset-x-2 sm:inset-x-8 bottom-12 sm:bottom-16 h-20 pointer-events-none z-30 flex items-center"
+              >
+                <div className="w-full h-5 sm:h-7 bg-gradient-to-r from-cyan-400 via-rose-500 to-amber-300 shadow-[0_0_40px_rgba(244,63,94,1)] rounded-full blur-[1px] relative">
+                  <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-2 sm:h-3 bg-white rounded-full shadow-[0_0_25px_rgba(255,255,255,1)]" />
+                </div>
+                <div className="absolute right-0 w-20 h-20 rounded-full bg-rose-400 blur-md animate-ping" />
+                <div className="absolute left-0 w-24 h-24 rounded-full bg-cyan-300 blur-lg animate-pulse" />
               </motion.div>
             )}
           </div>

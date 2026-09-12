@@ -922,6 +922,43 @@ class AudioManager {
     osc.stop(now + 1.2);
   }
 
+  /**
+   * Ocular Laser Beam / Arcane Death Ray SFX
+   */
+  public playEnemyLaserBeam() {
+    if (!this.isSfxEnabled || this.isMuted) return;
+    this.unlockContext();
+    if (!this.ctx || !this.sfxGain) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
+
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(680, now);
+      osc.frequency.exponentialRampToValueAtTime(130, now + 0.7);
+
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(1400, now);
+      filter.frequency.exponentialRampToValueAtTime(280, now + 0.7);
+      filter.Q.value = 5.0;
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.5, now + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.sfxGain);
+
+      osc.start(now);
+      osc.stop(now + 0.78);
+    } catch {
+      // Audio fallback
+    }
+  }
+
   public playEnemyAttack() {
     if (!this.isSfxEnabled || this.isMuted) return;
     this.unlockContext();
