@@ -136,19 +136,21 @@ export default function ShopPage() {
       : character?.equipped_theme || "default_dark";
 
   return (
-    <div className="relative min-h-[calc(100vh-5rem)] rounded-3xl overflow-hidden border border-amber-500/40 p-4 sm:p-7 shadow-[0_0_50px_rgba(0,0,0,0.85)]">
-      {/* Real Fantasy Enchanted Night Bazaar Background */}
-      <img
-        src={GAME_ASSETS.backgrounds.shop}
-        alt="Grand Realm Bazaar"
-        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[1.02] contrast-[1.05] saturate-110 contrast-[1.05]"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0b1130]/60 via-[#0e163d]/20 to-[#0b1130]/35 pointer-events-none z-0" />
+    <>
+      {/* Fixed Grand Realm Bazaar Environment Backdrop: Preserves full artwork composition across viewports */}
+      <div className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden">
+        <img
+          src={GAME_ASSETS.backgrounds.shop}
+          alt="Grand Realm Bazaar"
+          className="w-full h-full object-cover object-center brightness-[1.04] contrast-[1.05] saturate-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#070b1e]/75 via-[#0c1435]/45 to-[#070b1e]/85" />
+      </div>
 
       <div className="relative z-10 space-y-6">
-      {/* 1. Alchemist & Weaponsmith Counter Banner */}
-      <section className="relative rounded-2xl border border-amber-500/30 bg-gradient-to-r from-slate-950 via-slate-900 to-amber-950/20 p-5 sm:p-7 shadow-[0_10px_35px_rgba(0,0,0,0.6)] overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,rgba(245,158,11,0.08),transparent_60%)] pointer-events-none" />
+        {/* 1. Alchemist & Weaponsmith Counter Banner */}
+        <section className="relative rounded-2xl border-2 border-amber-500/40 bg-gradient-to-r from-slate-950/90 via-slate-900/85 to-amber-950/40 p-5 sm:p-7 shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-md overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,rgba(245,158,11,0.08),transparent_60%)] pointer-events-none" />
 
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
           <div>
@@ -526,7 +528,7 @@ export default function ShopPage() {
           })}
         </div>
       )}
-    </div>
-    </div>
+      </div>
+    </>
   );
 }

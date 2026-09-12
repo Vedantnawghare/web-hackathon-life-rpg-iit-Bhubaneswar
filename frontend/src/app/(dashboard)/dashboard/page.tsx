@@ -185,12 +185,12 @@ export default function DashboardPage() {
         <img
           src={GAME_ASSETS.backgrounds.home}
           alt="Fantasy Kingdom Realm"
-          className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[0.75] contrast-[1.15] saturate-110"
+          className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[1.05] contrast-[1.05] saturate-115"
         />
 
         {/* Cinematic atmospheric gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#060a1f]/95 via-[#080d28]/80 to-[#070b22]/90 pointer-events-none z-0" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-black/60 pointer-events-none z-0" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#060a1f]/80 via-[#080d28]/50 to-[#070b22]/75 pointer-events-none z-0" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/15 via-transparent to-black/40 pointer-events-none z-0" />
 
         {/* Hero Section Grid: Left Copy & CTA | Right Character & Today's Quests Panels */}
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

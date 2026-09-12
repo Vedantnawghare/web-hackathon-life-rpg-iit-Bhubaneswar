@@ -43,18 +43,20 @@ export default function AchievementsPage() {
   });
 
   return (
-    <div className="relative min-h-[calc(100vh-5rem)] rounded-3xl overflow-hidden border border-amber-500/40 p-4 sm:p-7 shadow-[0_0_50px_rgba(0,0,0,0.85)]">
-      {/* Real Fantasy Trophy Hall of Champions Background */}
-      <img
-        src={GAME_ASSETS.backgrounds.achievements}
-        alt="Hall of Trophies"
-        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[1.02] contrast-[1.05] saturate-110 contrast-[1.05]"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0b1130]/60 via-[#0e163d]/20 to-[#0b1130]/35 pointer-events-none z-0" />
+    <>
+      {/* Fixed Hall of Trophies Environment Backdrop: Preserves full artwork composition across viewports */}
+      <div className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden">
+        <img
+          src={GAME_ASSETS.backgrounds.achievements}
+          alt="Hall of Trophies"
+          className="w-full h-full object-cover object-center brightness-[1.04] contrast-[1.05] saturate-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#070b1e]/75 via-[#0c1435]/45 to-[#070b1e]/85" />
+      </div>
 
       <div className="relative z-10 space-y-6">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+        {/* Header Banner */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-100 flex items-center gap-2.5 font-display">
             <Trophy className="h-6 w-6 text-amber-400" /> Hall of Trophies
@@ -192,7 +194,7 @@ export default function AchievementsPage() {
           ))}
         </div>
       )}
-    </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -30,7 +30,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://liferpg.app"),
+  metadataBase: new URL("https://life-rpg-pi-silk.vercel.app"),
+  alternates: {
+    canonical: "https://life-rpg-pi-silk.vercel.app/",
+  },
   title: {
     default: "Life RPG — Level Up Your Real Life",
     template: "%s | Life RPG",
@@ -45,13 +48,15 @@ export const metadata: Metadata = {
     "RPG Progression",
     "Level Up",
     "Daily Quests",
+    "IIT Bhubaneswar",
+    "Tech Zephyr",
   ],
   authors: [{ name: "Life RPG Guild" }],
   openGraph: {
     title: "Life RPG — Level Up Your Real Life",
     description:
       "Transform your daily habits and real-world productivity into an immersive RPG progression system.",
-    url: "https://liferpg.app",
+    url: "https://life-rpg-pi-silk.vercel.app/",
     siteName: "Life RPG",
     locale: "en_US",
     type: "website",

@@ -171,44 +171,94 @@ export default function QuestsPage() {
     return true;
   });
 
+  const { data: dailyProgress } = useQuery<{
+    date: string;
+    daily_xp_earned: number;
+    daily_xp_goal: number;
+    is_goal_reached: boolean;
+    remaining_xp: number;
+    progress_percentage: number;
+  }>({
+    queryKey: ["character", "daily-progress"],
+    queryFn: () => apiClient("/characters/me/daily-progress"),
+  });
+
   return (
-    <div className="relative min-h-[calc(100vh-5rem)] rounded-3xl overflow-hidden border border-amber-500/40 p-4 sm:p-7 shadow-[0_0_50px_rgba(0,0,0,0.85)]">
-      {/* Real Fantasy Adventurer Guild Hall Background */}
-      <img
-        src={GAME_ASSETS.backgrounds.quests}
-        alt="Adventurer Guild Hall"
-        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[1.02] contrast-[1.05] saturate-110 contrast-[1.05]"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0b1130]/60 via-[#0e163d]/20 to-[#0b1130]/35 pointer-events-none z-0" />
+    <>
+      {/* Fixed Guild Hall Environment Backdrop: Preserves full artwork composition across viewports */}
+      <div className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden">
+        <img
+          src={GAME_ASSETS.backgrounds.quests}
+          alt="Adventurer Guild Hall"
+          className="w-full h-full object-cover object-center brightness-[1.04] contrast-[1.05] saturate-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#070b1e]/75 via-[#0c1435]/45 to-[#070b1e]/85" />
+      </div>
 
       <div className="relative z-10 space-y-6">
-      {/* Top Banner: Adventurer's Guild Notice Board */}
-      <section className="relative rounded-2xl border border-amber-500/30 bg-gradient-to-r from-slate-950 via-slate-900 to-amber-950/20 p-5 sm:p-7 shadow-[0_10px_35px_rgba(0,0,0,0.6)] overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(245,158,11,0.06),transparent_50%)] pointer-events-none" />
+        {/* Top Banner: Adventurer's Guild Notice Board */}
+        <section className="relative rounded-2xl border-2 border-amber-500/40 bg-gradient-to-r from-slate-950/90 via-slate-900/85 to-amber-950/40 p-5 sm:p-7 shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-md overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(245,158,11,0.08),transparent_50%)] pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <Scroll className="h-6 w-6 text-amber-400" />
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white font-display">
-                Adventurer&apos;s Guild Bounty Board
-              </h1>
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <Scroll className="h-6 w-6 text-amber-400" />
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white font-display">
+                  Adventurer&apos;s Guild Bounty Board
+                </h1>
+              </div>
+              <p className="text-xs text-slate-300 mt-1 max-w-xl font-sans">
+                Sanctioned contracts posted across the realm. Complete your daily real-world deeds to deal damage to today&apos;s arena boss and earn authoritative XP.
+              </p>
             </div>
-            <p className="text-xs text-slate-400 mt-1 max-w-xl">
-              Sanctioned contracts posted across the realm. Conquer your real-world deeds to forge legendary standing.
-            </p>
+
+            <Button
+              variant="gold"
+              size="sm"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="gap-2 font-display font-bold tracking-wide shadow-[0_0_15px_rgba(245,158,11,0.3)] self-start sm:self-auto shrink-0"
+            >
+              <Plus className="h-4 w-4" /> Inscribe New Bounty
+            </Button>
           </div>
 
-          <Button
-            variant="gold"
-            size="sm"
-            onClick={() => setIsCreateModalOpen(true)}
-            className="gap-2 font-display font-bold tracking-wide shadow-[0_0_15px_rgba(245,158,11,0.2)] self-start sm:self-auto shrink-0"
-          >
-            <Plus className="h-4 w-4" /> Inscribe New Bounty
-          </Button>
-        </div>
-      </section>
+          {/* Real-Data Quest Performance & Daily Goal Bar */}
+          {dailyProgress && (
+            <div className="mt-5 pt-4 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+              <div className="space-y-1">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-amber-300 font-bold flex items-center gap-1.5">
+                  <Sparkles className="h-3 w-3 text-amber-400" />
+                  Today&apos;s XP Milestone
+                </span>
+                <p className="text-xs text-slate-300">
+                  <span className="font-mono font-bold text-white text-sm">{dailyProgress.daily_xp_earned}</span>
+                  <span className="text-slate-400"> / {dailyProgress.daily_xp_goal} XP</span>
+                  <span className="ml-2 text-amber-400 font-mono">({dailyProgress.progress_percentage}%)</span>
+                </p>
+              </div>
+
+              <div className="w-full sm:col-span-2 space-y-1">
+                <div className="flex justify-between text-[11px] font-mono">
+                  <span className="text-slate-300">
+                    {dailyProgress.is_goal_reached
+                      ? "🏆 Daily Goal Reached!"
+                      : `⚡ ${dailyProgress.remaining_xp} XP remaining to daily goal`}
+                  </span>
+                  <span className="text-amber-300 font-bold">
+                    {quests.filter((q) => q.is_completed_for_period).length} / {quests.length} Completed
+                  </span>
+                </div>
+                <div className="w-full h-2.5 bg-slate-950 rounded-full border border-slate-700/80 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]"
+                    style={{ width: `${dailyProgress.progress_percentage}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
 
       {/* Floating Victory Toast / Banner */}
       {lastCompletion && (
@@ -447,6 +497,6 @@ export default function QuestsPage() {
         characterName={character?.username || "Adventurer"}
       />
     </div>
-    </div>
-  );
+  </>
+);
 }

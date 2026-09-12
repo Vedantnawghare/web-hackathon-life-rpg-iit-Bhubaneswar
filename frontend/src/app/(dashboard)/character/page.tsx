@@ -149,40 +149,43 @@ export default function CharacterPage() {
   const xpPercentage = Math.min(100, Math.max(0, Math.round((xpIntoLevel / (xpRequired || 1)) * 100)));
 
   return (
-    <div className="relative min-h-[calc(100vh-5rem)] rounded-3xl overflow-hidden border border-amber-500/40 p-4 sm:p-7 shadow-[0_0_50px_rgba(0,0,0,0.85)]">
-      {/* Real Fantasy Sanctum Environment */}
-      <img
-        src={GAME_ASSETS.backgrounds.character}
-        alt="Hero Grand Sanctum"
-        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[1.02] contrast-[1.05] saturate-110 contrast-[1.05]"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0b1130]/65 via-[#0e163d]/25 to-[#0b1130]/40 pointer-events-none z-0" />
-      <div className="relative z-10 space-y-8 select-none">
-      {/* 1. HERO SANCTUM PEDESTAL WITH FULL CHARACTER RIG */}
-      <section className="relative rounded-2xl border-2 border-amber-500/40 bg-gradient-to-r from-slate-950 via-slate-900 to-amber-950/30 p-6 md:p-8 shadow-[0_12px_40px_rgba(0,0,0,0.7)] overflow-hidden">
-        {/* Ambient Glow */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+    <>
+      {/* Fixed Hero Grand Sanctum Environment Backdrop: Preserves full artwork composition across viewports */}
+      <div className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden">
+        <img
+          src={GAME_ASSETS.backgrounds.character}
+          alt="Hero Grand Sanctum"
+          className="w-full h-full object-cover object-center brightness-[1.04] contrast-[1.05] saturate-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#070b1e]/75 via-[#0c1435]/45 to-[#070b1e]/85" />
+      </div>
 
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Left: Hero Vector Artwork Staging */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="relative p-4 rounded-2xl bg-black/60 border border-slate-800 shadow-2xl flex flex-col items-center">
-              <HeroCharacter
-                heroId={character?.hero_class || "vanguard_male"}
-                state="IDLE"
-                equippedTheme={character?.equipped_theme}
-                size="lg"
-                showShadow={true}
-              />
-              <div className="mt-2 text-center">
-                <span className="text-xs font-bold font-cinzel text-amber-400">
-                  {currentHero.name} â€” {currentHero.title}
-                </span>
-                <span className="block text-[11px] text-slate-400 font-rajdhani">
-                  Signature Weapon: {currentHero.weapon}
-                </span>
+      <div className="relative z-10 space-y-8 select-none">
+        {/* 1. HERO SANCTUM PEDESTAL WITH FULL CHARACTER RIG */}
+        <section className="relative rounded-2xl border-2 border-amber-500/40 bg-gradient-to-r from-slate-950/90 via-slate-900/85 to-amber-950/40 p-6 md:p-8 shadow-[0_12px_40px_rgba(0,0,0,0.7)] backdrop-blur-md overflow-hidden">
+          {/* Ambient Glow */}
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            {/* Left: Hero Vector Artwork Staging */}
+            <div className="flex flex-col items-center gap-3">
+              <div className="relative p-4 rounded-2xl bg-black/60 border border-slate-800 shadow-2xl flex flex-col items-center">
+                <HeroCharacter
+                  heroId={character?.hero_class || "vanguard_male"}
+                  state="IDLE"
+                  equippedTheme={character?.equipped_theme}
+                  size="lg"
+                  showShadow={true}
+                />
+                <div className="mt-2 text-center">
+                  <span className="text-xs font-bold font-cinzel text-amber-400">
+                    {currentHero.name} — {currentHero.title}
+                  </span>
+                  <span className="block text-[11px] text-slate-300 font-rajdhani">
+                    Signature Weapon: {currentHero.weapon}
+                  </span>
+                </div>
               </div>
-            </div>
 
             {/* Change Champion Button */}
             <Button
@@ -476,7 +479,7 @@ export default function CharacterPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
-    </div>
+      </div>
+    </>
   );
 }

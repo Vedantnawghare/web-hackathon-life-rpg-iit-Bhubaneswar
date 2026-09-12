@@ -1,11 +1,13 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
 import { Settings as SettingsIcon, Volume2, Shield, Globe } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUiStore } from "@/hooks/use-ui-store";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { Character } from "@/types/character";
+import { GAME_ASSETS } from "@/lib/game-assets";
 
 export default function SettingsPage() {
   const { isAudioMuted, toggleAudioMute, audioVolume, setAudioVolume } = useUiStore();
@@ -20,24 +22,35 @@ export default function SettingsPage() {
     : "UTC";
 
   return (
-    <div className="space-y-6">
-      <div className="border-b border-slate-800 pb-5">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-100 flex items-center gap-2.5 font-display">
-          <SettingsIcon className="h-6 w-6 text-amber-400" /> Guild Settings
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Adjust client preferences, sound effects, and realm interface options.
-        </p>
+    <>
+      {/* Fixed Environment Backdrop: Preserves full artwork composition */}
+      <div className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden">
+        <img
+          src={GAME_ASSETS.backgrounds.character}
+          alt="Guild Sanctum Backdrop"
+          className="w-full h-full object-cover object-center brightness-[1.04] contrast-[1.05] saturate-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#070b1e]/75 via-[#0c1435]/45 to-[#070b1e]/85" />
       </div>
 
-      <div className="space-y-4 max-w-2xl">
-        {/* Audio Preferences */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2 font-display">
-              <Volume2 className="h-4 w-4 text-amber-400" /> Audio & Sound Effects
-            </CardTitle>
-            <CardDescription>
+      <div className="relative z-10 space-y-6">
+        <div className="border-b border-slate-800/80 pb-5">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-2.5 font-display">
+            <SettingsIcon className="h-6 w-6 text-amber-400" /> Guild Settings
+          </h1>
+          <p className="text-xs text-slate-300 mt-1 font-sans">
+            Adjust client preferences, sound effects, and realm interface options.
+          </p>
+        </div>
+
+        <div className="space-y-4 max-w-2xl">
+          {/* Audio Preferences */}
+          <Card className="border-2 border-amber-500/30 bg-slate-900/85 backdrop-blur-md shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2 font-display text-white">
+                <Volume2 className="h-4 w-4 text-amber-400" /> Audio & Sound Effects
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-300">
               Control celebratory SFX during quest completions, item purchases, and level-ups.
             </CardDescription>
           </CardHeader>
@@ -128,6 +141,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

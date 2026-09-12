@@ -243,10 +243,10 @@ export function RealmMap({
         <img
           src={GAME_ASSETS.backgrounds.worldMap}
           alt="Realm of Aethelgard Map"
-          className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[0.88] contrast-[1.05]"
+          className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[1.04] contrast-[1.05] saturate-110"
         />
         {/* Atmosphere overlay ensuring interactive pins pop cleanly */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/40 pointer-events-none z-0" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none z-0" />
 
         {/* Floating Active Encounter & Boss Progress Card */}
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-xl bg-slate-950/90 backdrop-blur-md border border-amber-500/60 shadow-[0_4px_25px_rgba(0,0,0,0.8)] flex items-center gap-3">
