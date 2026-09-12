@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -14,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { audioManager } from "@/lib/audio-manager";
+import { GAME_ASSETS } from "@/lib/game-assets";
 import { cn } from "@/lib/utils";
 
 export default function OnboardingPage() {
@@ -126,8 +128,15 @@ export default function OnboardingPage() {
   const selectedHero = HERO_LIST.find((h) => h.id === selectedHeroId) || HERO_LIST[0];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black text-slate-100 p-4 sm:p-8 flex flex-col items-center justify-center selection:bg-amber-500/30">
-      <div className="w-full max-w-5xl flex flex-col items-center gap-6">
+    <div className="relative min-h-screen text-slate-100 p-4 sm:p-8 flex flex-col items-center justify-center selection:bg-amber-500/30 overflow-hidden">
+      {/* Real Fantasy Hero Awakening Chamber Environment */}
+      <img
+        src={GAME_ASSETS.backgrounds.heroSelect}
+        alt="Hero Awakening Chamber"
+        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[0.90] contrast-[1.05]"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/65 pointer-events-none z-0" />
+      <div className="relative z-10 w-full max-w-5xl flex flex-col items-center gap-6">
         {/* Ritual Title */}
         <div className="text-center space-y-2">
           <span className="text-xs uppercase tracking-widest text-amber-400 font-bold font-rajdhani flex items-center justify-center gap-1.5">

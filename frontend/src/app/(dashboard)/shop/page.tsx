@@ -1,5 +1,8 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+import { GAME_ASSETS } from "@/lib/game-assets";
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, ApiError } from "@/lib/api-client";
@@ -133,7 +136,16 @@ export default function ShopPage() {
       : character?.equipped_theme || "default_dark";
 
   return (
-    <div className="space-y-6">
+    <div className="relative min-h-[calc(100vh-5rem)] rounded-3xl overflow-hidden border border-amber-500/40 p-4 sm:p-7 shadow-[0_0_50px_rgba(0,0,0,0.85)]">
+      {/* Real Fantasy Enchanted Night Bazaar Background */}
+      <img
+        src={GAME_ASSETS.backgrounds.shop}
+        alt="Grand Realm Bazaar"
+        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[0.88] contrast-[1.05]"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/60 pointer-events-none z-0" />
+
+      <div className="relative z-10 space-y-6">
       {/* 1. Alchemist & Weaponsmith Counter Banner */}
       <section className="relative rounded-2xl border border-amber-500/30 bg-gradient-to-r from-slate-950 via-slate-900 to-amber-950/20 p-5 sm:p-7 shadow-[0_10px_35px_rgba(0,0,0,0.6)] overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,rgba(245,158,11,0.08),transparent_60%)] pointer-events-none" />
@@ -515,6 +527,6 @@ export default function ShopPage() {
         </div>
       )}
     </div>
+    </div>
   );
 }
-

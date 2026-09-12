@@ -1,5 +1,8 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+import { GAME_ASSETS } from "@/lib/game-assets";
+
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -54,8 +57,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 selection:bg-amber-500/30">
-      <div className="w-full max-w-md">
+    <div className="relative min-h-screen flex flex-col items-center justify-center p-4 selection:bg-amber-500/30 overflow-hidden">
+      {/* Real Fantasy Realm Gateway Portal Background */}
+      <img
+        src={GAME_ASSETS.backgrounds.login}
+        alt="Realm of Aethelgard Gateway"
+        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[0.92] contrast-[1.05]"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/60 pointer-events-none z-0" />
+      <div className="relative z-10 w-full max-w-md">
+
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-8">
           <Link href="/" className="flex items-center gap-2 mb-2">

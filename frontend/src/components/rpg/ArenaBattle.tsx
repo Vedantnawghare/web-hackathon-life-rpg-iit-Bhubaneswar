@@ -172,7 +172,7 @@ export function ArenaBattle({
     }
   }, [activeHeroClass]);
 
-  // Choreographed Mini-Combat Scene (4-6 Seconds)
+  // Choreographed Mini-Combat Scene (6-7 Seconds Pacing with Monster Roars & Long Reach)
   const startCombatExchange = useCallback((data: QuestCompleteResponse, calculatedNewHp: number) => {
     clearAllBattleTimers();
     setIsBattling(true);
@@ -190,11 +190,11 @@ export function ArenaBattle({
     // Damage amount per task
     const damageAmount = Math.max(1, enemyHp - calculatedNewHp);
 
-    // PHASE 1: Hero Prepares & Enters Attack Stance (0.0s - 0.4s)
-    setCombatAlert(`⚔️ ${heroArchetype.name} initiates ${heroArchetype.signatureMove}!`);
-    setHeroState(isRogue ? "APPROACH" : "READY");
+    // PHASE 1: Anticipation & Wind-Up (0.0s - 0.6s)
+    setCombatAlert(`⚔️ ${heroArchetype.name} channels ${heroArchetype.signatureMove}!`);
+    setHeroState("READY");
 
-    // Launch Attack & Projectile (0.4s)
+    // Launch Attack & Extended Projectile Travel across the Arena (0.6s)
     const t0 = setTimeout(() => {
       triggerHeroAttackSound();
       setHeroState(isRogue ? "ATTACK_COMBO" : "ATTACK");
@@ -208,16 +208,17 @@ export function ArenaBattle({
       } else {
         setActiveProjectile("sword_arc");
       }
-    }, 400);
+    }, 600);
 
-    // PHASE 2: Visual Impact on Enemy (1.4s)
+    // PHASE 2: Visual Impact on Enemy across the Arena (2.0s)
     const t1 = setTimeout(() => {
       setActiveProjectile(null);
       triggerHeroImpactSound();
+      audioManager.playEnemyHurt(); // Monster pain vocalization!
       setScreenShake(true);
       setEnemyState("HIT");
       setEnemyHp(calculatedNewHp);
-      setCombatAlert(`${damageAmount} DAMAGE DEALT!`);
+      setCombatAlert(`✦ ${damageAmount} DAMAGE CRUSHES THE ADVERSARY!`);
       setDamageNumber({
         text: `-${damageAmount} HP`,
         isCrit: calculatedNewHp === 0,
@@ -225,26 +226,28 @@ export function ArenaBattle({
       });
 
       // Trailing HP catches up
-      setTimeout(() => setEnemyTrailingHp(calculatedNewHp), 350);
-      setTimeout(() => setScreenShake(false), 280);
-    }, 1400);
+      setTimeout(() => setEnemyTrailingHp(calculatedNewHp), 450);
+      setTimeout(() => setScreenShake(false), 380);
+    }, 2000);
 
-    // PHASE 3: Hero Recovers & Enemy Prepares Counter (2.2s)
+    // PHASE 3: Hero Recovers & Monster Roars in Retaliation (2.9s)
     const t2 = setTimeout(() => {
       setHeroState("READY");
       setCombatAlert(null);
       setDamageNumber(null);
 
       if (calculatedNewHp > 0) {
-        // Enemy is still alive: Counterattack initiated!
+        // Monster roars and initiates long-range counterattack!
+        audioManager.playEnemyRoar();
         setEnemyState("APPROACH");
-        setCombatAlert(`⚠️ ${enemyInfo.name} COUNTERATTACKS!`);
+        setCombatAlert(`⚠️ ${enemyInfo.name} ROARS & COUNTERATTACKS!`);
       } else {
-        // Enemy defeated: K.O. sequence
+        // Boss Defeated: Dramatic death roar and victory fanfare
         setEnemyState("DEFEATED");
+        audioManager.playEnemyDeathRoar();
         audioManager.playDefeatSound();
         audioManager.playFanfare();
-        setCombatAlert("★ ENEMY DEFEATED! ★");
+        setCombatAlert("👑 VICTORY! DAILY BOSS DEFEATED!");
         setShowLoot(true);
 
         if (data.has_leveled_up && onLevelUp) {
@@ -256,14 +259,14 @@ export function ArenaBattle({
           });
         }
       }
-    }, 2200);
+    }, 2900);
 
-    // PHASE 4: Enemy Counterattack Strike Lands (3.1s)
+    // PHASE 4: Enemy Closes Distance & Slams Player (4.0s)
     const t3 = setTimeout(() => {
       if (calculatedNewHp > 0) {
         setEnemyState("ATTACK");
 
-        // Precise sync at 450ms into claw strike
+        // Precise sync at 550ms into long-range monster lunge
         const contactTimer = setTimeout(() => {
           audioManager.playEnemyAttack();
           setScreenShake(true);
@@ -276,15 +279,15 @@ export function ArenaBattle({
             isHero: true,
           });
 
-          setTimeout(() => setHeroTrailingHp((prev) => Math.max(40, prev - 15)), 350);
-          setTimeout(() => setScreenShake(false), 300);
-          setTimeout(() => setRedScreenFlash(false), 350);
-        }, 400);
+          setTimeout(() => setHeroTrailingHp((prev) => Math.max(40, prev - 15)), 400);
+          setTimeout(() => setScreenShake(false), 350);
+          setTimeout(() => setRedScreenFlash(false), 400);
+        }, 550);
         timeoutRefs.current.push(contactTimer);
       }
-    }, 3100);
+    }, 4000);
 
-    // PHASE 5: Combat Concludes & Enemy Remains Alive in Arena (4.6s)
+    // PHASE 5: Combat Concludes & Enemy Remains Alive in Arena (5.6s - 6.5s)
     const t4 = setTimeout(() => {
       setHeroState("IDLE");
       setDamageNumber(null);
@@ -292,7 +295,7 @@ export function ArenaBattle({
 
       if (calculatedNewHp > 0) {
         setEnemyState("IDLE");
-        setCombatAlert(`✦ Boss HP: ${calculatedNewHp}/100 • Enemy Wounded!`);
+        setCombatAlert(`✦ Boss HP: ${calculatedNewHp}/100 • Adversary Wounded!`);
         setIsBattling(false);
         audioManager.startAmbientMusic();
 
@@ -303,9 +306,9 @@ export function ArenaBattle({
         setTimeout(() => {
           setIsBattling(false);
           audioManager.startAmbientMusic();
-        }, 3000);
+        }, 3500);
       }
-    }, 4600);
+    }, 5600);
 
     timeoutRefs.current.push(t0, t1, t2, t3, t4);
   }, [
@@ -572,46 +575,46 @@ export function ArenaBattle({
           </div>
 
           {/* =========================================================== */}
-          {/* TRAVELING VISIBLE PROJECTILE & WEAPON SLICE ENTITIES        */}
+          {/* EXTENDED TRAVEL VISIBLE PROJECTILES & WEAPON SLICES         */}
           {/* =========================================================== */}
-          <div className="absolute inset-x-24 bottom-24 h-32 pointer-events-none z-20 flex items-center">
-            {/* Lyra: Arcane Orb Traveling Projectile */}
+          <div className="absolute inset-x-12 sm:inset-x-20 bottom-24 h-36 pointer-events-none z-20 flex items-center">
+            {/* Lyra: Arcane Orb Traveling across full width of the arena */}
             {activeProjectile === "arcane_orb" && (
               <motion.div
-                initial={{ x: 20, y: -10, opacity: 0, scale: 0.5 }}
+                initial={{ x: 20, y: -15, opacity: 0, scale: 0.5 }}
                 animate={{
-                  x: [20, 240, 480],
-                  y: [-10, -35, -5],
+                  x: [20, 280, 560],
+                  y: [-15, -45, -8],
                   opacity: [0, 1, 1, 0],
-                  scale: [0.6, 1.4, 1.8],
+                  scale: [0.7, 1.5, 2.0],
                 }}
-                transition={{ duration: 0.95, ease: "easeInOut" }}
+                transition={{ duration: 1.35, ease: "easeInOut" }}
                 className="absolute"
               >
-                <div className="relative w-14 h-14 flex items-center justify-center">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-300 animate-spin shadow-[0_0_35px_rgba(168,85,247,1)]" />
-                  <div className="absolute -left-6 w-8 h-8 rounded-full bg-cyan-400/60 blur-sm animate-pulse" />
-                  <div className="absolute -left-12 w-5 h-5 rounded-full bg-purple-500/40 blur-md" />
+                <div className="relative w-16 h-16 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-300 animate-spin shadow-[0_0_40px_rgba(168,85,247,1)]" />
+                  <div className="absolute -left-8 w-10 h-10 rounded-full bg-cyan-400/70 blur-sm animate-pulse" />
+                  <div className="absolute -left-16 w-6 h-6 rounded-full bg-purple-500/50 blur-md" />
                 </div>
               </motion.div>
             )}
 
-            {/* Aria: Energy Arrow Traveling Projectile */}
+            {/* Aria: Energy Arrow Flying across full width of the arena */}
             {activeProjectile === "arrow" && (
               <motion.div
-                initial={{ x: 20, y: 5, opacity: 0, scale: 0.6 }}
+                initial={{ x: 20, y: 8, opacity: 0, scale: 0.6 }}
                 animate={{
-                  x: [20, 260, 490],
-                  y: [5, -12, 0],
+                  x: [20, 300, 580],
+                  y: [8, -14, 0],
                   opacity: [0, 1, 1, 0],
-                  scale: [0.8, 1.1, 1.3],
+                  scale: [0.8, 1.2, 1.4],
                 }}
-                transition={{ duration: 0.85, ease: "easeIn" }}
+                transition={{ duration: 1.25, ease: "easeIn" }}
                 className="absolute"
               >
-                <div className="relative w-20 h-6 flex items-center">
-                  <div className="w-5 h-5 rotate-45 bg-amber-300 shadow-[0_0_20px_rgba(245,158,11,1)]" />
-                  <div className="w-16 h-1.5 bg-gradient-to-r from-transparent via-emerald-400 to-amber-300 shadow-[0_0_12px_rgba(16,185,129,0.9)]" />
+                <div className="relative w-24 h-8 flex items-center">
+                  <div className="w-6 h-6 rotate-45 bg-amber-300 shadow-[0_0_25px_rgba(245,158,11,1)]" />
+                  <div className="w-20 h-2 bg-gradient-to-r from-transparent via-emerald-400 to-amber-300 shadow-[0_0_15px_rgba(16,185,129,0.95)]" />
                 </div>
               </motion.div>
             )}
@@ -619,13 +622,13 @@ export function ArenaBattle({
             {/* Valen: Sunfire Cleave Giant Golden Arc */}
             {activeProjectile === "sword_arc" && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.5, x: 280 }}
-                animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1.4, 1.7] }}
-                transition={{ duration: 0.6 }}
+                initial={{ opacity: 0, scale: 0.4, x: 340 }}
+                animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1.5, 1.8] }}
+                transition={{ duration: 0.8 }}
                 className="absolute"
               >
-                <svg className="w-36 h-36 text-amber-400 drop-shadow-[0_0_25px_rgba(245,158,11,1)]" viewBox="0 0 100 100">
-                  <path d="M 15 85 A 50 50 0 0 1 85 15" fill="none" stroke="currentColor" strokeWidth="10" strokeLinecap="round" />
+                <svg className="w-44 h-44 text-amber-400 drop-shadow-[0_0_30px_rgba(245,158,11,1)]" viewBox="0 0 100 100">
+                  <path d="M 15 85 A 50 50 0 0 1 85 15" fill="none" stroke="currentColor" strokeWidth="11" strokeLinecap="round" />
                 </svg>
               </motion.div>
             )}
@@ -633,14 +636,14 @@ export function ArenaBattle({
             {/* Kaelen: Volt Tempest Twin Cross Slices */}
             {activeProjectile === "dual_slash" && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.4, x: 280 }}
-                animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1.3, 1.6] }}
-                transition={{ duration: 0.55 }}
+                initial={{ opacity: 0, scale: 0.4, x: 340 }}
+                animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1.4, 1.7] }}
+                transition={{ duration: 0.75 }}
                 className="absolute"
               >
-                <svg className="w-32 h-32 text-cyan-400 drop-shadow-[0_0_25px_rgba(6,182,212,1)]" viewBox="0 0 100 100">
-                  <line x1="20" y1="20" x2="80" y2="80" stroke="currentColor" strokeWidth="7" strokeLinecap="round" />
-                  <line x1="80" y1="20" x2="20" y2="80" stroke="currentColor" strokeWidth="7" strokeLinecap="round" />
+                <svg className="w-40 h-40 text-cyan-400 drop-shadow-[0_0_30px_rgba(6,182,212,1)]" viewBox="0 0 100 100">
+                  <line x1="15" y1="15" x2="85" y2="85" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
+                  <line x1="85" y1="15" x2="15" y2="85" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
                 </svg>
               </motion.div>
             )}

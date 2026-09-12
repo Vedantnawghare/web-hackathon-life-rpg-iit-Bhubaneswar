@@ -1,5 +1,7 @@
-﻿"use client";
+"use client";
 
+/* eslint-disable @next/next/no-img-element */
+﻿
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
@@ -33,6 +35,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn, formatGold, formatXP } from "@/lib/utils";
+import { GAME_ASSETS } from "@/lib/game-assets";
 
 export default function CharacterPage() {
   const queryClient = useQueryClient();
@@ -146,7 +149,15 @@ export default function CharacterPage() {
   const xpPercentage = Math.min(100, Math.max(0, Math.round((xpIntoLevel / (xpRequired || 1)) * 100)));
 
   return (
-    <div className="space-y-8 select-none">
+    <div className="relative min-h-[calc(100vh-5rem)] rounded-3xl overflow-hidden border border-amber-500/40 p-4 sm:p-7 shadow-[0_0_50px_rgba(0,0,0,0.85)]">
+      {/* Real Fantasy Sanctum Environment */}
+      <img
+        src={GAME_ASSETS.backgrounds.character}
+        alt="Hero Grand Sanctum"
+        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[0.85] contrast-[1.05]"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/65 pointer-events-none z-0" />
+      <div className="relative z-10 space-y-8 select-none">
       {/* 1. HERO SANCTUM PEDESTAL WITH FULL CHARACTER RIG */}
       <section className="relative rounded-2xl border-2 border-amber-500/40 bg-gradient-to-r from-slate-950 via-slate-900 to-amber-950/30 p-6 md:p-8 shadow-[0_12px_40px_rgba(0,0,0,0.7)] overflow-hidden">
         {/* Ambient Glow */}
@@ -466,6 +477,6 @@ export default function CharacterPage() {
         </Card>
       </div>
     </div>
+    </div>
   );
 }
-

@@ -840,6 +840,88 @@ class AudioManager {
     osc.stop(now + 0.38);
   }
 
+  /**
+   * Deep guttural monster roar / alien growl with bass presence and resonance
+   */
+  public playEnemyRoar() {
+    if (!this.isSfxEnabled || this.isMuted) return;
+    this.unlockContext();
+    if (!this.ctx || !this.sfxGain) return;
+    const now = this.ctx.currentTime;
+
+    // Sub-bass rumble
+    const subOsc = this.ctx.createOscillator();
+    const subGain = this.ctx.createGain();
+    subOsc.type = "sawtooth";
+    subOsc.frequency.setValueAtTime(85, now);
+    subOsc.frequency.exponentialRampToValueAtTime(32, now + 0.6);
+    subGain.gain.setValueAtTime(0.5, now);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+    subOsc.connect(subGain);
+    subGain.connect(this.sfxGain);
+    subOsc.start(now);
+    subOsc.stop(now + 0.7);
+
+    // Distorted growl vocalization
+    const roarOsc = this.ctx.createOscillator();
+    const roarGain = this.ctx.createGain();
+    roarOsc.type = "sawtooth";
+    roarOsc.frequency.setValueAtTime(140, now);
+    roarOsc.frequency.linearRampToValueAtTime(95, now + 0.25);
+    roarOsc.frequency.exponentialRampToValueAtTime(45, now + 0.55);
+    roarGain.gain.setValueAtTime(0.35, now);
+    roarGain.gain.exponentialRampToValueAtTime(0.001, now + 0.58);
+    roarOsc.connect(roarGain);
+    roarGain.connect(this.sfxGain);
+    roarOsc.start(now);
+    roarOsc.stop(now + 0.6);
+  }
+
+  /**
+   * Painful monster grunt / alien hurt reaction when hit
+   */
+  public playEnemyHurt() {
+    if (!this.isSfxEnabled || this.isMuted) return;
+    this.unlockContext();
+    if (!this.ctx || !this.sfxGain) return;
+    const now = this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+    gain.gain.setValueAtTime(0.42, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.35);
+  }
+
+  /**
+   * Cataclysmic monster death roar when boss reaches 0 HP
+   */
+  public playEnemyDeathRoar() {
+    if (!this.isSfxEnabled || this.isMuted) return;
+    this.unlockContext();
+    if (!this.ctx || !this.sfxGain) return;
+    const now = this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(160, now);
+    osc.frequency.linearRampToValueAtTime(70, now + 0.4);
+    osc.frequency.exponentialRampToValueAtTime(25, now + 1.1);
+    gain.gain.setValueAtTime(0.55, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.15);
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 1.2);
+  }
+
   public playEnemyAttack() {
     if (!this.isSfxEnabled || this.isMuted) return;
     this.unlockContext();

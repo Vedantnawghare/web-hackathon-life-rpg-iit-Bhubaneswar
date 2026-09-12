@@ -1,5 +1,8 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+import { GAME_ASSETS } from "@/lib/game-assets";
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
@@ -40,7 +43,16 @@ export default function AchievementsPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="relative min-h-[calc(100vh-5rem)] rounded-3xl overflow-hidden border border-amber-500/40 p-4 sm:p-7 shadow-[0_0_50px_rgba(0,0,0,0.85)]">
+      {/* Real Fantasy Trophy Hall of Champions Background */}
+      <img
+        src={GAME_ASSETS.backgrounds.achievements}
+        alt="Hall of Trophies"
+        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[0.85] contrast-[1.05]"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/60 pointer-events-none z-0" />
+
+      <div className="relative z-10 space-y-6">
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div>
@@ -180,6 +192,7 @@ export default function AchievementsPage() {
           ))}
         </div>
       )}
+    </div>
     </div>
   );
 }
