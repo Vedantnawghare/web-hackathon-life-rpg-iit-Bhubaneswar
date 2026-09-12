@@ -493,7 +493,11 @@ export default function DashboardPage() {
         {/* 5 Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
           {/* 1. Mindpeak Spire - INTELLECT */}
-          <div className="group relative rounded-2xl overflow-hidden border border-cyan-400/40 bg-[#0a1128] hover:border-cyan-300 hover:shadow-[0_0_30px_rgba(6,182,212,0.4)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1.5">
+          <Link
+            href="/character#attributes"
+            aria-label="Mindpeak Spire - View Intellect attributes and progression in Hero Sanctum"
+            className="group relative rounded-2xl overflow-hidden border border-cyan-400/40 bg-[#0a1128] hover:border-cyan-300 hover:shadow-[0_0_30px_rgba(6,182,212,0.4)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.99]"
+          >
             <div className="relative h-44 w-full overflow-hidden">
               <img
                 src={GAME_ASSETS.zones.mindpeak}
@@ -523,13 +527,17 @@ export default function DashboardPage() {
               </div>
               <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono font-bold text-cyan-300">
                 <span>XP +120 AVAILABLE</span>
-                <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                <span className="group-hover:translate-x-1.5 transition-transform inline-flex items-center gap-1 font-bold" aria-hidden="true">&rarr;</span>
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* 2. The Iron Grounds - STRENGTH */}
-          <div className="group relative rounded-2xl overflow-hidden border border-rose-500/40 bg-[#160a0d] hover:border-rose-400 hover:shadow-[0_0_30px_rgba(244,63,94,0.4)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1.5">
+          <Link
+            href="/character#attributes"
+            aria-label="The Iron Grounds - View Strength attributes and progression in Hero Sanctum"
+            className="group relative rounded-2xl overflow-hidden border border-rose-500/40 bg-[#160a0d] hover:border-rose-400 hover:shadow-[0_0_30px_rgba(244,63,94,0.4)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.99]"
+          >
             <div className="relative h-44 w-full overflow-hidden">
               <img
                 src={GAME_ASSETS.zones.ironCrags}
@@ -559,13 +567,17 @@ export default function DashboardPage() {
               </div>
               <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono font-bold text-rose-300">
                 <span>XP +100 AVAILABLE</span>
-                <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                <span className="group-hover:translate-x-1.5 transition-transform inline-flex items-center gap-1 font-bold" aria-hidden="true">&rarr;</span>
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* 3. Sanctum of Discipline - DISCIPLINE */}
-          <div className="group relative rounded-2xl overflow-hidden border border-emerald-500/40 bg-[#071710] hover:border-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1.5">
+          <Link
+            href="/quests"
+            aria-label="Sanctum of Discipline - View daily quests and streak progression"
+            className="group relative rounded-2xl overflow-hidden border border-emerald-500/40 bg-[#071710] hover:border-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.99]"
+          >
             <div className="relative h-44 w-full overflow-hidden">
               <img
                 src={GAME_ASSETS.zones.discipline}
@@ -595,13 +607,17 @@ export default function DashboardPage() {
               </div>
               <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono font-bold text-emerald-300">
                 <span>XP +150 AVAILABLE</span>
-                <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                <span className="group-hover:translate-x-1.5 transition-transform inline-flex items-center gap-1 font-bold" aria-hidden="true">&rarr;</span>
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* 4. Springs of Vitalis - VITALITY */}
-          <div className="group relative rounded-2xl overflow-hidden border border-amber-500/40 bg-[#171106] hover:border-amber-400 hover:shadow-[0_0_30px_rgba(245,158,11,0.4)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1.5">
+          <Link
+            href="/character#attributes"
+            aria-label="Springs of Vitalis - View Vitality attributes and progression in Hero Sanctum"
+            className="group relative rounded-2xl overflow-hidden border border-amber-500/40 bg-[#171106] hover:border-amber-400 hover:shadow-[0_0_30px_rgba(245,158,11,0.4)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.99]"
+          >
             <div className="relative h-44 w-full overflow-hidden">
               <img
                 src={GAME_ASSETS.zones.vitalis}
@@ -631,13 +647,17 @@ export default function DashboardPage() {
               </div>
               <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono font-bold text-amber-300">
                 <span>XP +110 AVAILABLE</span>
-                <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                <span className="group-hover:translate-x-1.5 transition-transform inline-flex items-center gap-1 font-bold" aria-hidden="true">&rarr;</span>
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* 5. The Arcanum - CREATIVITY */}
-          <div className="group relative rounded-2xl overflow-hidden border border-purple-500/40 bg-[#140a1c] hover:border-purple-400 hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1.5">
+          <Link
+            href="/character#attributes"
+            aria-label="The Arcanum - View Creativity attributes and progression in Hero Sanctum"
+            className="group relative rounded-2xl overflow-hidden border border-purple-500/40 bg-[#140a1c] hover:border-purple-400 hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.99]"
+          >
             <div className="relative h-44 w-full overflow-hidden">
               <img
                 src={GAME_ASSETS.zones.arcanum}
@@ -667,10 +687,10 @@ export default function DashboardPage() {
               </div>
               <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono font-bold text-purple-300">
                 <span>XP +90 AVAILABLE</span>
-                <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                <span className="group-hover:translate-x-1.5 transition-transform inline-flex items-center gap-1 font-bold" aria-hidden="true">&rarr;</span>
               </div>
             </div>
-          </div>
+          </Link>
         </div>
       </section>
 

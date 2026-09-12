@@ -381,7 +381,7 @@ export default function CharacterPage() {
         </Card>
 
         {/* 5 Core Attributes List */}
-        <Card className="border-slate-800 bg-slate-900/60 backdrop-blur-md shadow-xl lg:col-span-2">
+        <Card id="attributes" className="border-slate-800 bg-slate-900/60 backdrop-blur-md shadow-xl lg:col-span-2 scroll-mt-24">
           <CardHeader>
             <CardTitle className="text-base font-cinzel">Core Life Attributes</CardTitle>
             <CardDescription>Faculties enhanced by clearing bounties across the realm</CardDescription>
