@@ -9,7 +9,7 @@
  * - Browser autoplay compliance with automatic unlock on first user interaction
  */
 
-export type AudioState = "MUTED" | "AMBIENT" | "BATTLE" | "VICTORY";
+export type AudioState = "MUTED" | "AMBIENT" | "BATTLE" | "VICTORY" | "IDLE";
 
 class AudioManager {
   private ctx: AudioContext | null = null;
@@ -120,6 +120,16 @@ class AudioManager {
     this.isSfxEnabled = enabled;
   }
 
+  public getCurrentState(): AudioState {
+    return this.currentState;
+  }
+
+  public getCurrentTrack(): "ambient" | "battle" | "idle" {
+    if (this.currentState === "BATTLE") return "battle";
+    if (this.currentState === "AMBIENT") return "ambient";
+    return "idle";
+  }
+
   // =========================================================================
   // CALM AMBIENT MUSIC (Rich, Peaceful, Multi-Track Fantasy Soundtrack)
   // =========================================================================
@@ -129,16 +139,29 @@ class AudioManager {
     this.unlockContext();
     if (!this.ctx || !this.ambientGain) return;
 
+    // If exploration music is already actively playing, keep it flowing continuously!
+    if (this.currentState === "AMBIENT" && this.ambientTimer) {
+      const now = this.ctx.currentTime;
+      this.ambientGain.gain.cancelScheduledValues(now);
+      this.ambientGain.gain.linearRampToValueAtTime(0.5, now + 0.3);
+      return;
+    }
+
     this.currentState = "AMBIENT";
     const now = this.ctx.currentTime;
 
-    // Smooth warm fade in for ambient music
+    // Smooth warm crossfade: fade in ambient over 1.2s, fade out battle over 1.0s
     this.ambientGain.gain.cancelScheduledValues(now);
     this.ambientGain.gain.linearRampToValueAtTime(0.5, now + 1.2);
 
     if (this.battleGain) {
       this.battleGain.gain.cancelScheduledValues(now);
       this.battleGain.gain.linearRampToValueAtTime(0, now + 1.0);
+    }
+
+    if (this.battleTimer) {
+      clearInterval(this.battleTimer);
+      this.battleTimer = null;
     }
 
     if (!this.ambientTimer) {
@@ -374,16 +397,25 @@ class AudioManager {
     this.unlockContext();
     if (!this.ctx || !this.battleGain) return;
 
+    if (this.currentState === "BATTLE" && this.battleTimer) {
+      return;
+    }
+
     this.currentState = "BATTLE";
     const now = this.ctx.currentTime;
 
-    // Crossfade: bring battle gain up to 0.55 within 400ms, bring ambient down to 0
+    // Smooth crossfade: bring battle gain up to 0.55 over 800ms, bring ambient down to 0 over 800ms
     this.battleGain.gain.cancelScheduledValues(now);
-    this.battleGain.gain.linearRampToValueAtTime(0.55, now + 0.4);
+    this.battleGain.gain.linearRampToValueAtTime(0.55, now + 0.8);
 
     if (this.ambientGain) {
       this.ambientGain.gain.cancelScheduledValues(now);
-      this.ambientGain.gain.linearRampToValueAtTime(0, now + 0.4);
+      this.ambientGain.gain.linearRampToValueAtTime(0, now + 0.8);
+    }
+
+    if (this.ambientTimer) {
+      clearInterval(this.ambientTimer);
+      this.ambientTimer = null;
     }
 
     if (!this.battleTimer) {
@@ -527,10 +559,16 @@ class AudioManager {
     }
     if (this.ctx) {
       const now = this.ctx.currentTime;
-      if (this.ambientGain) this.ambientGain.gain.linearRampToValueAtTime(0, now + 0.2);
-      if (this.battleGain) this.battleGain.gain.linearRampToValueAtTime(0, now + 0.2);
+      if (this.ambientGain) {
+        this.ambientGain.gain.cancelScheduledValues(now);
+        this.ambientGain.gain.linearRampToValueAtTime(0, now + 0.2);
+      }
+      if (this.battleGain) {
+        this.battleGain.gain.cancelScheduledValues(now);
+        this.battleGain.gain.linearRampToValueAtTime(0, now + 0.2);
+      }
     }
-    this.currentState = "MUTED";
+    this.currentState = "IDLE";
   }
 
   // =========================================================================

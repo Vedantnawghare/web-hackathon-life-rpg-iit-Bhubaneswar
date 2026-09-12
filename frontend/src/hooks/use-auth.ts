@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { audioManager } from "@/lib/audio-manager";
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -52,6 +53,7 @@ export function useAuth() {
 
   const signOut = useCallback(async () => {
     try {
+      audioManager.stopAllBgm();
       await supabase.auth.signOut();
     } finally {
       setUser(null);

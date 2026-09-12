@@ -135,23 +135,28 @@ export function ArenaBattle({
       setCombatAlert("⚠️ ADVERSARY AMBUSH! ⚠️");
     }, 300);
 
-    // 0.85s - Enemy executes ferocious claw/void ATTACK!
+    // 0.85s - Enemy winds up into ferocious claw/void ATTACK!
     const t1 = setTimeout(() => {
       setEnemyState("ATTACK");
-      audioManager.playEnemyAttack();
-      setScreenShake(true);
-      setCombatClash("ENEMY_COUNTER");
-      setHeroState("HIT");
-      setHeroHp(70); // User HP drops by 30%!
-      setDamageNumber({
-        text: "-30 HP (MISSED DEADLINE!)",
-        isCrit: true,
-        isHero: true,
-      });
 
-      // Trailing damage bar catches up
-      setTimeout(() => setHeroTrailingHp(70), 450);
-      setTimeout(() => setScreenShake(false), 400);
+      // Impact synchronizes at 450ms when claw reaches the hero
+      const impactTimer = setTimeout(() => {
+        audioManager.playEnemyAttack();
+        setScreenShake(true);
+        setCombatClash("ENEMY_COUNTER");
+        setHeroState("HIT");
+        setHeroHp(70); // User HP drops by 30%!
+        setDamageNumber({
+          text: "-30 HP (MISSED DEADLINE!)",
+          isCrit: true,
+          isHero: true,
+        });
+
+        // Trailing damage bar catches up
+        setTimeout(() => setHeroTrailingHp(70), 450);
+        setTimeout(() => setScreenShake(false), 400);
+      }, 450);
+      timeoutRefs.current.push(impactTimer);
     }, 850);
 
     // 2.0s - Settle into active battle-ready stance
@@ -187,7 +192,10 @@ export function ArenaBattle({
   useEffect(() => {
     return () => {
       clearAllBattleTimers();
-      audioManager.stopAllBgm();
+      // If battle was running when leaving, crossfade back to exploration ambient music
+      if (audioManager.getCurrentTrack() === "battle") {
+        audioManager.startAmbientMusic();
+      }
     };
   }, [clearAllBattleTimers]);
 
@@ -204,6 +212,59 @@ export function ArenaBattle({
       audioManager.startAmbientMusic();
     }
   }, [isBattling]);
+
+  // Enemy idle attack cadence: attacks every 30-60 seconds at random interval
+  const idleAttackTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (isBattling || isOverdue) {
+      if (idleAttackTimerRef.current) {
+        clearTimeout(idleAttackTimerRef.current);
+        idleAttackTimerRef.current = null;
+      }
+      return;
+    }
+
+    const scheduleNextIdleAttack = () => {
+      // Random delay between 30 and 60 seconds (30,000ms - 60,000ms)
+      const nextDelay = Math.floor(30000 + Math.random() * 30000);
+      idleAttackTimerRef.current = setTimeout(() => {
+        // Only attack if still idle and not in active battle sequence
+        setEnemyState("ATTACK");
+
+        // Precise audio sync at 450ms visual impact
+        const strikeTimer = setTimeout(() => {
+          audioManager.playEnemyAttack();
+          setScreenShake(true);
+          setCombatAlert("⚠️ ADVERSARY PROWLS & PROBES! (PARRIED)");
+          setTimeout(() => setScreenShake(false), 300);
+        }, 450);
+        timeoutRefs.current.push(strikeTimer);
+
+        // Reset to IDLE after attack animation completes (950ms)
+        const recoverTimer = setTimeout(() => {
+          setEnemyState("IDLE");
+        }, 950);
+        timeoutRefs.current.push(recoverTimer);
+
+        // Clear alert and schedule next 30-60s strike
+        const alertClearTimer = setTimeout(() => {
+          setCombatAlert(null);
+          scheduleNextIdleAttack();
+        }, 2500);
+        timeoutRefs.current.push(alertClearTimer);
+      }, nextDelay);
+    };
+
+    scheduleNextIdleAttack();
+
+    return () => {
+      if (idleAttackTimerRef.current) {
+        clearTimeout(idleAttackTimerRef.current);
+        idleAttackTimerRef.current = null;
+      }
+    };
+  }, [isBattling, isOverdue]);
 
   const heroArchetype = getHeroArchetype(character?.hero_class);
   const enemyInfo = activeQuest
@@ -362,21 +423,26 @@ export function ArenaBattle({
 
     const t4 = setTimeout(() => {
       setEnemyState("ATTACK");
-      audioManager.playEnemyAttack();
-      setScreenShake(true);
-      setCombatClash("ENEMY_COUNTER");
-      setHeroState("HIT");
-      setHeroHp(75);
-      setFocusMeter(70); // Counter attack charges hero's Super meter!
-      setCombatAlert("COUNTER ATTACK!");
-      setDamageNumber({
-        text: "-250 RESIST",
-        isCrit: false,
-        isHero: true,
-      });
 
-      setTimeout(() => setHeroTrailingHp(75), 400);
-      setTimeout(() => setScreenShake(false), 300);
+      // Impact synchronizes at 450ms when weapon/claw connects
+      const counterImpactTimer = setTimeout(() => {
+        audioManager.playEnemyAttack();
+        setScreenShake(true);
+        setCombatClash("ENEMY_COUNTER");
+        setHeroState("HIT");
+        setHeroHp(75);
+        setFocusMeter(70); // Counter attack charges hero's Super meter!
+        setCombatAlert("COUNTER ATTACK!");
+        setDamageNumber({
+          text: "-250 RESIST",
+          isCrit: false,
+          isHero: true,
+        });
+
+        setTimeout(() => setHeroTrailingHp(75), 400);
+        setTimeout(() => setScreenShake(false), 300);
+      }, 450);
+      timeoutRefs.current.push(counterImpactTimer);
     }, 3900);
 
     // EXCHANGE 3: Hero Rebounds, Focus Hits MAX! (5.2s - 6.2s)
