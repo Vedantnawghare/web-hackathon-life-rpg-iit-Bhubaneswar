@@ -1,0 +1,48 @@
+import { Character } from "./character";
+
+export type QuestDifficulty = "EASY" | "MEDIUM" | "HARD" | "EPIC";
+export type CharacterAttribute = "STRENGTH" | "INTELLECT" | "DISCIPLINE" | "VITALITY" | "CREATIVITY";
+export type QuestStatus = "ACTIVE" | "ARCHIVED";
+export type QuestRecurrence = "NONE" | "DAILY" | "WEEKLY";
+
+export interface Quest {
+  id: string;
+  character_id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  difficulty: QuestDifficulty;
+  primary_attribute: CharacterAttribute;
+  base_xp: number;
+  base_gold: number;
+  status: QuestStatus;
+  recurrence: QuestRecurrence;
+  due_date: string | null;
+  created_at: string;
+  updated_at: string;
+
+  // Dynamic period evaluation
+  is_completed_for_period: boolean;
+  last_completed_at: string | null;
+}
+
+export interface QuestCreatePayload {
+  title: string;
+  description?: string;
+  category: string;
+  difficulty: QuestDifficulty;
+  recurrence?: QuestRecurrence;
+  due_date?: string;
+}
+
+export interface QuestCompleteResponse {
+  quest_id: string;
+  earned_xp: number;
+  earned_gold: number;
+  xp_multiplier: number;
+  attribute_increased: CharacterAttribute;
+  attribute_gain: number;
+  level_ups: number[];
+  unlocked_achievement_ids: string[];
+  character: Character;
+}
