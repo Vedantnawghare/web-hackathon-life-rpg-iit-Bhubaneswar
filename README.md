@@ -1,3 +1,5 @@
+# ⚔️ SparkX Presents — Life RPG
+
 > **Complete real-life tasks. Defeat your daily boss. Level up your character. Build your streak.**
 
 Life RPG is a full-stack gamified productivity platform that transforms everyday responsibilities into an interactive fantasy RPG experience.
@@ -6,76 +8,105 @@ Instead of simply checking tasks off a list, users enter a persistent game world
 
 Every completed real-life task damages the day's boss.
 
-**Complete your tasks → defeat the boss → earn XP + Gold → level up.**
+> **Complete your tasks → defeat the boss → earn XP + Gold → level up.**
 
 ---
 
 ## 🚀 Quick Access
 
-🎮 **[Play the Live Game](https://life-rpg-pi-silk.vercel.app/)**  
-💻 **[View GitHub Repository](https://github.com/Vedantnawghare/web-hackathon-life-rpg-iit-Bhubaneswar)**  
-⚙️ **[Open Backend](https://life-rpg-backend-1wuv.onrender.com/)**  
+🎮 **[Play the Live Game](https://life-rpg-pi-silk.vercel.app/)**
+
+💻 **[View GitHub Repository](https://github.com/Vedantnawghare/web-hackathon-life-rpg-iit-Bhubaneswar)**
+
+⚙️ **[Open Backend](https://life-rpg-backend-1wuv.onrender.com/)**
+
 ❤️ **[Backend Health Check](https://life-rpg-backend-1wuv.onrender.com/api/v1/health)**
 
 ---
 
-## 🎭 Hackathon Presentation Demo Account & Dataset
+# 🎭 Hackathon Presentation Demo Account & Dataset
 
-To evaluate **Life RPG** with realistic, long-term player progression without needing to manually grind for days, a dedicated production demo account is seeded with **8 days of authentic historical quest activity, XP progression, streaks, inventory relics, and unlocked achievements**:
+To evaluate **Life RPG** with realistic, long-term player progression without needing to manually grind for days, a dedicated production demo account is seeded with **8 days of historical quest activity, XP progression, streaks, inventory relics, and unlocked achievements**.
 
-- **Demo User Email**: `demo_hero@liferpg.dev`
-- **Demo User Role**: Internal hackathon demonstration account (*credentials provided in submission portal notes*)
-- **Character**: `ValenIronheart` — Level 5 Vanguard Hero (`vanguard_male`), Title: *The Unbroken Vanguard*
-- **Auth Provider**: Real Supabase Authentication + Real Supabase PostgreSQL database (*no mock/fake frontend data*)
+- **Demo User Email:** `demo_hero@liferpg.dev`
+- **Demo User Role:** Internal hackathon demonstration account
+- **Credentials:** Provided separately in submission portal notes
+- **Character:** `ValenIronheart` — Level 5 Vanguard Hero
+- **Title:** *The Unbroken Vanguard*
+- **Auth Provider:** Real Supabase Authentication
+- **Database:** Real Supabase PostgreSQL
+- **Frontend Data:** No mock/fake production data
 
-### 🎬 Recommended Demo Flow for Judges & Video Walkthrough
+### 🎬 Recommended Demo Flow
 
 1. **Log In** via `/login` using the demo account.
-2. **Hero Dashboard (`/dashboard`)**:
-   - Observe today's **3D Boss Battle Arena** with the daily boss at **50 / 100 HP** (2 of 4 daily quests completed today).
-   - Click **Strike Task** on an active daily quest (e.g., *"Drink 3 Liters Mineral Water"*) to trigger the real-time 3D combat choreography (projectile flight, camera shake, boss counterattack, sound effects) and watch the boss HP drop in real time!
-   - Use the **50 HP Demo** or **Reset (100 HP)** buttons in the arena header to seamlessly reset today's demonstration state for repeat video takes without ever deleting historical data.
-3. **Chronicles & Analytics (`/history`)**:
-   - **Cumulative XP Progression**: Inspect the multi-day growth curve tracking lifetime experience across 8 consecutive days.
-   - **Weekly Adventure Activity**: View the completed task distribution across every day of the week (Monday through Sunday).
-   - **Attribute Profile & Domains**: Review the balanced faculty distribution across Intellect, Strength, Discipline, Vitality, and Creativity.
-   - **Difficulty Breakdown**: Inspect Easy, Medium, Hard, and Epic contract completion metrics.
-4. **Hero Sanctum (`/character`)**:
-   - Review the authoritative 8-day quest streak (+16% XP bonus multiplier).
-   - View the interactive 5-axis **Astrolabe Radar Matrix** powered by live attributes (STR 36, INT 42, DIS 17, VIT 19, CRE 16).
-5. **Relic Vault & Trophies (`/inventory` & `/achievements`)**:
-   - Review owned and equipped cosmetics (*Abyssal Dark Theme*, *Bronze Laurel Frame*, *Founder Sigil Badge*, and *Phoenix Crest*).
-   - Review 5 unlocked achievement milestones (*First Step*, *Path of Mastery [Lvl 5]*, *Unwavering Will [7-day Streak]*, *Tenacious Slayer [10 Quests]*, *Novice Awakening [1000 XP]*).
 
-> **Developer Seeder**: Developers can re-run or inspect the authoritative multi-day seeder script anytime via:  
-> `python backend/app/scripts/seed_demo_user.py`
+2. **Hero Dashboard (`/dashboard`)**
+   - Observe today's **3D Boss Battle Arena**
+   - View the daily boss at **50 / 100 HP**
+   - View today's active quests
+   - Click **Strike Task** on an active quest
+   - Trigger the real-time combat choreography
+   - Observe projectile flight, camera shake, boss counterattack and sound effects
+   - Watch boss HP decrease in real time
+   - Use showcase controls to reset the demonstration state when needed
+
+3. **Chronicles & Analytics (`/history`)**
+   - Cumulative XP progression
+   - Weekly adventure activity
+   - Attribute distribution
+   - Difficulty breakdown
+   - Historical quest activity
+
+4. **Hero Sanctum (`/character`)**
+   - Review the multi-day quest streak
+   - View character attributes
+   - View the interactive 5-axis attribute radar
+   - Inspect progression
+
+5. **Relic Vault & Trophies**
+   - `/inventory`
+   - `/achievements`
+   - Review owned/equipped cosmetics
+   - Review unlocked achievements
+
+### 🧑‍💻 Demo Data Seeder
+
+Developers can re-run or inspect the authoritative multi-day demo seeder:
+
+```bash
+python backend/app/scripts/seed_demo_user.py
+````
 
 ---
 
-## 🖼️ Project Preview
+# 🖼️ Project Preview
 
-### 🌍 Game World
+## 🌍 Game World
 
 <p align="center">
   <img src="docs/images/game-home.png" alt="Life RPG Game World" width="90%">
 </p>
 
-### ⚔️ Daily Boss Battle
+## ⚔️ Daily Boss Battle
 
 <p align="center">
   <img src="docs/images/boss-arena.png" alt="Life RPG Daily Boss Battle" width="90%">
 </p>
 
-### 🗺️ Fantasy World Map
+## 🗺️ Fantasy World Map
 
 <p align="center">
   <img src="docs/images/world-map.png" alt="Life RPG Fantasy World Map" width="90%">
 </p>
 
-> **Screenshot files:**  
-> `docs/images/game-home.png`  
-> `docs/images/boss-arena.png`  
-> `docs/images/world-map.png`
+### Screenshot Files
+
+```text
+docs/images/game-home.png
+docs/images/boss-arena.png
+docs/images/world-map.png
+```
 
 ---
 
@@ -88,16 +119,16 @@ Traditional productivity apps usually look like:
 ☐ Exercise
 ☐ Read
 ☐ Drink Water
-````
+```
 
-Life RPG turns the same tasks into a game:
+Life RPG turns the same tasks into an interactive game loop:
 
 ```text
-              TODAY'S BOSS
-          ┌─────────────────┐
-          │    ARCANE WOLF  │
-          │     75 / 100 HP │
-          └─────────────────┘
+                 TODAY'S BOSS
+             ┌─────────────────┐
+             │    DAILY BOSS   │
+             │     75 / 100 HP │
+             └─────────────────┘
 
 ✓ Study Data Structures
 □ Workout
@@ -110,11 +141,11 @@ Life RPG turns the same tasks into a game:
 
         ↓
 
-   Enter combat
+    Enter combat
 
         ↓
 
-   Attack the boss
+     Attack boss
 
         ↓
 
@@ -123,9 +154,13 @@ Life RPG turns the same tasks into a game:
         ↓
 
       XP + Gold
+
+        ↓
+
+  Character progression
 ```
 
-The objective is to make productivity feel **interactive, rewarding, and memorable**.
+The objective is to make productivity feel **interactive, rewarding, visible, and memorable**.
 
 ---
 
@@ -147,7 +182,7 @@ Boss HP is determined by daily task completion:
 Boss HP = 100 × (1 - completedTasks / totalDailyTasks)
 ```
 
-For example, with four tasks:
+For example, with four daily tasks:
 
 ```text
 Start       → 100 / 100
@@ -160,10 +195,10 @@ Task 3      →  25 / 100
 
 Task 4      →   0 / 100
 
-              BOSS DEFEATED
+               BOSS DEFEATED
 ```
 
-This creates a simple relationship:
+This creates a direct relationship:
 
 > **Every completed real-life task damages the boss.**
 
@@ -173,7 +208,7 @@ The enemy remains alive throughout the day and progressively weakens as the user
 
 # 🥊 Cinematic Combat
 
-Completing a task triggers a short combat sequence rather than instantly changing a number.
+Completing a task triggers a short combat sequence instead of instantly changing a number.
 
 Combat follows:
 
@@ -197,8 +232,6 @@ HP Update
 Recovery
 ```
 
-Each exchange is designed to feel like an actual game encounter.
-
 Combat includes:
 
 * Character movement
@@ -211,6 +244,8 @@ Combat includes:
 * Impact particles
 * Camera feedback
 * Combat sound effects
+
+Each exchange is designed to feel like an actual game encounter.
 
 ---
 
@@ -435,7 +470,7 @@ Achievements can be related to:
 
 Daily consistency is represented through a streak system.
 
-Maintaining a streak contributes to progression and reward calculations and encourages long-term consistency.
+Maintaining a streak contributes to progression and reward calculations while encouraging long-term consistency.
 
 ---
 
@@ -479,7 +514,7 @@ Background assets are centralized through:
 frontend/src/lib/game-assets.ts
 ```
 
-Example:
+Examples:
 
 ```text
 GAME_ASSETS.backgrounds.worldMap
@@ -492,14 +527,14 @@ Assets are stored under:
 frontend/public/assets/world/
 ```
 
-This allows background artwork to be replaced manually without rewriting React components.
-
-For example:
+Example files:
 
 ```text
 frontend/public/assets/world/world-background.png
 frontend/public/assets/world/arena-background.png
 ```
+
+This allows background artwork to be replaced manually without rewriting React components.
 
 Replace an image using the same filename and the new artwork will be used automatically.
 
@@ -556,6 +591,8 @@ BOSS DEFEATED
 
 without waiting for an entire day of real-world tasks.
 
+These controls are intended specifically for controlled testing and hackathon demonstrations.
+
 ---
 
 # 🧑‍💻 Demo Data
@@ -587,7 +624,7 @@ These endpoints are intended for controlled showcasing and testing.
 ```text
                     ┌──────────────────────┐
                     │      Next.js App     │
-                    │   React + TypeScript  │
+                    │   React + TypeScript │
                     │       Tailwind       │
                     └──────────┬───────────┘
                                │
@@ -620,6 +657,9 @@ These endpoints are intended for controlled showcasing and testing.
 * Tailwind CSS
 * Framer Motion
 * Lucide Icons
+* Three.js
+* Zustand
+* TanStack React Query
 
 ## Backend
 
@@ -664,6 +704,8 @@ Protected resources are scoped to the authenticated user.
 
 Authentication is handled using Supabase Authentication and JWT verification.
 
+Production secrets are never stored in the public repository.
+
 ---
 
 # 📁 Project Structure
@@ -707,6 +749,7 @@ web-hackathon-life-rpg-iit-Bhubaneswar/
 │       └── world-map.png
 │
 ├── README.md
+├── .env.example
 └── ...
 ```
 
@@ -861,6 +904,24 @@ http://localhost:3000
 
 ---
 
+# 🔑 Environment Template
+
+The repository includes environment templates for local development.
+
+Use:
+
+```text
+.env.example
+```
+
+as a reference for required configuration.
+
+Create local environment files from the template and provide your own development credentials.
+
+Never commit production secrets, service-role credentials, private database passwords, or server-only authentication secrets.
+
+---
+
 # 🧪 Testing
 
 ## Backend Tests
@@ -870,7 +931,11 @@ cd backend
 pytest
 ```
 
-The current implementation has **58/58 backend tests passing**.
+Current implementation:
+
+```text
+58/58 backend tests passing
+```
 
 ## Frontend TypeScript Check
 
@@ -910,6 +975,30 @@ npm run build
 ## 💻 GitHub Repository
 
 👉 **[View Source Code](https://github.com/Vedantnawghare/web-hackathon-life-rpg-iit-Bhubaneswar)**
+
+---
+
+# 🔎 SEO & Accessibility
+
+Life RPG is designed for production presentation and responsive gameplay.
+
+The project includes:
+
+* Meaningful page metadata
+* Semantic headings
+* Descriptive image alt text
+* Responsive layouts
+* Keyboard-accessible controls
+* Visible focus states
+* Accessible buttons and forms
+* Reduced-motion considerations
+* Mobile and desktop layouts
+
+Production metadata should use the deployed Life RPG URL:
+
+```text
+https://life-rpg-pi-silk.vercel.app/
+```
 
 ---
 
@@ -975,7 +1064,7 @@ WORLD EXPLORATION
 LONG-TERM MOTIVATION
 ```
 
-The game mechanics exist to make everyday progress **visible, rewarding and emotionally engaging**.
+The game mechanics exist to make everyday progress **visible, rewarding, and emotionally engaging**.
 
 ---
 
@@ -1032,17 +1121,20 @@ This creates a direct feedback loop between real-world actions and virtual progr
 
 # 👥 Team
 
-## Team
+# 🟣 SparkX Presents
 
-**SparkX**
+## **Life RPG**
 
-> A SparkX Production
+> **A SparkX Production**
 
-Life RPG — Turn Your Real Life Into a Game.
+**Life RPG — Turn Your Real Life Into a Game.**
 
-Built for **Tech Zephyr 4.0 — Web Hackathon** at the **Indian Institute of Technology (IIT) Bhubaneswar**.
+Built by **SparkX** for:
 
-### Links
+**Tech Zephyr 4.0 — Web Hackathon**
+**Indian Institute of Technology (IIT) Bhubaneswar**
+
+### Team Links
 
 * 🎮 [Live Game](https://life-rpg-pi-silk.vercel.app/)
 * 💻 [GitHub Repository](https://github.com/Vedantnawghare/web-hackathon-life-rpg-iit-Bhubaneswar)
@@ -1053,95 +1145,232 @@ Built for **Tech Zephyr 4.0 — Web Hackathon** at the **Indian Institute of Tec
 
 # 📚 Resources & References
 
-This project was built during **Tech Zephyr 4.0 — Web Hackathon** at the **Indian Institute of Technology (IIT) Bhubaneswar**. Below is a comprehensive audit and attribution of the official technologies, libraries, visual assets, fonts, procedural audio, and developmental tools used throughout Life RPG.
+This project was built during **Tech Zephyr 4.0 — Web Hackathon** at the **Indian Institute of Technology (IIT) Bhubaneswar**.
 
-### 🌐 Core Technologies & Frameworks
+The following resources were used during development.
 
-| Technology | Purpose | Official Documentation / Resource |
-| :--- | :--- | :--- |
-| **Next.js 14** | React Framework (App Router, Server Actions, Dynamic Layouts) | [https://nextjs.org/docs](https://nextjs.org/docs) |
-| **React 18** | Core UI Component Library & Hooks | [https://react.dev/](https://react.dev/) |
-| **TypeScript 5** | Strict Static Typing & Schema Definitions | [https://www.typescriptlang.org/docs/](https://www.typescriptlang.org/docs/) |
-| **Tailwind CSS 3** | Utility-First Responsive Styling & Glassmorphic Themes | [https://tailwindcss.com/docs](https://tailwindcss.com/docs) |
-| **Framer Motion 13** | Page Transitions, Combat Sequences, and UI Micro-Animations | [https://www.framer.com/motion/](https://www.framer.com/motion/) |
-| **Three.js** | WebGL 3D Digital-Twin Boss & Procedural Entity Rendering | [https://threejs.org/docs/](https://threejs.org/docs/) |
-| **Zustand** | Lightweight Client-Side State Management (Auth, Audio, UI) | [https://zustand.docs.pmnd.rs/](https://zustand.docs.pmnd.rs/) |
-| **TanStack React Query** | Asynchronous Server State Caching & Optimistic Updates | [https://tanstack.com/query/latest](https://tanstack.com/query/latest) |
-| **FastAPI** | High-Performance Asynchronous Python Backend Framework | [https://fastapi.tiangolo.com/](https://fastapi.tiangolo.com/) |
-| **Python 3.11+** | Backend Programming Language & Standard Library | [https://docs.python.org/3/](https://docs.python.org/3/) |
-| **SQLAlchemy 2.0 (async)** | Object-Relational Mapping & Database Abstraction | [https://docs.sqlalchemy.org/](https://docs.sqlalchemy.org/) |
-| **Alembic** | Lightweight Database Migration Tool for SQLAlchemy | [https://alembic.sqlalchemy.org/](https://alembic.sqlalchemy.org/) |
-| **PostgreSQL** | Relational Database Engine | [https://www.postgresql.org/docs/](https://www.postgresql.org/docs/) |
-| **Supabase** | Cloud Database Hosting, Row-Level Security, and Auth Infrastructure | [https://supabase.com/docs](https://supabase.com/docs) |
-| **Vercel** | Frontend Edge Deployment & CI/CD Pipeline | [https://vercel.com/docs](https://vercel.com/docs) |
-| **Render** | Backend Cloud Application Hosting & Web Service Deployment | [https://render.com/docs](https://render.com/docs) |
+## 🌐 Core Technologies & Frameworks
 
----
-
-### 🎨 Visual Assets & Art Attribution
-
-- **Environment & World Backdrops**: 
-  - Centralized in `frontend/src/lib/game-assets.ts` and loaded from `frontend/public/assets/world/`.
-  - Includes `home-background.png`, `world-background.png`, `arena-background.png`, `quests-background.png`, `inventory-background.png`, `shop-background.png`, `character-background.png`, `achievements-background.png`, `login-background.png`, and `hero-select-background.png`.
-  - **Attribution**: *AI-generated during project development specifically for Life RPG's fantasy aesthetic; no external copyrighted third-party artwork used.*
-- **Ascension Zone Illustrations**:
-  - `zone-mindpeak.png`, `zone-iron-crags.png`, `zone-discipline.png`, `zone-vitalis.png`, and `zone-arcanum.png`.
-  - **Attribution**: *AI-generated during project development; no external third-party artwork used.*
-- **Enemy & Monster Concept Art**:
-  - `void-brute.png`, `void-archon.png`, and `crystal-horror.png`.
-  - **Attribution**: *AI-generated during project development; no external third-party artwork used.*
-- **Real-Time 3D Digital-Twin Boss**:
-  - `Boss3DModel.tsx` is built completely via procedural WebGL code with Three.js (custom crystalline geometry, armored torso segmenting, segmented tentacle limbs, glowing compound eyes, and dynamic eye-laser vector rigging). No external OBJ/GLTF files downloaded.
+| Technology               | Purpose                                    | Official Documentation                                           |
+| :----------------------- | :----------------------------------------- | :--------------------------------------------------------------- |
+| **Next.js 14**           | React Framework and App Router             | [Next.js Documentation](https://nextjs.org/docs)                 |
+| **React 18**             | Core UI Component Library                  | [React Documentation](https://react.dev/)                        |
+| **TypeScript 5**         | Static Typing                              | [TypeScript Documentation](https://www.typescriptlang.org/docs/) |
+| **Tailwind CSS 3**       | Utility-First Styling                      | [Tailwind Documentation](https://tailwindcss.com/docs)           |
+| **Framer Motion 13**     | Page Transitions and UI Animations         | [Framer Motion](https://www.framer.com/motion/)                  |
+| **Three.js**             | WebGL 3D Boss Rendering                    | [Three.js Documentation](https://threejs.org/docs/)              |
+| **Zustand**              | Client-Side State Management               | [Zustand Documentation](https://zustand.docs.pmnd.rs/)           |
+| **TanStack React Query** | Server State Management and Caching        | [TanStack Query](https://tanstack.com/query/latest)              |
+| **FastAPI**              | Python Backend Framework                   | [FastAPI Documentation](https://fastapi.tiangolo.com/)           |
+| **Python 3.11+**         | Backend Language                           | [Python Documentation](https://docs.python.org/3/)               |
+| **SQLAlchemy 2.0**       | ORM and Database Abstraction               | [SQLAlchemy Documentation](https://docs.sqlalchemy.org/)         |
+| **Alembic**              | Database Migration Tool                    | [Alembic Documentation](https://alembic.sqlalchemy.org/)         |
+| **PostgreSQL**           | Relational Database                        | [PostgreSQL Documentation](https://www.postgresql.org/docs/)     |
+| **Supabase**             | Database and Authentication Infrastructure | [Supabase Documentation](https://supabase.com/docs)              |
+| **Vercel**               | Frontend Deployment                        | [Vercel Documentation](https://vercel.com/docs)                  |
+| **Render**               | Backend Hosting                            | [Render Documentation](https://render.com/docs)                  |
 
 ---
 
-### 🔤 Typography & Iconography
+# 🎨 Visual Assets & Art Attribution
 
-- **Lucide Icons**:
-  - Vector iconography across all quest, combat, and HUD interfaces (`lucide-react`).
-  - License: [ISC License](https://github.com/lucide-icons/lucide/blob/main/LICENSE) | Documentation: [https://lucide.dev/](https://lucide.dev/)
-- **Google Fonts**:
-  - **Cinzel**: Used for fantasy headers, titles, and boss heraldry ([SIL Open Font License 1.1](https://fonts.google.com/specimen/Cinzel)).
-  - **Rajdhani**: Used for UI labels, quest badges, and stats ([SIL Open Font License 1.1](https://fonts.google.com/specimen/Rajdhani)).
-  - **JetBrains Mono**: Used for combat logs, numeric damage values, and code HUDs ([SIL Open Font License 1.1](https://fonts.google.com/specimen/JetBrains+Mono)).
+## Environment & World Backdrops
+
+Assets are centralized in:
+
+```text
+frontend/src/lib/game-assets.ts
+```
+
+and loaded from:
+
+```text
+frontend/public/assets/world/
+```
+
+Environment artwork includes assets such as:
+
+```text
+home-background.png
+world-background.png
+arena-background.png
+quests-background.png
+inventory-background.png
+shop-background.png
+character-background.png
+achievements-background.png
+login-background.png
+hero-select-background.png
+```
+
+**Attribution:**
+
+> AI-generated during project development specifically for Life RPG's fantasy aesthetic. No external copyrighted third-party artwork was intentionally used.
 
 ---
 
-### 🔊 Procedural Audio & Sound Synthesis
+## Ascension Zone Illustrations
 
-- **Web Audio API Engine (`frontend/src/lib/audio-manager.ts`)**:
-  - *Audio effects and background music are procedurally synthesized in code via Web Audio API; no external audio files are used.*
-  - Custom procedural oscillators (sine, square, sawtooth, triangle), multi-stage envelope generators (attack, decay, sustain, release), biquad resonance filters, and procedural noise buffers synthesize:
-    - Weapon slashes, claymore impacts, and arcane spellbursts
-    - Enemy digital-twin charge sounds and synchronized eye-laser beams
-    - Dynamic shield parries, dodges, and critical hit alerts
-    - Victory fanfare chords and game over minor descents
-    - Procedural ambient dungeon and arena drone loops
+Examples include:
+
+```text
+zone-mindpeak.png
+zone-iron-crags.png
+zone-discipline.png
+zone-vitalis.png
+zone-arcanum.png
+```
+
+**Attribution:**
+
+> AI-generated during project development; no external third-party artwork was intentionally used.
 
 ---
 
-### 🤖 AI-Assisted Development Disclosure
+## Enemy & Monster Concept Art
+
+Examples include:
+
+```text
+void-brute.png
+void-archon.png
+crystal-horror.png
+```
+
+**Attribution:**
+
+> AI-generated during project development; no external third-party artwork was intentionally used.
+
+---
+
+## Real-Time 3D Digital-Twin Boss
+
+`Boss3DModel.tsx` uses procedural WebGL code through Three.js for the boss presentation.
+
+The model uses custom procedural geometry and visual effects, including:
+
+* Crystalline geometry
+* Armored torso segmentation
+* Segmented tentacle limbs
+* Glowing compound eyes
+* Dynamic eye-laser vector rigging
+
+No external OBJ/GLTF model files are required for the boss.
+
+---
+
+# 🔤 Typography & Iconography
+
+## Lucide Icons
+
+Lucide is used for vector iconography across quest, combat, and HUD interfaces.
+
+* License: [ISC License](https://github.com/lucide-icons/lucide/blob/main/LICENSE)
+* Documentation: [Lucide](https://lucide.dev/)
+
+## Google Fonts
+
+### Cinzel
+
+Used for fantasy headers, titles, and boss heraldry.
+
+* [Cinzel](https://fonts.google.com/specimen/Cinzel)
+* SIL Open Font License 1.1
+
+### Rajdhani
+
+Used for UI labels, quest badges, and statistics.
+
+* [Rajdhani](https://fonts.google.com/specimen/Rajdhani)
+* SIL Open Font License 1.1
+
+### JetBrains Mono
+
+Used for combat logs, numeric damage values, and HUD-style text.
+
+* SIL Open Font License 1.1
+
+---
+
+# 🔊 Procedural Audio & Sound Synthesis
+
+Life RPG uses a dedicated audio system based on the Web Audio API.
+
+Source:
+
+```text
+frontend/src/lib/audio-manager.ts
+```
+
+Audio effects and background music are procedurally synthesized in code rather than relying exclusively on external audio files.
+
+Procedural synthesis is used for:
+
+* Weapon slashes
+* Claymore impacts
+* Arcane spellbursts
+* Enemy attacks
+* Eye-laser effects
+* Shield/parry feedback
+* Dodge feedback
+* Critical hit alerts
+* Victory fanfare
+* Defeat effects
+* Ambient exploration and arena loops
+
+Combat sounds are synchronized with visual combat events.
+
+---
+
+# 🤖 AI-Assisted Development Disclosure
 
 In the spirit of hackathon transparency and academic integrity:
-- **Code & Architecture Assistance**: Generative AI tools were utilized during development for architectural brainstorming, boilerplate generation, Next.js App Router route handlers, FastAPI async repository scaffolding, Three.js vector calculations, and combat timing choreography.
-- **Visual Asset Generation**: Generative AI models were employed to generate original fantasy concept backgrounds and zone backdrops adhering to a cohesive palette.
-- **Review & Verification**: All AI-assisted code was manually reviewed, verified, type-checked with TypeScript strict mode, tested with Pytest and unit suites, and audited for security.
+
+### Code & Architecture Assistance
+
+Generative AI tools were utilized during development for:
+
+* Architectural brainstorming
+* Boilerplate generation
+* Next.js implementation assistance
+* FastAPI async repository scaffolding
+* Three.js calculations
+* Combat choreography
+* UI and interaction iteration
+
+### Visual Asset Generation
+
+Generative AI models were used to create original fantasy concept backgrounds and environmental artwork for the Life RPG aesthetic.
+
+### Review & Verification
+
+AI-assisted code was manually reviewed and validated using:
+
+* TypeScript checks
+* ESLint
+* Production builds
+* Pytest
+* Backend verification
+* Frontend verification
+* Security review
 
 ---
 
-### 🏛️ Hackathon Information
+# 🏛️ Hackathon Information
 
-- **Event**: Tech Zephyr 4.0 — Web Hackathon
-- **Host Institution**: Indian Institute of Technology (IIT) Bhubaneswar
-- **Year**: 2026
+* **Event:** Tech Zephyr 4.0 — Web Hackathon
+* **Host Institution:** Indian Institute of Technology (IIT) Bhubaneswar
+* **Year:** 2026
 
 ---
 
 # 📜 License
 
-This project was developed as a hackathon project.
+This project was developed as a hackathon submission by **Team SparkX**.
 
-Add an open-source license if the team decides to publish the project under one.
+No separate open-source license is currently granted beyond the terms applicable to the project and its individual dependencies/assets.
+
+Third-party libraries and resources remain subject to their respective licenses.
 
 ---
 
@@ -1151,6 +1380,16 @@ Add an open-source license if the team decides to publish the project under one.
 > **Your habits are your stats.**
 > **Your tasks are your battles.**
 > **And every completed day is a boss defeated.**
+
+---
+
+## 🟣 SparkX Presents
+
+# **LIFE RPG**
+
+### Turn Your Real Life Into a Game.
+
+**A SparkX Production**
 
 ```
 
