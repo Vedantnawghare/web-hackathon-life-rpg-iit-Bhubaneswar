@@ -25,11 +25,11 @@ const navigationItems = [
 ];
 
 const themeGradients: Record<string, string> = {
-  default_slate: "bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900/50",
+  default_slate: "bg-gradient-to-b from-[#0d1436] via-[#101842]/95 to-[#0b112e]",
   theme_abyssal_dark: "bg-gradient-to-b from-black via-slate-950 to-purple-950/25",
-  theme_sunfire_gold: "bg-gradient-to-b from-slate-950 via-amber-950/15 to-slate-900/60",
-  theme_emerald_forest: "bg-gradient-to-b from-slate-950 via-emerald-950/15 to-slate-900/60",
-  theme_arcane_violet: "bg-gradient-to-b from-slate-950 via-purple-950/25 to-slate-900/60",
+  theme_sunfire_gold: "bg-gradient-to-b from-[#181335] via-[#231a47] to-[#151030]",
+  theme_emerald_forest: "bg-gradient-to-b from-[#0b1a29] via-[#0e273b] to-[#0a1622]",
+  theme_arcane_violet: "bg-gradient-to-b from-[#180e33] via-[#261550] to-[#140b2b]",
 };
 
 export function DashboardShell({ children }: { children: ReactNode }) {
@@ -76,7 +76,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     themeGradients.default_slate;
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#0a0f2b] text-slate-100 overflow-hidden font-sans">
       {/* Desktop Sidebar */}
       <Sidebar />
 

@@ -62,9 +62,9 @@ export default function LoginPage() {
       <img
         src={GAME_ASSETS.backgrounds.login}
         alt="Realm of Aethelgard Gateway"
-        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[0.92] contrast-[1.05]"
+        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[1.04] contrast-[1.05] saturate-110 contrast-[1.05]"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/60 pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0b1130]/55 via-[#0e163d]/20 to-[#0b1130]/35 pointer-events-none z-0" />
       <div className="relative z-10 w-full max-w-md">
 
         {/* Brand Header */}

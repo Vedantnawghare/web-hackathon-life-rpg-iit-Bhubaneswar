@@ -1121,6 +1121,43 @@ class AudioManager {
       osc.stop(now + idx * 0.06 + 0.22);
     });
   }
+  /**
+   * Agile Hero Dodge / Dash Whoosh SFX
+   */
+  public playHeroDodge() {
+    if (!this.isSfxEnabled || this.isMuted) return;
+    this.unlockContext();
+    if (!this.ctx || !this.sfxGain) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.exponentialRampToValueAtTime(120, now + 0.25);
+
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(800, now);
+      filter.frequency.exponentialRampToValueAtTime(250, now + 0.25);
+      filter.Q.value = 3.0;
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.06, now + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.sfxGain);
+
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } catch {
+      // Audio autoplay policy fallback
+    }
+  }
+
 }
 
 export const audioManager = new AudioManager();

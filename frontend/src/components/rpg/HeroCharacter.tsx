@@ -4,7 +4,7 @@ import { motion, Variants, useReducedMotion } from "framer-motion";
 import { getHeroArchetype, HeroArchetype } from "@/lib/hero-data";
 import { cn } from "@/lib/utils";
 
-export type HeroCombatState = "IDLE" | "READY" | "APPROACH" | "ATTACK" | "ATTACK_COMBO" | "ATTACK_FINISHER" | "HIT" | "VICTORY";
+export type HeroCombatState = "IDLE" | "READY" | "APPROACH" | "ATTACK" | "ATTACK_COMBO" | "ATTACK_FINISHER" | "HIT" | "VICTORY" | "DODGE";
 
 interface HeroCharacterProps {
   heroId?: string;
@@ -131,6 +131,14 @@ export function HeroCharacter({
             ease: "easeOut",
           },
         },
+    DODGE: shouldReduceMotion
+      ? { opacity: 0.7, x: -30 }
+      : {
+          x: [0, -45, -20],
+          scale: [1, 0.92, 1],
+          opacity: [1, 0.6, 1],
+          transition: { duration: 0.45, ease: "easeOut" },
+        },
     VICTORY: shouldReduceMotion
       ? { scale: 1.08, y: -8 }
       : {
@@ -177,6 +185,14 @@ export function HeroCharacter({
       rotate: [0, -20, 0],
       transition: { duration: 0.5 },
     },
+    DODGE: shouldReduceMotion
+      ? { opacity: 0.7, x: -30 }
+      : {
+          x: [0, -45, -20],
+          scale: [1, 0.92, 1],
+          opacity: [1, 0.6, 1],
+          transition: { duration: 0.45, ease: "easeOut" },
+        },
     VICTORY: {
       rotate: [-25, -45, -25],
       y: [-6, -14, -6],

@@ -48,9 +48,9 @@ export default function AchievementsPage() {
       <img
         src={GAME_ASSETS.backgrounds.achievements}
         alt="Hall of Trophies"
-        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[0.85] contrast-[1.05]"
+        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[1.02] contrast-[1.05] saturate-110 contrast-[1.05]"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/60 pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0b1130]/60 via-[#0e163d]/20 to-[#0b1130]/35 pointer-events-none z-0" />
 
       <div className="relative z-10 space-y-6">
       {/* Header Banner */}

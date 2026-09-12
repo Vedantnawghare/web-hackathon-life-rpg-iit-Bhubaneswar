@@ -154,9 +154,9 @@ export default function CharacterPage() {
       <img
         src={GAME_ASSETS.backgrounds.character}
         alt="Hero Grand Sanctum"
-        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[0.85] contrast-[1.05]"
+        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[1.02] contrast-[1.05] saturate-110 contrast-[1.05]"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/65 pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0b1130]/65 via-[#0e163d]/25 to-[#0b1130]/40 pointer-events-none z-0" />
       <div className="relative z-10 space-y-8 select-none">
       {/* 1. HERO SANCTUM PEDESTAL WITH FULL CHARACTER RIG */}
       <section className="relative rounded-2xl border-2 border-amber-500/40 bg-gradient-to-r from-slate-950 via-slate-900 to-amber-950/30 p-6 md:p-8 shadow-[0_12px_40px_rgba(0,0,0,0.7)] overflow-hidden">

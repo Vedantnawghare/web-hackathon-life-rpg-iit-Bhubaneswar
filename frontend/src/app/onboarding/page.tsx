@@ -133,7 +133,7 @@ export default function OnboardingPage() {
       <img
         src={GAME_ASSETS.backgrounds.heroSelect}
         alt="Hero Awakening Chamber"
-        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[0.90] contrast-[1.05]"
+        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[1.04] contrast-[1.05] saturate-110 contrast-[1.05]"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/65 pointer-events-none z-0" />
       <div className="relative z-10 w-full max-w-5xl flex flex-col items-center gap-6">

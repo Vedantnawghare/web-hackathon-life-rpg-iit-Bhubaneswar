@@ -31,7 +31,7 @@ export function getEnemyArchetypeInfo(attribute: CharacterAttribute, difficulty:
         name: difficulty === "EPIC" ? "Dread Archon" : difficulty === "HARD" ? "Void Archon" : "Astral Phantom",
         title: "Master of Dark Singularity",
         primaryColor: "#c084fc",
-        glowColor: "rgba(192, 132, 252, 0.6)",
+        glowColor: "rgba(192, 132, 252, 0.75)",
         imageSrc: GAME_ASSETS.enemies.voidArchon,
         bgRune: "✦",
       };
@@ -40,7 +40,7 @@ export function getEnemyArchetypeInfo(attribute: CharacterAttribute, difficulty:
         name: difficulty === "EPIC" ? "Ignis Behemoth" : difficulty === "HARD" ? "Magma Colossus" : "Volcanic Brute",
         title: "Armored Molten Titan",
         primaryColor: "#f87171",
-        glowColor: "rgba(248, 113, 113, 0.65)",
+        glowColor: "rgba(248, 113, 113, 0.8)",
         imageSrc: GAME_ASSETS.enemies.voidBrute,
         bgRune: "⚔",
       };
@@ -52,7 +52,7 @@ export function getEnemyArchetypeInfo(attribute: CharacterAttribute, difficulty:
         name: difficulty === "EPIC" ? "Abyssal Chimera" : difficulty === "HARD" ? "Chitinous Dread" : "Scythe Stalker",
         title: "Apex Bioluminescent Predator",
         primaryColor: "#34d399",
-        glowColor: "rgba(52, 211, 153, 0.6)",
+        glowColor: "rgba(52, 211, 153, 0.75)",
         imageSrc: GAME_ASSETS.enemies.crystalHorror,
         bgRune: "👁",
       };
@@ -69,15 +69,16 @@ export function EnemySprite({
   const shouldReduceMotion = useReducedMotion();
   const archetype = getEnemyArchetypeInfo(attribute, difficulty);
 
-  // Animations based on battle state (Long reach & deliberate cinematic pacing)
+  // 3D Digital Boss Animations
   const enemyVariants: Variants = {
     IDLE: shouldReduceMotion
       ? { scale: 1, x: 0, opacity: 1 }
       : {
-          y: hp <= 25 ? [0, -5, 0, -3, 0] : hp <= 50 ? [0, -7, 0] : [0, -10, 0],
-          scale: hp <= 25 ? [1, 1.03, 1] : [1, 1.02, 1],
+          y: hp <= 25 ? [0, -4, 0, -2, 0] : hp <= 50 ? [0, -8, 0] : [0, -12, 0],
+          scale: hp <= 25 ? [1, 1.04, 1] : [1, 1.02, 1],
+          rotateZ: hp <= 25 ? [-1, 1, -1] : [-0.5, 0.5, -0.5],
           transition: {
-            duration: hp <= 25 ? 1.6 : hp <= 50 ? 2.2 : 3.2,
+            duration: hp <= 25 ? 1.4 : hp <= 50 ? 2.0 : 3.0,
             repeat: Infinity,
             ease: "easeInOut",
           },
@@ -85,18 +86,18 @@ export function EnemySprite({
     APPROACH: shouldReduceMotion
       ? { x: -50 }
       : {
-          x: [0, -80, -60],
-          y: [0, -8, 0],
-          scale: [1, 1.08, 1.05],
+          x: [0, -90, -60],
+          y: [0, -10, 0],
+          scale: [1, 1.1, 1.06],
           transition: { duration: 0.7, ease: "easeOut" },
         },
     ATTACK: shouldReduceMotion
-      ? { x: -140, scale: 1.15 }
+      ? { x: -160, scale: 1.2 }
       : {
-          // Deep reach forward across the arena to physically strike the hero
-          x: [0, 35, -240, -180, 0],
-          y: [0, -14, -8, 0, 0],
-          scale: [1, 1.08, 1.28, 1.15, 1],
+          x: [0, 40, -260, -200, 0],
+          y: [0, -16, -10, 0, 0],
+          scale: [1, 1.08, 1.32, 1.18, 1],
+          rotateZ: [0, -4, 8, 2, 0],
           transition: {
             duration: 1.4,
             times: [0, 0.25, 0.55, 0.75, 1],
@@ -106,9 +107,10 @@ export function EnemySprite({
     HIT: shouldReduceMotion
       ? { opacity: 0.5 }
       : {
-          x: [0, 45, -15, 25, 0],
-          y: [0, -12, 6, -3, 0],
-          scale: [1, 0.88, 1.06, 0.96, 1],
+          x: [0, 55, -20, 30, 0],
+          y: [0, -14, 8, -4, 0],
+          scale: [1, 0.86, 1.08, 0.96, 1],
+          rotateZ: [0, 6, -3, 2, 0],
           transition: {
             duration: 0.8,
             ease: "easeInOut",
@@ -117,12 +119,17 @@ export function EnemySprite({
     DEFEATED: shouldReduceMotion
       ? { opacity: 0 }
       : {
-          scale: [1, 1.3, 0],
+          scale: [1, 1.35, 0],
           opacity: [1, 0.9, 0],
-          rotate: [0, 15, -30],
-          y: [0, -30, 80],
+          rotateZ: [0, 20, -45],
+          y: [0, -40, 100],
+          filter: [
+            `drop-shadow(0 0 25px ${archetype.glowColor})`,
+            "drop-shadow(0 0 60px rgba(255,255,255,1))",
+            "drop-shadow(0 0 0px transparent)",
+          ],
           transition: {
-            duration: 1.6,
+            duration: 1.8,
             ease: "easeIn",
           },
         },
@@ -130,42 +137,73 @@ export function EnemySprite({
 
   return (
     <div className={cn("relative flex flex-col items-center select-none", className)}>
-      {/* Ground Pedestal Shadow & Threat Aura */}
-      <div className="absolute -bottom-4 w-44 sm:w-56 h-10 bg-black/80 rounded-full blur-md pointer-events-none" />
+      {/* 1. Dynamic 3D Ground Shadow (Scales with Boss Breathing & Height) */}
+      <motion.div
+        animate={{
+          scaleX: hp <= 25 ? [1, 1.05, 1] : [1, 1.12, 1],
+          opacity: hp <= 25 ? [0.6, 0.75, 0.6] : [0.75, 0.9, 0.75],
+        }}
+        transition={{
+          duration: hp <= 25 ? 1.4 : 3.0,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        className="absolute -bottom-6 w-52 sm:w-64 h-12 rounded-full pointer-events-none z-0"
+        style={{
+          background: `radial-gradient(ellipse at center, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 50%, transparent 75%)`,
+        }}
+      />
+
+      {/* 2. Concentric Magic Rune Stage Ring */}
       <div
-        className="absolute -bottom-3 w-40 sm:w-52 h-8 rounded-full border border-slate-700/50 opacity-80 pointer-events-none animate-pulse"
+        className="absolute -bottom-5 w-48 sm:w-60 h-10 rounded-full border border-slate-600/40 opacity-70 pointer-events-none z-0 animate-pulse"
         style={{
           background: `radial-gradient(ellipse at center, ${archetype.glowColor}, transparent 70%)`,
         }}
       />
 
-      {/* Critical Danger Aura (<25% HP): Pulsing Blood Rune Warning Ring */}
+      {/* 3. Critical Danger Aura (<25% HP): Pulsing Blood Warning Flare */}
       {hp <= 25 && hp > 0 && (
-        <div className="absolute -inset-4 rounded-full border-2 border-rose-600/80 bg-rose-950/30 blur-md animate-pulse pointer-events-none z-0" />
+        <div className="absolute -inset-6 rounded-full border-2 border-rose-500/80 bg-rose-950/20 blur-xl animate-pulse pointer-events-none z-0" />
       )}
 
-      {/* Moderate to Severe Fatigue Smoke Wisps (<50% HP) */}
+      {/* 4. Battle Damage Wisps (<50% HP): Dissolving Plasma Tendrils */}
       {hp <= 50 && hp > 0 && (
         <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
-          <div className="absolute bottom-8 left-8 w-4 h-4 rounded-full bg-rose-500/50 blur-sm animate-ping" />
-          <div className="absolute bottom-14 right-10 w-5 h-5 rounded-full bg-slate-400/40 blur-sm animate-pulse" />
-          <div className="absolute top-16 left-12 w-3 h-3 rounded-full bg-amber-400/60 blur-xs animate-bounce" />
+          <div className="absolute bottom-10 left-6 w-4 h-4 rounded-full bg-rose-500/60 blur-sm animate-ping" />
+          <div className="absolute bottom-16 right-8 w-5 h-5 rounded-full bg-amber-400/50 blur-sm animate-pulse" />
+          <div className="absolute top-20 left-10 w-3 h-3 rounded-full bg-purple-400/60 blur-xs animate-bounce" />
         </div>
       )}
 
-      {/* Large Imposing Animated Creature Artwork */}
+      {/* 5. 3D DIGITAL BOSS CHARACTER SPRITE (NO RECTANGULAR BOX, TRANSPARENT EDGES + 3D DEPTH) */}
       <motion.div
         variants={enemyVariants}
         animate={state}
-        className="relative z-10 w-52 h-56 sm:w-64 sm:h-72 lg:w-72 lg:h-80 flex items-center justify-center"
+        style={{
+          perspective: 800,
+          transformStyle: "preserve-3d",
+        }}
+        className="relative z-10 w-56 h-60 sm:w-68 sm:h-76 lg:w-80 lg:h-88 flex items-center justify-center"
       >
+        {/* Core Volumetric Glow Behind Boss Torso */}
+        <div
+          className="absolute w-36 h-36 rounded-full blur-2xl pointer-events-none opacity-40 animate-pulse"
+          style={{ backgroundColor: archetype.primaryColor }}
+        />
+
+        {/* The Transparent Cutout Boss Artwork with Volumetric Rim Lighting */}
         <img
           src={archetype.imageSrc}
           alt={archetype.name}
+          style={{
+            transform: "rotateY(-6deg) rotateX(2deg)",
+            filter: `drop-shadow(0 0 18px ${archetype.glowColor}) drop-shadow(0 14px 28px rgba(0,0,0,0.85))`,
+          }}
           className={cn(
-            "w-full h-full object-contain filter drop-shadow-[0_12px_32px_rgba(0,0,0,0.85)] transition-all",
-            state === "HIT" && "brightness-150 contrast-125",
-            hp <= 25 && "brightness-90 saturate-150"
+            "w-full h-full object-contain pointer-events-none select-none transition-all duration-300",
+            state === "HIT" && "brightness-175 contrast-150",
+            hp <= 25 && "contrast-125 saturate-125"
           )}
         />
       </motion.div>

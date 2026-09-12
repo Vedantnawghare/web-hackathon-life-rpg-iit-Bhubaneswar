@@ -119,9 +119,9 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="hidden md:flex w-64 flex-col border-r-2 border-amber-900/50 bg-gradient-to-b from-slate-950 via-slate-900/95 to-black backdrop-blur-2xl relative z-30 shadow-[6px_0_30px_rgba(0,0,0,0.85)]">
+    <aside className="hidden md:flex w-64 flex-col border-r-2 border-amber-900/50 bg-gradient-to-b from-[#10173d]/95 via-[#0e1538]/95 to-[#090e26]/95 border-r border-indigo-500/30 backdrop-blur-2xl relative z-30 shadow-[6px_0_30px_rgba(0,0,0,0.85)]">
       {/* 1. GOTHIC STONE COMMAND PANEL HEADER (Ref Image 1: "Day X" & Gold Filigree) */}
-      <div className="relative p-4 border-b border-amber-900/40 bg-gradient-to-b from-slate-900/90 to-slate-950/90">
+      <div className="relative p-4 border-b border-amber-900/40 bg-gradient-to-b from-[#141d4a]/90 to-[#0e163d]/90">
         {/* Ornate Gold Crown Filigree Border */}
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-2">
