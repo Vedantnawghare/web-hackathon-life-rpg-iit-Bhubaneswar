@@ -47,3 +47,5 @@ This file maintains verified license and attribution records for third-party lib
 | **Rajdhani** | Font (Stat & Numeric Values) | SIL Open Font License 1.1 | Indian Type Foundry (Google Fonts) | https://fonts.google.com/specimen/Rajdhani |
 | **Inter** | Font (Body & System Text) | SIL Open Font License 1.1 | Rasmus Andersson (Google Fonts) | https://fonts.google.com/specimen/Inter |
 | **Kenney RPG Audio** | Sound Effects (Fanfare, Clears) | CC0 1.0 Universal (Public Domain) | Kenney (Asset Forge / Kenney.nl) | https://kenney.nl/assets/rpg-audio |
+| **Life RPG Procedural Web Audio Engine** | Adaptive Audio & SFX Synthesis | MIT (Original Work) | Life RPG Project Team | Custom procedural Web Audio API synthesis for ambient calm BGM, 128 BPM combat BGM, hit impact, defeat, and fanfare |
+| **Life RPG Vector Sprite System** | Character & Enemy Illustrations | MIT (Original Work) | Life RPG Project Team | Original stylized vector artwork for Hero and 5 domain-aligned enemy archetypes |

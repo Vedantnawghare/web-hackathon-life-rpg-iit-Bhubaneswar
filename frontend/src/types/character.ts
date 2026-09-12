@@ -42,3 +42,12 @@ export interface CharacterEquipPayload {
   equipped_badge?: string;
   title?: string;
 }
+
+export interface DailyProgress {
+  date: string;
+  daily_xp_earned: number;
+  daily_xp_goal: number;
+  is_goal_reached: boolean;
+  remaining_xp: number;
+  progress_percentage: number;
+}

@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -62,3 +62,12 @@ class CharacterOut(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class DailyProgressOut(BaseModel):
+    date: date
+    daily_xp_earned: int
+    daily_xp_goal: int
+    is_goal_reached: bool
+    remaining_xp: int
+    progress_percentage: int

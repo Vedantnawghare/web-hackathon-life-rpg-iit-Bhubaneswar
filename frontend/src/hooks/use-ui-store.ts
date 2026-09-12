@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { audioManager } from "@/lib/audio-manager";
 
 interface UiState {
   // Audio state
@@ -21,8 +22,17 @@ interface UiState {
 export const useUiStore = create<UiState>((set) => ({
   isAudioMuted: false,
   audioVolume: 0.7,
-  toggleAudioMute: () => set((state) => ({ isAudioMuted: !state.isAudioMuted })),
-  setAudioVolume: (volume: number) => set({ audioVolume: Math.max(0, Math.min(1, volume)) }),
+  toggleAudioMute: () =>
+    set((state) => {
+      const nextMuted = !state.isAudioMuted;
+      audioManager.setMuted(nextMuted);
+      return { isAudioMuted: nextMuted };
+    }),
+  setAudioVolume: (volume: number) => {
+    const clamped = Math.max(0, Math.min(1, volume));
+    audioManager.setVolume(clamped);
+    set({ audioVolume: clamped });
+  },
 
   isLevelUpModalOpen: false,
   celebrationLevel: null,

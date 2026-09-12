@@ -1,13 +1,15 @@
 import uuid
 from fastapi import APIRouter, Depends, status
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.security import get_current_user_id, get_current_character
 from app.core.exceptions import ConflictException
 from app.models.character import Character
 from app.models.streak import Streak
-from app.schemas.character import CharacterCreate, CharacterOut, CharacterEquip
+from app.models.quest_completion import QuestCompletion
+from app.schemas.character import CharacterCreate, CharacterOut, CharacterEquip, DailyProgressOut
+from app.services.streak_service import get_local_date_for_timezone
 
 router = APIRouter()
 
@@ -20,6 +22,48 @@ async def get_my_character(
     Returns the authoritative Character profile for the authenticated Supabase user.
     """
     return current_character
+
+
+@router.get(
+    "/me/daily-progress",
+    response_model=DailyProgressOut,
+    summary="Get authoritative daily XP progress and goal",
+)
+async def get_my_daily_progress(
+    current_character: Character = Depends(get_current_character),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Returns the authoritative Daily XP progress and goal for today in the user's timezone.
+    Calculates sum of earned_xp from quest_completions for today.
+    """
+    local_date = get_local_date_for_timezone(current_character.timezone)
+    stmt = (
+        select(func.coalesce(func.sum(QuestCompletion.earned_xp), 0))
+        .where(
+            QuestCompletion.character_id == current_character.id,
+            QuestCompletion.completion_date == local_date,
+        )
+    )
+    result = await db.execute(stmt)
+    daily_xp_earned = int(result.scalar_one())
+
+    # Daily XP goal (baseline 200 XP scaled with current level)
+    daily_xp_goal = max(100, min(600, 150 + (current_character.current_level - 1) * 25))
+    is_goal_reached = daily_xp_earned >= daily_xp_goal
+    remaining_xp = max(0, daily_xp_goal - daily_xp_earned)
+    progress_percentage = (
+        min(100, int((daily_xp_earned / daily_xp_goal) * 100)) if daily_xp_goal > 0 else 100
+    )
+
+    return DailyProgressOut(
+        date=local_date,
+        daily_xp_earned=daily_xp_earned,
+        daily_xp_goal=daily_xp_goal,
+        is_goal_reached=is_goal_reached,
+        remaining_xp=remaining_xp,
+        progress_percentage=progress_percentage,
+    )
 
 
 @router.post(

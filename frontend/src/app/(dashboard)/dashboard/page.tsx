@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
-import { Character } from "@/types/character";
+import { Character, DailyProgress } from "@/types/character";
 import { Quest, QuestCompleteResponse, CharacterAttribute } from "@/types/quest";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { CosmeticFrame } from "@/components/rpg/CosmeticFrame";
 import { StreakCalendar } from "@/components/rpg/StreakCalendar";
 import { RealmMap } from "@/components/rpg/RealmMap";
 import { QuestCard } from "@/components/rpg/QuestCard";
+import { ArenaBattle } from "@/components/rpg/ArenaBattle";
 import {
   Sword,
   Trophy,
@@ -54,6 +55,11 @@ export default function DashboardPage() {
     queryFn: () => apiClient<Character>("/characters/me"),
   });
 
+  const { data: dailyProgress } = useQuery<DailyProgress>({
+    queryKey: ["character", "daily-progress"],
+    queryFn: () => apiClient<DailyProgress>("/characters/me/daily-progress"),
+  });
+
   const { data: quests = [], isLoading: isQuestsLoading } = useQuery<Quest[]>({
     queryKey: ["quests"],
     queryFn: () => apiClient<Quest[]>("/quests?status=ACTIVE"),
@@ -70,6 +76,7 @@ export default function DashboardPage() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["character", "me"] });
+      queryClient.invalidateQueries({ queryKey: ["character", "daily-progress"] });
       queryClient.invalidateQueries({ queryKey: ["quests"] });
       queryClient.invalidateQueries({ queryKey: ["achievements"] });
       queryClient.invalidateQueries({ queryKey: ["quest-history"] });
@@ -105,12 +112,9 @@ export default function DashboardPage() {
   if (isCharacterLoading) {
     return (
       <div className="space-y-6 animate-pulse">
+        <div className="h-96 bg-slate-900/80 rounded-3xl border border-slate-800" />
         <div className="h-32 bg-slate-900/80 rounded-2xl border border-slate-800" />
         <div className="h-96 bg-slate-900/80 rounded-2xl border border-slate-800" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="h-44 bg-slate-900/80 rounded-xl border border-slate-800" />
-          <div className="h-44 bg-slate-900/80 rounded-xl border border-slate-800" />
-        </div>
       </div>
     );
   }
@@ -122,7 +126,24 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* 1. HERO SANCTUM & STATUS PEDESTAL */}
+      {/* 1. PRIMARY GAMEPLAY ARENA BATTLE (HERO VS ENEMY ENCOUNTER) */}
+      <ArenaBattle
+        character={character}
+        quests={quests}
+        dailyProgress={dailyProgress}
+        onCompleteQuest={(questId) => completeMutation.mutateAsync(questId)}
+        isCompleting={completingQuestId !== null}
+        onLevelUp={(lvl) =>
+          setLevelUpState({
+            isOpen: true,
+            oldLevel: lvl.oldLevel,
+            newLevel: lvl.newLevel,
+            levelsGained: lvl.levelsGained,
+          })
+        }
+      />
+
+      {/* 2. HERO SANCTUM & STATUS PEDESTAL */}
       <section className="relative rounded-2xl border border-amber-500/30 bg-gradient-to-r from-slate-950 via-slate-900/90 to-amber-950/20 p-5 sm:p-7 shadow-[0_10px_35px_rgba(0,0,0,0.6)] overflow-hidden">
         {/* Ambient Pedestal Light */}
         <div className="absolute top-0 right-1/4 w-96 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -196,7 +217,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* 2. VICTORY CELEBRATION TOAST */}
+      {/* 3. VICTORY CELEBRATION TOAST */}
       {lastCompletion && (
         <div
           role="status"
@@ -252,7 +273,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* 3. THE REALM OF ASCENSION (Interactive World Map) */}
+      {/* 4. THE REALM OF ASCENSION (Interactive World Map) */}
       <section aria-label="The Realm of Ascension">
         <RealmMap
           attributes={{
@@ -268,7 +289,7 @@ export default function DashboardPage() {
         />
       </section>
 
-      {/* 4. ADVENTURER'S GUILD BOUNTY BOARD */}
+      {/* 5. ADVENTURER'S GUILD BOUNTY BOARD */}
       <section className="space-y-4" aria-label="Adventurer's Guild Bounty Board">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-800">
           <div className="flex items-center gap-2">
@@ -384,13 +405,13 @@ export default function DashboardPage() {
         )}
       </section>
 
-      {/* 5. STREAK CALENDAR & CADENCE TRACKER */}
+      {/* 6. STREAK CALENDAR & CADENCE TRACKER */}
       <StreakCalendar
         currentStreak={character?.current_streak ?? 0}
         longestStreak={character?.longest_streak ?? 0}
       />
 
-      {/* 6. REALM PORTALS & FAST EXPEDITIONS */}
+      {/* 7. REALM PORTALS & FAST EXPEDITIONS */}
       <section className="space-y-4" aria-label="Realm Fast Portals">
         <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 font-display flex items-center gap-2">
           <Compass className="h-4 w-4 text-amber-400" /> Realm Portals & Sanctuaries
@@ -451,7 +472,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* 7. LEVEL UP CELEBRATION MODAL */}
+      {/* 8. LEVEL UP CELEBRATION MODAL */}
       <LevelUpModal
         isOpen={levelUpState.isOpen}
         onClose={() => setLevelUpState((prev) => ({ ...prev, isOpen: false }))}
