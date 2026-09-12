@@ -846,11 +846,15 @@ export default function LandingPage() {
       {/* 8. COMPACT GAME FOOTER */}
       {/* ========================================================================= */}
       <footer className="border-t border-slate-800/80 py-8 px-6 text-center text-xs text-slate-400 max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-4 font-sans">
-        <div className="flex items-center gap-2">
-          <Flame className="h-4 w-4 text-amber-400" />
-          <span className="font-display font-bold text-slate-200">LIFE RPG</span>
-          <span className="text-slate-500">•</span>
-          <span>Authoritative Real-World Adventure Engine</span>
+        <div className="flex flex-col sm:flex-row items-center gap-2">
+          <div className="flex items-center gap-2">
+            <Flame className="h-4 w-4 text-amber-400" />
+            <span className="font-display font-bold text-slate-200">LIFE RPG</span>
+            <span className="text-slate-500">•</span>
+            <span className="text-amber-300/90 font-medium">A SparkX Production</span>
+          </div>
+          <span className="hidden sm:inline text-slate-600">|</span>
+          <span className="text-slate-400 font-mono text-[11px]">© 2026 SparkX · Life RPG</span>
         </div>
         <div className="flex items-center gap-6 text-slate-300 font-mono">
           <Link href="/login" className="hover:text-amber-300 transition-colors">

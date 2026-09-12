@@ -1032,9 +1032,15 @@ This creates a direct feedback loop between real-world actions and virtual progr
 
 # 👥 Team
 
-Built as a hackathon project for:
+## Team
 
-**IIT Bhubaneswar Hackathon**
+**SparkX**
+
+> A SparkX Production
+
+Life RPG — Turn Your Real Life Into a Game.
+
+Built for **Tech Zephyr 4.0 — Web Hackathon** at the **Indian Institute of Technology (IIT) Bhubaneswar**.
 
 ### Links
 

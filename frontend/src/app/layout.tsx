@@ -50,8 +50,10 @@ export const metadata: Metadata = {
     "Daily Quests",
     "IIT Bhubaneswar",
     "Tech Zephyr",
+    "SparkX",
   ],
-  authors: [{ name: "Life RPG Guild" }],
+  authors: [{ name: "SparkX" }],
+  creator: "SparkX",
   openGraph: {
     title: "Life RPG — Level Up Your Real Life",
     description:

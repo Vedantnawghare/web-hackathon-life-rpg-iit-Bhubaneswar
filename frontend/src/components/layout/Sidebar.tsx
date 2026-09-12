@@ -212,6 +212,13 @@ export function Sidebar() {
           <span className="text-[10px] font-rajdhani font-bold">Exit</span>
         </button>
       </div>
+
+      {/* Subtle Team Branding */}
+      <div className="px-3 py-1.5 text-center border-t border-amber-950/40 bg-slate-950">
+        <span className="text-[9px] font-mono text-slate-500 tracking-wider">
+          © 2026 SparkX · Life RPG
+        </span>
+      </div>
     </aside>
   );
 }
