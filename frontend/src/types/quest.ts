@@ -18,6 +18,7 @@ export interface Quest {
   status: QuestStatus;
   recurrence: QuestRecurrence;
   due_date: string | null;
+  due_time?: string | null;
   created_at: string;
   updated_at: string;
 
@@ -33,6 +34,7 @@ export interface QuestCreatePayload {
   difficulty: QuestDifficulty;
   recurrence?: QuestRecurrence;
   due_date?: string | null;
+  due_time?: string | null;
 }
 
 export interface QuestUpdatePayload {
@@ -42,6 +44,7 @@ export interface QuestUpdatePayload {
   difficulty?: QuestDifficulty;
   recurrence?: QuestRecurrence;
   due_date?: string | null;
+  due_time?: string | null;
   status?: QuestStatus;
 }
 

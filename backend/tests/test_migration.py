@@ -8,7 +8,11 @@ def test_alembic_migration_revisions():
     script = ScriptDirectory.from_config(alembic_cfg)
     revisions = list(script.walk_revisions())
 
-    assert len(revisions) >= 1
+    assert len(revisions) >= 2
     head_rev = revisions[0]
-    assert head_rev.revision == "0001_initial_schema"
-    assert head_rev.down_revision is None
+    assert head_rev.revision == "0002_hero_class_and_due_time"
+    assert head_rev.down_revision == "0001_initial_schema"
+
+    base_rev = revisions[-1]
+    assert base_rev.revision == "0001_initial_schema"
+    assert base_rev.down_revision is None

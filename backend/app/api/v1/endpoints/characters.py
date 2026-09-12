@@ -95,6 +95,7 @@ async def onboard_character(
         username=payload.username,
         title=payload.title,
         timezone=payload.timezone,
+        hero_class=payload.hero_class or "vanguard_male",
         current_level=1,
         lifetime_xp=0,
         xp_into_current_level=0,
@@ -116,3 +117,33 @@ async def onboard_character(
     await db.commit()
     await db.refresh(new_character)
     return new_character
+
+
+@router.patch(
+    "/me/equip",
+    response_model=CharacterOut,
+    summary="Update character equipped cosmetics or hero archetype",
+)
+async def update_character_cosmetics(
+    payload: CharacterEquip,
+    current_character: Character = Depends(get_current_character),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Allows the user to update their equipped hero_class, theme, frame, badge, or title.
+    """
+    if payload.hero_class is not None:
+        current_character.hero_class = payload.hero_class
+    if payload.equipped_theme is not None:
+        current_character.equipped_theme = payload.equipped_theme
+    if payload.equipped_frame is not None:
+        current_character.equipped_frame = payload.equipped_frame
+    if payload.equipped_badge is not None:
+        current_character.equipped_badge = payload.equipped_badge
+    if payload.title is not None:
+        current_character.title = payload.title
+
+    await db.commit()
+    await db.refresh(current_character)
+    return current_character
+

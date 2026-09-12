@@ -20,7 +20,8 @@ export interface Character {
   vitality: number;
   creativity: number;
 
-  // Visual Cosmetics
+  // Visual Cosmetics & Hero Archetype
+  hero_class?: string;
   equipped_theme: string;
   equipped_frame: string;
   equipped_badge: string;
@@ -34,9 +35,11 @@ export interface CharacterCreatePayload {
   username: string;
   title?: string;
   timezone?: string;
+  hero_class?: string;
 }
 
 export interface CharacterEquipPayload {
+  hero_class?: string;
   equipped_theme?: string;
   equipped_frame?: string;
   equipped_badge?: string;

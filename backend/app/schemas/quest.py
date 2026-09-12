@@ -30,6 +30,17 @@ class QuestBase(BaseModel):
     difficulty: QuestDifficulty
     recurrence: QuestRecurrence = Field(default=QuestRecurrence.NONE)
     due_date: Optional[date] = None
+    due_time: Optional[str] = Field(None, max_length=5)
+
+    @field_validator("due_time")
+    @classmethod
+    def validate_due_time(cls, v: Optional[str]) -> Optional[str]:
+        if v is None or not v.strip():
+            return None
+        cleaned = v.strip()
+        if not re.match(r"^([01]\d|2[0-3]):([0-5]\d)$", cleaned):
+            raise ValueError("due_time must be in 24-hour HH:MM format (e.g. 09:00 or 14:30)")
+        return cleaned
 
     @field_validator("title")
     @classmethod
@@ -65,7 +76,18 @@ class QuestUpdate(BaseModel):
     primary_attribute: Optional[CharacterAttribute] = None
     recurrence: Optional[QuestRecurrence] = None
     due_date: Optional[date] = None
+    due_time: Optional[str] = Field(None, max_length=5)
     status: Optional[QuestStatus] = None
+
+    @field_validator("due_time")
+    @classmethod
+    def validate_due_time(cls, v: Optional[str]) -> Optional[str]:
+        if v is None or not v.strip():
+            return None
+        cleaned = v.strip()
+        if not re.match(r"^([01]\d|2[0-3]):([0-5]\d)$", cleaned):
+            raise ValueError("due_time must be in 24-hour HH:MM format (e.g. 09:00 or 14:30)")
+        return cleaned
 
     @field_validator("title")
     @classmethod
@@ -96,6 +118,7 @@ class QuestOut(BaseModel):
     status: QuestStatus
     recurrence: QuestRecurrence
     due_date: Optional[date]
+    due_time: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

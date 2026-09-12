@@ -8,6 +8,8 @@ import { Character } from "@/types/character";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CosmeticFrame } from "@/components/rpg/CosmeticFrame";
+import { HeroCharacter } from "@/components/rpg/HeroCharacter";
+import { getHeroArchetype } from "@/lib/hero-data";
 import {
   Backpack,
   Store,
@@ -19,6 +21,7 @@ import {
   Loader2,
   AlertCircle,
   X,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -149,16 +152,47 @@ export default function InventoryPage() {
 
       {/* 2. Active Loadout Showcase */}
       <section className="p-5 sm:p-6 rounded-2xl border border-amber-500/25 bg-slate-950/80 backdrop-blur-md space-y-4">
-        <div className="flex items-center gap-2">
-          <Shield className="h-4 w-4 text-amber-400" />
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-200 font-display">
-            Active Champion Loadout
-          </h2>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-amber-400" />
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-200 font-cinzel">
+              Active Champion Loadout
+            </h2>
+          </div>
+          <Link href="/character">
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs font-cinzel border-slate-700 hover:border-amber-500/40">
+              <Users className="h-3.5 w-3.5 text-amber-400" /> Switch Champion
+            </Button>
+          </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Slot 0: Champion Rig */}
+          <div className="p-3 rounded-xl bg-slate-900/80 border border-amber-500/30 flex items-center gap-3">
+            <div className="shrink-0 h-16 w-14 flex items-center justify-center">
+              <HeroCharacter
+                heroId={character?.hero_class || "vanguard_male"}
+                equippedTheme={character?.equipped_theme}
+                state="IDLE"
+                size="sm"
+                showShadow={false}
+              />
+            </div>
+            <div className="min-w-0">
+              <span className="text-[10px] uppercase font-mono tracking-wider text-amber-500 block font-bold">
+                Champion
+              </span>
+              <span className="text-xs font-bold text-slate-200 font-cinzel truncate block">
+                {getHeroArchetype(character?.hero_class).name}
+              </span>
+              <span className="text-[10px] text-slate-400 font-rajdhani truncate block">
+                {getHeroArchetype(character?.hero_class).weapon}
+              </span>
+            </div>
+          </div>
+
           {/* Slot 1: Avatar Frame */}
-          <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3.5">
+          <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
             <div className="shrink-0">
               <CosmeticFrame
                 size="sm"
@@ -171,14 +205,14 @@ export default function InventoryPage() {
               <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500 block font-bold">
                 Frame
               </span>
-              <span className="text-xs font-bold text-slate-200 font-display truncate block">
+              <span className="text-xs font-bold text-slate-200 font-cinzel truncate block">
                 {character?.equipped_frame || "Standard Frame"}
               </span>
             </div>
           </div>
 
           {/* Slot 2: Badge */}
-          <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3.5">
+          <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300">
               <Sparkles className="h-5 w-5" />
             </div>
@@ -186,14 +220,14 @@ export default function InventoryPage() {
               <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500 block font-bold">
                 Crest Badge
               </span>
-              <span className="text-xs font-bold text-slate-200 font-display truncate block">
+              <span className="text-xs font-bold text-slate-200 font-cinzel truncate block">
                 {character?.equipped_badge || "Default Badge"}
               </span>
             </div>
           </div>
 
           {/* Slot 3: Title */}
-          <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3.5">
+          <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-300">
               <Crown className="h-5 w-5" />
             </div>
@@ -201,14 +235,14 @@ export default function InventoryPage() {
               <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500 block font-bold">
                 Title
               </span>
-              <span className="text-xs font-bold text-slate-200 font-display truncate block">
+              <span className="text-xs font-bold text-slate-200 font-cinzel truncate block">
                 {character?.title || "Novice Adventurer"}
               </span>
             </div>
           </div>
 
           {/* Slot 4: Leyline Theme */}
-          <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3.5">
+          <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-sky-500/15 border border-sky-500/30 text-sky-300">
               <Palette className="h-5 w-5" />
             </div>
@@ -216,7 +250,7 @@ export default function InventoryPage() {
               <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500 block font-bold">
                 Leyline Theme
               </span>
-              <span className="text-xs font-bold text-slate-200 font-display truncate block">
+              <span className="text-xs font-bold text-slate-200 font-cinzel truncate block">
                 {character?.equipped_theme || "Standard Slate"}
               </span>
             </div>

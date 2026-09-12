@@ -62,6 +62,7 @@ async def create_quest(
         base_gold=rewards["base_gold"],
         recurrence=payload.recurrence,
         due_date=payload.due_date,
+        due_time=payload.due_time,
         status=QuestStatus.ACTIVE,
     )
 
@@ -170,6 +171,7 @@ async def list_quests(
             "status": quest.status,
             "recurrence": quest.recurrence,
             "due_date": quest.due_date,
+            "due_time": quest.due_time,
             "created_at": quest.created_at,
             "updated_at": quest.updated_at,
             "is_completed_for_period": is_completed,
@@ -210,6 +212,8 @@ async def update_quest(
         quest.recurrence = payload.recurrence
     if payload.due_date is not None:
         quest.due_date = payload.due_date
+    if payload.due_time is not None:
+        quest.due_time = payload.due_time
     if payload.status is not None:
         quest.status = payload.status
 

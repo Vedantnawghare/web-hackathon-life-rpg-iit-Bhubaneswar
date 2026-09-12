@@ -8,6 +8,7 @@ class CharacterBase(BaseModel):
     username: str = Field(..., min_length=2, max_length=50)
     title: str = Field(default="Novice Adventurer", max_length=100)
     timezone: str = Field(default="UTC", max_length=50)
+    hero_class: Optional[str] = Field(default="vanguard_male", max_length=50)
 
     @field_validator("username", mode="before")
     @classmethod
@@ -24,6 +25,7 @@ class CharacterCreate(CharacterBase):
 
 
 class CharacterEquip(BaseModel):
+    hero_class: Optional[str] = Field(None, max_length=50)
     equipped_theme: Optional[str] = Field(None, max_length=50)
     equipped_frame: Optional[str] = Field(None, max_length=50)
     equipped_badge: Optional[str] = Field(None, max_length=50)
@@ -52,7 +54,8 @@ class CharacterOut(BaseModel):
     vitality: int
     creativity: int
 
-    # Visual Cosmetics
+    # Visual Cosmetics & Hero Archetype
+    hero_class: str = "vanguard_male"
     equipped_theme: str
     equipped_frame: str
     equipped_badge: str

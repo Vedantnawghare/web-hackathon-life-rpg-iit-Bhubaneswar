@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CosmeticFrame } from "@/components/rpg/CosmeticFrame";
+import { HeroCharacter } from "@/components/rpg/HeroCharacter";
 import {
   Store,
   Coins,
@@ -126,6 +127,11 @@ export default function ShopPage() {
       ? previewItem.asset_key
       : character?.equipped_badge || "default_badge";
 
+  const previewThemeKey =
+    previewItem?.item_type === "THEME"
+      ? previewItem.asset_key
+      : character?.equipped_theme || "default_dark";
+
   return (
     <div className="space-y-6">
       {/* 1. Alchemist & Weaponsmith Counter Banner */}
@@ -179,13 +185,24 @@ export default function ShopPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-5 pt-4">
-            <div className="shrink-0 p-3 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-inner">
-              <CosmeticFrame
-                size="lg"
-                username={character?.username || "Adventurer"}
-                frameKey={previewFrameKey}
-                badgeKey={previewBadgeKey}
-              />
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-inner">
+                <CosmeticFrame
+                  size="lg"
+                  username={character?.username || "Adventurer"}
+                  frameKey={previewFrameKey}
+                  badgeKey={previewBadgeKey}
+                />
+              </div>
+              <div className="hidden md:flex p-2 rounded-2xl bg-black/50 border border-slate-800">
+                <HeroCharacter
+                  heroId={character?.hero_class || "vanguard_male"}
+                  equippedTheme={previewThemeKey}
+                  state="READY"
+                  size="sm"
+                  showShadow={false}
+                />
+              </div>
             </div>
 
             <div className="space-y-2 flex-1 text-center sm:text-left">
@@ -256,7 +273,7 @@ export default function ShopPage() {
                 Relic Claimed: {purchaseSuccess.inventory_item.shop_item.name}
               </span>
               <span className="text-xs text-emerald-300 font-mono">
-                Spent {purchaseSuccess.gold_spent} G • Remaining Treasury:{" "}
+                Spent {purchaseSuccess.gold_spent} G â€¢ Remaining Treasury:{" "}
                 {formatGold(purchaseSuccess.remaining_gold)} G
               </span>
             </div>
@@ -491,3 +508,4 @@ export default function ShopPage() {
     </div>
   );
 }
+

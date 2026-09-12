@@ -35,7 +35,8 @@ class Character(Base):
     vitality = Column(Integer, default=10, nullable=False)
     creativity = Column(Integer, default=10, nullable=False)
 
-    # Visual Cosmetics
+    # Visual Cosmetics & Hero Archetype
+    hero_class = Column(String(50), default="vanguard_male", nullable=False)
     equipped_theme = Column(String(50), default="default_slate", nullable=False)
     equipped_frame = Column(String(50), default="default_frame", nullable=False)
     equipped_badge = Column(String(50), default="novice_badge", nullable=False)

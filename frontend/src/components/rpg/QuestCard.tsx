@@ -255,14 +255,18 @@ export function QuestCard({
               </div>
             </div>
 
-            {/* Due date timestamp if present */}
-            {quest.due_date && (
+            {/* Due date & time timestamp if present */}
+            {(quest.due_date || quest.due_time) && (
               <div
                 className="flex items-center gap-1 text-[11px] font-mono text-slate-400"
-                title={`Contract expiration: ${quest.due_date}`}
+                title={`Contract due: ${quest.due_date || ""} ${quest.due_time || ""}`}
               >
                 <Clock className="h-3 w-3 text-slate-500" />
-                <span>{quest.due_date}</span>
+                <span>
+                  {quest.due_time ? `@ ${quest.due_time}` : ""}
+                  {quest.due_date && quest.due_time ? " • " : ""}
+                  {quest.due_date ? quest.due_date : ""}
+                </span>
               </div>
             )}
           </div>

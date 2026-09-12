@@ -3,19 +3,23 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Shield, ArrowRight, AlertCircle, Lock, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { Sparkles, AlertCircle, Lock, Loader2, Sword, Check } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { Character, CharacterCreatePayload } from "@/types/character";
+import { HERO_LIST, HeroArchetype } from "@/lib/hero-data";
+import { HeroCharacter } from "@/components/rpg/HeroCharacter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { CosmeticFrame } from "@/components/rpg/CosmeticFrame";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
+import { audioManager } from "@/lib/audio-manager";
+import { cn } from "@/lib/utils";
 
 export default function OnboardingPage() {
+  const [selectedHeroId, setSelectedHeroId] = useState<string>("vanguard_male");
   const [username, setUsername] = useState("");
-  const [title, setTitle] = useState("Novice Adventurer");
+  const [title, setTitle] = useState("Novice Champion");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -35,10 +39,21 @@ export default function OnboardingPage() {
     }
   }, [character, router]);
 
+  const handleSelectHero = (hero: HeroArchetype) => {
+    setSelectedHeroId(hero.id);
+    setTitle(hero.title);
+    audioManager.playCoinSound();
+  };
+
   const handleOnboarding = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAuthenticated || !session?.access_token) {
       setError("Active authenticated session required. Please sign in first.");
+      return;
+    }
+
+    if (!username.trim()) {
+      setError("Please name your champion before awakening.");
       return;
     }
 
@@ -51,6 +66,7 @@ export default function OnboardingPage() {
       username: username.trim(),
       title: title.trim(),
       timezone: userTimezone,
+      hero_class: selectedHeroId,
     };
 
     try {
@@ -59,6 +75,7 @@ export default function OnboardingPage() {
         body: JSON.stringify(payload),
       });
 
+      audioManager.playFanfare();
       router.push("/dashboard");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to initialize character. Please try again.");
@@ -84,126 +101,165 @@ export default function OnboardingPage() {
   // Unauthenticated gate: prevents unauthenticated character creation requests
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 selection:bg-amber-500/30">
-        <div className="w-full max-w-md">
-          <Card className="border-slate-800 bg-slate-900/90 shadow-xl text-center">
-            <CardHeader className="space-y-2 pb-4">
-              <div className="mx-auto h-12 w-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-1">
-                <Lock className="h-6 w-6" />
-              </div>
-              <CardTitle className="text-xl font-display text-slate-100">
-                Authentication Required
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-400">
-                You must be signed in to perform the Character Creation Ritual.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-xs text-slate-400 space-y-3 pb-6">
-              <p>
-                If you just created an account and email verification is enabled, please verify your email before entering the realm.
-              </p>
-            </CardContent>
-            <CardFooter className="flex flex-col space-y-3 border-t border-slate-800 pt-4">
-              <Link href="/login" className="w-full">
-                <Button variant="gold" className="w-full gap-2">
-                  Sign In to Continue <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/signup" className="w-full">
-                <Button variant="outline" className="w-full text-xs">
-                  Create an Account
-                </Button>
-              </Link>
-            </CardFooter>
-          </Card>
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md p-8 rounded-2xl bg-slate-900/90 border border-slate-800 text-center space-y-4">
+          <div className="mx-auto h-12 w-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <Lock className="h-6 w-6" />
+          </div>
+          <h2 className="text-xl font-bold font-cinzel text-slate-100">
+            Authentication Required
+          </h2>
+          <p className="text-xs text-slate-400 font-rajdhani">
+            You must be signed in to perform the Awakening Ritual.
+          </p>
+          <Link
+            href="/login"
+            className="w-full inline-flex items-center justify-center rounded-md text-sm font-bold font-cinzel transition-colors bg-amber-600 hover:bg-amber-500 text-slate-950 h-10 px-4 py-2"
+          >
+            Return to Sign In
+          </Link>
         </div>
       </div>
     );
   }
 
+  const selectedHero = HERO_LIST.find((h) => h.id === selectedHeroId) || HERO_LIST[0];
+
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 selection:bg-amber-500/30">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-6">
-          {/* Live Character Avatar Preview */}
-          <div className="mb-4">
-            <CosmeticFrame
-              size="lg"
-              username={username || "A"}
-              frameKey="default_frame"
-              badgeKey="novice_badge"
-            />
-          </div>
-          <h1 className="text-2xl font-bold tracking-wider text-slate-100 uppercase text-center font-display">
-            Forge Your Hero
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black text-slate-100 p-4 sm:p-8 flex flex-col items-center justify-center selection:bg-amber-500/30">
+      <div className="w-full max-w-5xl flex flex-col items-center gap-6">
+        {/* Ritual Title */}
+        <div className="text-center space-y-2">
+          <span className="text-xs uppercase tracking-widest text-amber-400 font-bold font-rajdhani flex items-center justify-center gap-1.5">
+            <Sparkles className="w-4 h-4" /> The Awakening Ritual
+          </span>
+          <h1 className="text-3xl sm:text-4xl font-black font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">
+            CHOOSE YOUR HERO
           </h1>
-          <p className="text-xs text-slate-400 tracking-wider uppercase font-medium mt-1">
-            Character Creation Ritual
+          <p className="text-xs sm:text-sm text-slate-400 font-rajdhani max-w-md mx-auto">
+            Select your champion for the Realm of Ascension. Your hero will fight in the Arena and embody your real-life conquests.
           </p>
         </div>
 
-        <Card className="border-slate-800 bg-slate-900/90 shadow-xl">
-          <CardHeader>
-            <CardTitle className="font-display text-lg">Name Your Adventurer</CardTitle>
-            <CardDescription>
-              Choose the identity under which all your real-world achievements will be recorded.
-            </CardDescription>
-          </CardHeader>
+        {/* 4 Hero Character Selection Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+          {HERO_LIST.map((hero) => {
+            const isSelected = selectedHeroId === hero.id;
+            return (
+              <motion.div
+                key={hero.id}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleSelectHero(hero)}
+                className={cn(
+                  "relative rounded-2xl border-2 p-4 flex flex-col items-center cursor-pointer transition-all duration-300 backdrop-blur-md",
+                  isSelected
+                    ? "bg-slate-900/90 border-amber-400 shadow-[0_0_30px_rgba(245,158,11,0.3)] ring-1 ring-amber-400"
+                    : "bg-slate-950/60 border-slate-800/80 hover:border-slate-700 opacity-75 hover:opacity-100"
+                )}
+              >
+                {/* Active Checkmark Pill */}
+                {isSelected && (
+                  <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-md">
+                    <Check className="w-4 h-4 stroke-[3]" />
+                  </div>
+                )}
 
-          <form onSubmit={handleOnboarding}>
-            <CardContent className="space-y-4">
-              {error && (
-                <div
-                  role="alert"
-                  aria-live="assertive"
-                  className="flex items-center gap-2 p-3 rounded-md bg-rose-950/50 border border-rose-800/80 text-rose-300 text-xs"
-                >
-                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <div className="space-y-1.5">
-                <label htmlFor="onboarding-username" className="text-xs font-semibold text-slate-300">
-                  Adventurer Name
-                </label>
-                <div className="relative">
-                  <Shield className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
-                  <Input
-                    id="onboarding-username"
-                    placeholder="e.g. Eldrin Stoneguard"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                    minLength={2}
-                    maxLength={50}
-                    className="pl-9"
-                    autoFocus
+                {/* Hero Vector Rig */}
+                <div className="h-44 sm:h-52 flex items-center justify-center my-2">
+                  <HeroCharacter
+                    heroId={hero.id}
+                    state={isSelected ? "READY" : "IDLE"}
+                    size="sm"
+                    showShadow={true}
                   />
                 </div>
-                <p className="text-[11px] text-slate-500">2-50 characters. Plain text only.</p>
-              </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor="onboarding-title" className="text-xs font-semibold text-slate-300">
-                  Starting Title
-                </label>
-                <Input
-                  id="onboarding-title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  maxLength={100}
-                />
-              </div>
-            </CardContent>
+                {/* Hero Meta */}
+                <div className="w-full text-center space-y-1">
+                  <span className="text-[10px] uppercase tracking-wider font-bold text-amber-400 font-rajdhani">
+                    {hero.gender === "male" ? "? Male Champion" : "? Female Champion"}
+                  </span>
+                  <h3 className="text-lg font-bold font-cinzel text-slate-100">
+                    {hero.name}
+                  </h3>
+                  <span className="text-xs text-slate-400 font-rajdhani block">
+                    {hero.archetype}
+                  </span>
 
-            <CardFooter>
-              <Button type="submit" variant="gold" className="w-full gap-2" disabled={loading}>
-                {loading ? "Awakening..." : "Begin Your Journey"} <ArrowRight className="h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
+                  {/* Weapon Pill */}
+                  <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-700 text-[11px] text-amber-300 font-rajdhani font-semibold mt-1">
+                    <Sword className="w-3 h-3 text-amber-400" />
+                    {hero.weapon}
+                  </div>
+
+                  <p className="text-[11px] text-slate-400 font-rajdhani line-clamp-2 pt-2 leading-relaxed">
+                    {hero.description}
+                  </p>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Selected Hero Identity Form & Awakening Button */}
+        <form onSubmit={handleOnboarding} className="w-full max-w-md space-y-4">
+          <div className="space-y-3 bg-slate-900/80 p-5 rounded-2xl border border-amber-500/30">
+            <div>
+              <label htmlFor="username" className="block text-xs font-bold font-cinzel text-amber-300 mb-1">
+                Name Your Champion
+              </label>
+              <Input
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="e.g. ShadowValen, LadyAria"
+                maxLength={30}
+                required
+                className="bg-slate-950 border-slate-700 text-white focus:border-amber-400 font-rajdhani text-sm"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="title" className="block text-xs font-bold font-cinzel text-slate-400 mb-1">
+                Champion Title
+              </label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Title"
+                maxLength={50}
+                className="bg-slate-950 border-slate-700 text-slate-300 font-rajdhani text-sm"
+              />
+            </div>
+
+            {error && (
+              <div className="p-2.5 rounded-lg bg-rose-950/80 border border-rose-800 text-xs text-rose-300 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              disabled={loading || !username.trim()}
+              className="w-full h-11 bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-slate-950 font-black font-cinzel text-sm uppercase tracking-wider shadow-[0_0_20px_rgba(245,158,11,0.3)] flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                  <span>Awakening {selectedHero.name}...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 text-slate-950" />
+                  <span>Awaken {selectedHero.name}</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );

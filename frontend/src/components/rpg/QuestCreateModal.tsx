@@ -103,6 +103,7 @@ export function QuestCreateModal({
   const [difficulty, setDifficulty] = useState<QuestDifficulty>("MEDIUM");
   const [recurrence, setRecurrence] = useState<QuestRecurrence>("DAILY");
   const [dueDate, setDueDate] = useState("");
+  const [dueTime, setDueTime] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Close on escape key
@@ -119,7 +120,7 @@ export function QuestCreateModal({
   // Reset error when inputs change
   useEffect(() => {
     setErrorMessage(null);
-  }, [title, description, category, difficulty, recurrence, dueDate]);
+  }, [title, description, category, difficulty, recurrence, dueDate, dueTime]);
 
   const createMutation = useMutation({
     mutationFn: (payload: QuestCreatePayload) =>
@@ -136,6 +137,7 @@ export function QuestCreateModal({
       setDifficulty("MEDIUM");
       setRecurrence("DAILY");
       setDueDate("");
+      setDueTime("");
       setErrorMessage(null);
       if (onSuccess) onSuccess();
       onClose();
@@ -170,6 +172,7 @@ export function QuestCreateModal({
       difficulty,
       recurrence,
       due_date: dueDate ? dueDate : undefined,
+      due_time: dueTime ? dueTime : undefined,
     };
 
     createMutation.mutate(payload);
@@ -370,21 +373,39 @@ export function QuestCreateModal({
             </div>
           </div>
 
-          {/* Optional Due Date */}
-          <div>
-            <label
-              htmlFor="quest-due"
-              className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
-            >
-              Target Due Date (Optional)
-            </label>
-            <Input
-              id="quest-due"
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="bg-slate-900 border-slate-800 text-slate-100 text-xs"
-            />
+          {/* Optional Due Date & Due Time */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label
+                htmlFor="quest-due"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+              >
+                Target Due Date (Optional)
+              </label>
+              <Input
+                id="quest-due"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="bg-slate-900 border-slate-800 text-slate-100 text-xs"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="quest-due-time"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+              >
+                Scheduled Time (HH:MM)
+              </label>
+              <Input
+                id="quest-due-time"
+                type="time"
+                value={dueTime}
+                onChange={(e) => setDueTime(e.target.value)}
+                className="bg-slate-900 border-slate-800 text-slate-100 text-xs"
+              />
+            </div>
           </div>
 
           {/* Footer Actions */}

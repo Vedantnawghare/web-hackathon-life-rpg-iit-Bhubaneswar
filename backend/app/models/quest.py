@@ -61,6 +61,7 @@ class Quest(Base):
     )
 
     due_date = Column(Date, nullable=True)
+    due_time = Column(String(5), nullable=True)  # Format HH:MM e.g. "09:00", "14:30"
 
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     updated_at = Column(
