@@ -1012,6 +1012,92 @@ Built as a hackathon project for:
 
 ---
 
+# 📚 Resources & References
+
+This project was built during **Tech Zephyr 4.0 — Web Hackathon** at the **Indian Institute of Technology (IIT) Bhubaneswar**. Below is a comprehensive audit and attribution of the official technologies, libraries, visual assets, fonts, procedural audio, and developmental tools used throughout Life RPG.
+
+### 🌐 Core Technologies & Frameworks
+
+| Technology | Purpose | Official Documentation / Resource |
+| :--- | :--- | :--- |
+| **Next.js 14** | React Framework (App Router, Server Actions, Dynamic Layouts) | [https://nextjs.org/docs](https://nextjs.org/docs) |
+| **React 18** | Core UI Component Library & Hooks | [https://react.dev/](https://react.dev/) |
+| **TypeScript 5** | Strict Static Typing & Schema Definitions | [https://www.typescriptlang.org/docs/](https://www.typescriptlang.org/docs/) |
+| **Tailwind CSS 3** | Utility-First Responsive Styling & Glassmorphic Themes | [https://tailwindcss.com/docs](https://tailwindcss.com/docs) |
+| **Framer Motion 13** | Page Transitions, Combat Sequences, and UI Micro-Animations | [https://www.framer.com/motion/](https://www.framer.com/motion/) |
+| **Three.js** | WebGL 3D Digital-Twin Boss & Procedural Entity Rendering | [https://threejs.org/docs/](https://threejs.org/docs/) |
+| **Zustand** | Lightweight Client-Side State Management (Auth, Audio, UI) | [https://zustand.docs.pmnd.rs/](https://zustand.docs.pmnd.rs/) |
+| **TanStack React Query** | Asynchronous Server State Caching & Optimistic Updates | [https://tanstack.com/query/latest](https://tanstack.com/query/latest) |
+| **FastAPI** | High-Performance Asynchronous Python Backend Framework | [https://fastapi.tiangolo.com/](https://fastapi.tiangolo.com/) |
+| **Python 3.11+** | Backend Programming Language & Standard Library | [https://docs.python.org/3/](https://docs.python.org/3/) |
+| **SQLAlchemy 2.0 (async)** | Object-Relational Mapping & Database Abstraction | [https://docs.sqlalchemy.org/](https://docs.sqlalchemy.org/) |
+| **Alembic** | Lightweight Database Migration Tool for SQLAlchemy | [https://alembic.sqlalchemy.org/](https://alembic.sqlalchemy.org/) |
+| **PostgreSQL** | Relational Database Engine | [https://www.postgresql.org/docs/](https://www.postgresql.org/docs/) |
+| **Supabase** | Cloud Database Hosting, Row-Level Security, and Auth Infrastructure | [https://supabase.com/docs](https://supabase.com/docs) |
+| **Vercel** | Frontend Edge Deployment & CI/CD Pipeline | [https://vercel.com/docs](https://vercel.com/docs) |
+| **Render** | Backend Cloud Application Hosting & Web Service Deployment | [https://render.com/docs](https://render.com/docs) |
+
+---
+
+### 🎨 Visual Assets & Art Attribution
+
+- **Environment & World Backdrops**: 
+  - Centralized in `frontend/src/lib/game-assets.ts` and loaded from `frontend/public/assets/world/`.
+  - Includes `home-background.png`, `world-background.png`, `arena-background.png`, `quests-background.png`, `inventory-background.png`, `shop-background.png`, `character-background.png`, `achievements-background.png`, `login-background.png`, and `hero-select-background.png`.
+  - **Attribution**: *AI-generated during project development specifically for Life RPG's fantasy aesthetic; no external copyrighted third-party artwork used.*
+- **Ascension Zone Illustrations**:
+  - `zone-mindpeak.png`, `zone-iron-crags.png`, `zone-discipline.png`, `zone-vitalis.png`, and `zone-arcanum.png`.
+  - **Attribution**: *AI-generated during project development; no external third-party artwork used.*
+- **Enemy & Monster Concept Art**:
+  - `void-brute.png`, `void-archon.png`, and `crystal-horror.png`.
+  - **Attribution**: *AI-generated during project development; no external third-party artwork used.*
+- **Real-Time 3D Digital-Twin Boss**:
+  - `Boss3DModel.tsx` is built completely via procedural WebGL code with Three.js (custom crystalline geometry, armored torso segmenting, segmented tentacle limbs, glowing compound eyes, and dynamic eye-laser vector rigging). No external OBJ/GLTF files downloaded.
+
+---
+
+### 🔤 Typography & Iconography
+
+- **Lucide Icons**:
+  - Vector iconography across all quest, combat, and HUD interfaces (`lucide-react`).
+  - License: [ISC License](https://github.com/lucide-icons/lucide/blob/main/LICENSE) | Documentation: [https://lucide.dev/](https://lucide.dev/)
+- **Google Fonts**:
+  - **Cinzel**: Used for fantasy headers, titles, and boss heraldry ([SIL Open Font License 1.1](https://fonts.google.com/specimen/Cinzel)).
+  - **Rajdhani**: Used for UI labels, quest badges, and stats ([SIL Open Font License 1.1](https://fonts.google.com/specimen/Rajdhani)).
+  - **JetBrains Mono**: Used for combat logs, numeric damage values, and code HUDs ([SIL Open Font License 1.1](https://fonts.google.com/specimen/JetBrains+Mono)).
+
+---
+
+### 🔊 Procedural Audio & Sound Synthesis
+
+- **Web Audio API Engine (`frontend/src/lib/audio-manager.ts`)**:
+  - *Audio effects and background music are procedurally synthesized in code via Web Audio API; no external audio files are used.*
+  - Custom procedural oscillators (sine, square, sawtooth, triangle), multi-stage envelope generators (attack, decay, sustain, release), biquad resonance filters, and procedural noise buffers synthesize:
+    - Weapon slashes, claymore impacts, and arcane spellbursts
+    - Enemy digital-twin charge sounds and synchronized eye-laser beams
+    - Dynamic shield parries, dodges, and critical hit alerts
+    - Victory fanfare chords and game over minor descents
+    - Procedural ambient dungeon and arena drone loops
+
+---
+
+### 🤖 AI-Assisted Development Disclosure
+
+In the spirit of hackathon transparency and academic integrity:
+- **Code & Architecture Assistance**: Generative AI tools were utilized during development for architectural brainstorming, boilerplate generation, Next.js App Router route handlers, FastAPI async repository scaffolding, Three.js vector calculations, and combat timing choreography.
+- **Visual Asset Generation**: Generative AI models were employed to generate original fantasy concept backgrounds and zone backdrops adhering to a cohesive palette.
+- **Review & Verification**: All AI-assisted code was manually reviewed, verified, type-checked with TypeScript strict mode, tested with Pytest and unit suites, and audited for security.
+
+---
+
+### 🏛️ Hackathon Information
+
+- **Event**: Tech Zephyr 4.0 — Web Hackathon
+- **Host Institution**: Indian Institute of Technology (IIT) Bhubaneswar
+- **Year**: 2026
+
+---
+
 # 📜 License
 
 This project was developed as a hackathon project.
