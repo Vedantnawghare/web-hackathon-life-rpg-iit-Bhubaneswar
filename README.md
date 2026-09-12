@@ -82,24 +82,41 @@ python backend/app/scripts/seed_demo_user.py
 
 # 🖼️ Project Preview
 
-## 🌍 Game World
+### 🔐 1. Login — Enter the RPG World
+<img src="docs/images/01-login.png" alt="Life RPG Login" width="48%">
 
-<p align="center">
-  <img src="docs/images/game-home.png" alt="Life RPG Game World" width="90%">
-</p>
+### 🧙 2. Hero Selection — Choose Your Champion
+<img src="docs/images/02-hero-selection.png" alt="Life RPG Hero Selection" width="48%">
 
-## ⚔️ Daily Boss Battle
+### 🏰 3. Game Home — The World of Life RPG
+<img src="docs/images/03-game-home.png" alt="Life RPG Game Home" width="48%">
 
-<p align="center">
-  <img src="docs/images/boss-arena.png" alt="Life RPG Daily Boss Battle" width="90%">
-</p>
+### ⚔️ 4. Daily Boss Arena — Today's Battle
+<img src="docs/images/04-boss-arena.png" alt="Life RPG Boss Arena" width="48%">
 
-## 🗺️ Fantasy World Map
+### 💥 5. Cinematic Combat — Enemy Laser Attack
+<img src="docs/images/05-combat-laser.png" alt="Life RPG Cinematic Combat" width="48%">
 
-<p align="center">
-  <img src="docs/images/world-map.png" alt="Life RPG Fantasy World Map" width="90%">
-</p>
+### 🗡️ 6. Hero vs Boss — Combat Arena
+<img src="docs/images/06-combat-arena.png" alt="Life RPG Hero Boss Battle" width="48%">
 
+### 📜 7. Adventurer's Guild — Bounty Board
+<img src="docs/images/07-bounty-board.png" alt="Life RPG Bounty Board" width="48%">
+
+### 💰 8. Guild Bazaar — Shop & Rewards
+<img src="docs/images/08-guild-bazaar.png" alt="Life RPG Guild Bazaar" width="48%">
+
+### 🎒 9. Relic Vault & Armory — Inventory
+<img src="docs/images/09-inventory.png" alt="Life RPG Inventory" width="48%">
+
+### 🏆 10. Hall of Trophies — Achievements
+<img src="docs/images/10-achievements.png" alt="Life RPG Achievements" width="48%">
+
+### 📊 11. Chronicles — Progress & Analytics
+<img src="docs/images/11-chronicles-analytics.png" alt="Life RPG Analytics" width="48%">
+
+### ⚙️ 12. Guild Settings — Personalization & Controls
+<img src="docs/images/12-guild-settings.png" alt="Life RPG Settings" width="48%">
 ### Screenshot Files
 
 ```text
