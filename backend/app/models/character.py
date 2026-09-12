@@ -56,8 +56,12 @@ class Character(Base):
         "QuestCompletion", back_populates="character", cascade="all, delete-orphan"
     )
     streak = relationship(
-        "Streak", back_populates="character", uselist=False, cascade="all, delete-orphan"
+        "Streak", back_populates="character", uselist=False, cascade="all, delete-orphan", lazy="selectin"
     )
+
+    @property
+    def current_streak(self) -> int:
+        return self.streak.current_streak if self.streak else 0
     inventory = relationship(
         "InventoryItem", back_populates="character", cascade="all, delete-orphan"
     )

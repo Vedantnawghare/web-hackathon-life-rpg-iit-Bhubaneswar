@@ -103,6 +103,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           xpIntoLevel={character?.xp_into_current_level}
           xpRequired={character?.xp_required_for_next_level}
           gold={character?.gold}
+          streak={character?.current_streak}
           username={character?.username}
           title={character?.title}
         />

@@ -17,7 +17,6 @@ def validate_plain_text(value: Optional[str], field_name: str) -> Optional[str]:
     if value is None:
         return None
     cleaned = value.strip()
-    # Reject null characters and ASCII control characters except standard whitespace
     if "\x00" in cleaned or bool(re.search(r"[\x01-\x08\x0b\x0c\x0e-\x1f\x7f]", cleaned)):
         raise ValueError(f"{field_name} must contain printable text without control characters.")
     return cleaned
@@ -54,7 +53,7 @@ class QuestBase(BaseModel):
 
 
 class QuestCreate(QuestBase):
-    pass
+    primary_attribute: Optional[CharacterAttribute] = None
 
 
 class QuestUpdate(BaseModel):
@@ -62,6 +61,7 @@ class QuestUpdate(BaseModel):
     description: Optional[str] = Field(None, max_length=1000)
     category: Optional[str] = Field(None, min_length=1, max_length=50)
     difficulty: Optional[QuestDifficulty] = None
+    primary_attribute: Optional[CharacterAttribute] = None
     recurrence: Optional[QuestRecurrence] = None
     due_date: Optional[date] = None
     status: Optional[QuestStatus] = None
@@ -107,11 +107,39 @@ class QuestOut(BaseModel):
 
 class QuestCompleteResponse(BaseModel):
     quest_id: uuid.UUID
+    quest_title: str
     earned_xp: int
     earned_gold: int
     xp_multiplier: float
     attribute_increased: CharacterAttribute
     attribute_gain: int
-    level_ups: List[int]
-    unlocked_achievement_ids: List[uuid.UUID]
+    old_level: int
+    new_level: int
+    has_leveled_up: bool
+    levels_gained: int
+    current_streak: int
+    streak_extended: bool
     character: CharacterOut
+
+
+class QuestHistoryItem(BaseModel):
+    id: uuid.UUID
+    quest_id: uuid.UUID
+    quest_title: str
+    category: str
+    difficulty: QuestDifficulty
+    primary_attribute: CharacterAttribute
+    earned_xp: int
+    earned_gold: int
+    attribute_gain: int
+    completion_date: date
+    completed_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class QuestHistoryResponse(BaseModel):
+    items: List[QuestHistoryItem]
+    total: int
+    limit: int
+    offset: int

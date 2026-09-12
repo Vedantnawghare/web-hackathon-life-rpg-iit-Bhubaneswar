@@ -12,12 +12,15 @@ from app.core.database import Base, get_db
 from app.main import app as fastapi_app
 import app.models  # ensure all models are registered
 
+from sqlalchemy.pool import StaticPool
+
 # In-memory SQLite async test database
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
 test_engine = create_async_engine(
     TEST_DB_URL,
     connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
 )
 
 # Enable foreign keys on SQLite connections
@@ -55,10 +58,17 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 @pytest.fixture
-async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+async def client() -> AsyncGenerator[AsyncClient, None]:
     """Provides an AsyncClient with database dependency overridden to test DB."""
     async def override_get_db():
-        yield db_session
+        async with TestingSessionLocal() as session:
+            try:
+                yield session
+            except Exception:
+                await session.rollback()
+                raise
+            finally:
+                await session.close()
 
     fastapi_app.dependency_overrides[get_db] = override_get_db
     transport = ASGITransport(app=fastapi_app)

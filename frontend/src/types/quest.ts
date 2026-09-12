@@ -32,17 +32,53 @@ export interface QuestCreatePayload {
   category: string;
   difficulty: QuestDifficulty;
   recurrence?: QuestRecurrence;
-  due_date?: string;
+  due_date?: string | null;
+}
+
+export interface QuestUpdatePayload {
+  title?: string;
+  description?: string;
+  category?: string;
+  difficulty?: QuestDifficulty;
+  recurrence?: QuestRecurrence;
+  due_date?: string | null;
+  status?: QuestStatus;
 }
 
 export interface QuestCompleteResponse {
   quest_id: string;
+  quest_title: string;
   earned_xp: number;
   earned_gold: number;
   xp_multiplier: number;
   attribute_increased: CharacterAttribute;
   attribute_gain: number;
-  level_ups: number[];
-  unlocked_achievement_ids: string[];
+  old_level: number;
+  new_level: number;
+  has_leveled_up: boolean;
+  levels_gained: number;
+  current_streak: number;
+  streak_extended: boolean;
   character: Character;
+}
+
+export interface QuestHistoryItem {
+  id: string;
+  quest_id: string;
+  quest_title: string;
+  category: string;
+  difficulty: QuestDifficulty;
+  primary_attribute: CharacterAttribute;
+  earned_xp: number;
+  earned_gold: number;
+  attribute_gain: number;
+  completion_date: string;
+  completed_at: string;
+}
+
+export interface QuestHistoryResponse {
+  items: QuestHistoryItem[];
+  total: number;
+  limit: number;
+  offset: number;
 }

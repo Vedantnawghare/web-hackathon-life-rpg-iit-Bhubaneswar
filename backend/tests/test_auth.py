@@ -99,6 +99,7 @@ async def test_character_onboarding_and_fetch_flow(client: AsyncClient):
     res_after = await client.get("/api/v1/characters/me", headers=headers)
     assert res_after.status_code == 200
     assert res_after.json()["username"] == "PaladinOne"
+    assert res_after.json()["current_streak"] == 0
 
     # 4. Attempting duplicate onboarding returns 409 Conflict
     res_duplicate = await client.post(

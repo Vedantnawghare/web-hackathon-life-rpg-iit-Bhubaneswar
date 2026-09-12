@@ -1,21 +1,85 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { Character } from "@/types/character";
+import { Quest, QuestCompleteResponse } from "@/types/quest";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dumbbell, Brain, Compass, Heart, Palette, Sword, Trophy } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { LevelUpModal } from "@/components/rpg/LevelUpModal";
+import {
+  Dumbbell,
+  Brain,
+  Compass,
+  Heart,
+  Palette,
+  Sword,
+  Trophy,
+  CheckCircle2,
+  Sparkles,
+  Coins,
+  Loader2,
+  ArrowRight,
+  Flame,
+} from "lucide-react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
-  const { data: character, isLoading } = useQuery<Character>({
+  const queryClient = useQueryClient();
+  const [completingQuestId, setCompletingQuestId] = useState<string | null>(null);
+  const [levelUpState, setLevelUpState] = useState<{
+    isOpen: boolean;
+    oldLevel: number;
+    newLevel: number;
+    levelsGained: number;
+  }>({
+    isOpen: false,
+    oldLevel: 1,
+    newLevel: 1,
+    levelsGained: 1,
+  });
+
+  const { data: character, isLoading: isCharacterLoading } = useQuery<Character>({
     queryKey: ["character", "me"],
     queryFn: () => apiClient<Character>("/characters/me"),
   });
 
-  if (isLoading) {
+  const { data: quests = [], isLoading: isQuestsLoading } = useQuery<Quest[]>({
+    queryKey: ["quests"],
+    queryFn: () => apiClient<Quest[]>("/quests?status=ACTIVE"),
+  });
+
+  // Complete mutation on dashboard
+  const completeMutation = useMutation({
+    mutationFn: (questId: string) =>
+      apiClient<QuestCompleteResponse>(`/quests/${questId}/complete`, {
+        method: "POST",
+      }),
+    onMutate: (questId) => {
+      setCompletingQuestId(questId);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["character", "me"] });
+      queryClient.invalidateQueries({ queryKey: ["quests"] });
+
+      if (data.has_leveled_up) {
+        setLevelUpState({
+          isOpen: true,
+          oldLevel: data.old_level,
+          newLevel: data.new_level,
+          levelsGained: data.levels_gained,
+        });
+      }
+    },
+    onSettled: () => {
+      setCompletingQuestId(null);
+    },
+  });
+
+  if (isCharacterLoading) {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-10 w-48 bg-slate-800 rounded"></div>
@@ -36,6 +100,14 @@ export default function DashboardPage() {
     { name: "Creativity", value: character?.creativity ?? 10, icon: Palette, color: "text-purple-400", border: "border-purple-500/20" },
   ];
 
+  // Up to 4 active quests for quick access, prioritized by uncompleted first
+  const activeQuests = [...quests]
+    .sort((a, b) => {
+      if (a.is_completed_for_period === b.is_completed_for_period) return 0;
+      return a.is_completed_for_period ? 1 : -1;
+    })
+    .slice(0, 4);
+
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
@@ -52,7 +124,7 @@ export default function DashboardPage() {
 
         <div className="flex items-center gap-3">
           <Link href="/quests">
-            <Button variant="gold" size="sm" className="gap-2">
+            <Button variant="gold" size="sm" className="gap-2 font-semibold">
               <Sword className="h-4 w-4" /> Open Quest Board
             </Button>
           </Link>
@@ -86,39 +158,124 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Today's Quests & Highlights */}
+      {/* Today's Quests & Campaign Progress Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Active Quests Card */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
                 <Sword className="h-4 w-4 text-amber-400" /> Active Quests
               </CardTitle>
-              <Link href="/quests" className="text-xs text-amber-400 hover:underline">
-                View All
+              <Link
+                href="/quests"
+                className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold"
+              >
+                <span>View All ({quests.length})</span>
+                <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
             <CardDescription>
-              Real-world tasks ready to be conquered for authoritative rewards
+              Conquer these challenges today to advance your character
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col items-center justify-center p-8 text-center border border-dashed border-slate-800 rounded-lg">
-              <Sword className="h-8 w-8 text-slate-600 mb-3" />
-              <p className="text-sm text-slate-300 font-medium">No active quests logged yet</p>
-              <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                Begin your journey by crafting your first real-world habit or productivity quest.
-              </p>
-              <Link href="/quests" className="mt-4">
-                <Button variant="secondary" size="sm">
-                  Create Quest
-                </Button>
-              </Link>
-            </div>
+            {isQuestsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-16 rounded-md bg-slate-900 animate-pulse" />
+                ))}
+              </div>
+            ) : activeQuests.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-8 text-center border border-dashed border-slate-800 rounded-lg">
+                <Sword className="h-8 w-8 text-slate-600 mb-3" />
+                <p className="text-sm text-slate-300 font-medium">No active quests logged yet</p>
+                <p className="text-xs text-slate-500 mt-1 max-w-sm">
+                  Begin your journey by creating your first daily habit or productivity challenge.
+                </p>
+                <Link href="/quests" className="mt-4">
+                  <Button variant="secondary" size="sm">
+                    Inscribe Quest
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {activeQuests.map((quest) => {
+                  const isCompleted = quest.is_completed_for_period;
+                  const isCompleting = completingQuestId === quest.id;
+
+                  return (
+                    <div
+                      key={quest.id}
+                      className={cn(
+                        "flex items-center justify-between gap-4 p-3.5 rounded-lg border transition-colors",
+                        isCompleted
+                          ? "bg-slate-900/30 border-slate-800/60 opacity-80"
+                          : "bg-slate-900/70 border-slate-800 hover:border-slate-700"
+                      )}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className={cn(
+                              "font-semibold text-xs sm:text-sm truncate text-slate-100",
+                              isCompleted && "line-through text-slate-400"
+                            )}
+                          >
+                            {quest.title}
+                          </span>
+                          <Badge variant="outline" className="text-[10px] uppercase font-semibold">
+                            {quest.difficulty}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-3 text-[11px] text-slate-400 font-mono mt-1">
+                          <span className="text-amber-400 flex items-center gap-1">
+                            <Sparkles className="h-3 w-3" /> +{quest.base_xp} XP
+                          </span>
+                          <span className="text-amber-300 flex items-center gap-1">
+                            <Coins className="h-3 w-3" /> +{quest.base_gold} G
+                          </span>
+                          <span className="text-slate-500">•</span>
+                          <span className="text-slate-400 font-sans uppercase text-[10px]">
+                            {quest.category}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0">
+                        {isCompleted ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400 bg-emerald-950/30 border border-emerald-500/20 px-2.5 py-1 rounded-md">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Cleared
+                          </span>
+                        ) : (
+                          <Button
+                            variant="gold"
+                            size="sm"
+                            disabled={isCompleting}
+                            onClick={() => completeMutation.mutate(quest.id)}
+                            className="h-8 text-xs font-semibold gap-1.5"
+                          >
+                            {isCompleting ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <>
+                                <Sword className="h-3.5 w-3.5" />
+                                <span>Clear</span>
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Campaign Milestones */}
+        {/* Campaign Progress Card */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -140,18 +297,38 @@ export default function DashboardPage() {
               </span>
             </div>
             <div className="flex justify-between py-2 border-b border-slate-800/80">
-              <span className="text-slate-400">Timezone</span>
-              <span className="font-mono text-slate-300">{character?.timezone ?? "UTC"}</span>
+              <span className="text-slate-400">XP to Next Level</span>
+              <span className="font-mono font-semibold text-amber-400">
+                {character?.xp_required_for_next_level
+                  ? character.xp_required_for_next_level - character.xp_into_current_level
+                  : 100}{" "}
+                XP
+              </span>
+            </div>
+            <div className="flex justify-between py-2 border-b border-slate-800/80">
+              <span className="text-slate-400">Active Daily Streak</span>
+              <span className="font-mono font-semibold text-orange-400 flex items-center gap-1">
+                <Flame className="h-3.5 w-3.5 fill-orange-400/30" />
+                {character?.current_streak ?? 0} days
+              </span>
             </div>
             <div className="flex justify-between py-2">
-              <span className="text-slate-400">Equipped Theme</span>
-              <span className="text-slate-300 capitalize">
-                {character?.equipped_theme?.replace("_", " ") ?? "Default"}
-              </span>
+              <span className="text-slate-400">Timezone</span>
+              <span className="font-mono text-slate-300">{character?.timezone ?? "UTC"}</span>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Level Up Celebration Modal */}
+      <LevelUpModal
+        isOpen={levelUpState.isOpen}
+        onClose={() => setLevelUpState((prev) => ({ ...prev, isOpen: false }))}
+        oldLevel={levelUpState.oldLevel}
+        newLevel={levelUpState.newLevel}
+        levelsGained={levelUpState.levelsGained}
+        characterName={character?.username || "Adventurer"}
+      />
     </div>
   );
 }
