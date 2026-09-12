@@ -96,11 +96,11 @@ export function HUDTopBar({
       </div>
 
       {/* Right: Gold Treasury, Daily Streak, Exit */}
-      <div className="flex items-center gap-2 sm:gap-3.5">
+      <div className="flex items-center gap-1.5 sm:gap-3.5">
         {/* Mobile Mini XP Gauge */}
-        <div className="sm:hidden flex flex-col items-end pr-1">
-          <span className="font-mono text-[10px] text-amber-400 font-bold">{xpPercentage}%</span>
-          <div className="h-1.5 w-12 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+        <div className="sm:hidden flex flex-col items-end pr-0.5">
+          <span className="font-mono text-[9px] text-amber-400 font-bold">{xpPercentage}%</span>
+          <div className="h-1.5 w-10 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
             <div
               className="h-full bg-amber-400 rounded-full"
               style={{ width: `${xpPercentage}%` }}
@@ -110,20 +110,20 @@ export function HUDTopBar({
 
         {/* Gold Pouch */}
         <div
-          className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-gradient-to-b from-amber-950/40 to-slate-950 border border-amber-500/30 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
+          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-gradient-to-b from-amber-950/40 to-slate-950 border border-amber-500/30 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
           title="Authoritative Gold Treasury"
         >
           <Coins className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-amber-400 shrink-0" />
-          <span className="font-mono font-bold text-xs sm:text-sm">{formatGold(gold)}</span>
+          <span className="font-mono font-bold text-[11px] sm:text-sm">{formatGold(gold)}</span>
         </div>
 
         {/* Streak Flame */}
         <div
-          className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-gradient-to-b from-orange-950/40 to-slate-950 border border-orange-500/30 text-orange-300 shadow-[0_0_10px_rgba(249,115,22,0.15)]"
+          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-gradient-to-b from-orange-950/40 to-slate-950 border border-orange-500/30 text-orange-300 shadow-[0_0_10px_rgba(249,115,22,0.15)]"
           title="Active Daily Streak"
         >
           <Flame className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-orange-400 fill-orange-400/40 animate-pulse shrink-0" />
-          <span className="font-mono font-bold text-xs sm:text-sm">{streak}d</span>
+          <span className="font-mono font-bold text-[11px] sm:text-sm">{streak}d</span>
         </div>
 
         {/* Sign Out Button */}

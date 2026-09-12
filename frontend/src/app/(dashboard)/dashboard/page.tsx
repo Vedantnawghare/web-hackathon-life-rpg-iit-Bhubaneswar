@@ -179,7 +179,7 @@ export default function DashboardPage() {
       {/* ========================================================================= */}
       <section
         aria-label="Fantasy RPG Hero Portal"
-        className="relative rounded-3xl overflow-hidden border-2 border-amber-400/50 shadow-[0_0_50px_rgba(0,0,0,0.85)] bg-slate-950 p-6 sm:p-8 lg:p-10"
+        className="relative rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-amber-400/50 shadow-[0_0_50px_rgba(0,0,0,0.85)] bg-slate-950 p-4 sm:p-8 lg:p-10"
       >
         {/* Real High-Resolution Fantasy Background Artwork */}
         <img
@@ -198,13 +198,13 @@ export default function DashboardPage() {
           <div className="lg:col-span-6 flex flex-col justify-between space-y-6 lg:pr-4">
             <div className="space-y-4">
               {/* World Status Pill */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0b112c]/90 border border-amber-400/60 text-amber-300 text-xs font-mono font-bold uppercase tracking-widest shadow-[0_0_15px_rgba(245,158,11,0.3)] backdrop-blur-md">
+              <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-[#0b112c]/90 border border-amber-400/60 text-amber-300 text-[10px] sm:text-xs font-mono font-bold uppercase tracking-widest shadow-[0_0_15px_rgba(245,158,11,0.3)] backdrop-blur-md">
                 <Sparkles className="h-3.5 w-3.5 text-amber-400 animate-spin" />
                 <span>AUTHORITATIVE RPG ENGINE &bull; DAY {currentStreak + 1}</span>
               </div>
 
               {/* Large Dramatic Headline */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black font-cinzel tracking-tight text-white leading-tight drop-shadow-md">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black font-cinzel tracking-tight text-white leading-tight drop-shadow-md">
                 FORGE YOUR DAILY HABITS <br />
                 INTO A{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-500 drop-shadow-[0_0_30px_rgba(245,158,11,0.8)]">
@@ -699,7 +699,7 @@ export default function DashboardPage() {
       {/* ========================================================================= */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* YOUR STREAK PANEL */}
-        <div className="rounded-2xl border border-amber-500/40 bg-[#090e24]/90 backdrop-blur-md p-6 shadow-[0_0_30px_rgba(0,0,0,0.7)] flex flex-col justify-between space-y-4">
+        <div className="rounded-2xl border border-amber-500/40 bg-[#090e24]/90 backdrop-blur-md p-4 sm:p-6 shadow-[0_0_30px_rgba(0,0,0,0.7)] flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold flex items-center gap-2">
               <Flame className="w-4 h-4 text-amber-400 fill-amber-400" /> YOUR STREAK
@@ -710,29 +710,29 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-baseline gap-3">
-            <span className="text-4xl sm:text-5xl font-black font-cinzel text-amber-300 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+            <span className="text-3xl sm:text-5xl font-black font-cinzel text-amber-300 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]">
               {String(currentStreak).padStart(2, "0")}
             </span>
-            <span className="text-lg font-rajdhani font-bold text-slate-300 uppercase tracking-widest">
+            <span className="text-base sm:text-lg font-rajdhani font-bold text-slate-300 uppercase tracking-widest">
               DAYS IN A ROW
             </span>
           </div>
 
           {/* Mon-Sun Day Nodes */}
-          <div className="grid grid-cols-7 gap-2 pt-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2 pt-2">
             {streakDays.map((day, idx) => {
               const isActive = idx <= currentDayIndex && currentStreak > 0;
               return (
-                <div key={day} className="flex flex-col items-center gap-1.5">
-                  <span className="text-[10px] font-mono text-slate-400 uppercase">{day}</span>
+                <div key={day} className="flex flex-col items-center gap-1 sm:gap-1.5">
+                  <span className="text-[9px] sm:text-[10px] font-mono text-slate-400 uppercase">{day}</span>
                   <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center border transition-all ${
+                    className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center border transition-all ${
                       isActive
                         ? "bg-amber-400/25 border-amber-400 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.6)]"
                         : "bg-slate-950/60 border-slate-700 text-slate-600"
                     }`}
                   >
-                    {isActive ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : <Circle className="w-2.5 h-2.5" />}
+                    {isActive ? <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" /> : <Circle className="w-2 h-2 sm:w-2.5 sm:h-2.5" />}
                   </div>
                 </div>
               );

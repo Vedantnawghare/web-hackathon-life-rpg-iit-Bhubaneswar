@@ -619,16 +619,16 @@ export function ArenaBattle({
         </div>
 
         {/* Fast Action Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <Button
             size="sm"
             onClick={handleCycleChampion}
             disabled={isBattling}
             variant="outline"
-            className="h-8 px-3 text-xs font-rajdhani font-bold border-cyan-400/50 text-cyan-200 bg-cyan-950/40 hover:bg-cyan-900/60 shadow-sm"
+            className="h-7 sm:h-8 px-2 sm:px-3 text-[11px] sm:text-xs font-rajdhani font-bold border-cyan-400/50 text-cyan-200 bg-cyan-950/40 hover:bg-cyan-900/60 shadow-sm"
             title="Cycle Champion to preview unique animations & projectiles"
           >
-            <Swords className="w-3.5 h-3.5 mr-1.5 text-cyan-300" />
+            <Swords className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 sm:mr-1.5 text-cyan-300" />
             <span>Hero: {heroArchetype.name}</span>
           </Button>
 
@@ -636,9 +636,9 @@ export function ArenaBattle({
             size="sm"
             onClick={handleQuickDemoComplete}
             disabled={isBattling}
-            className="h-8 px-3.5 text-xs font-rajdhani font-black bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_20px_rgba(245,158,11,0.6)]"
+            className="h-7 sm:h-8 px-2.5 sm:px-3.5 text-[11px] sm:text-xs font-rajdhani font-black bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_20px_rgba(245,158,11,0.6)]"
           >
-            <Play className="w-3.5 h-3.5 mr-1.5 fill-slate-950" />
+            <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 sm:mr-1.5 fill-slate-950" />
             <span>Strike Task</span>
           </Button>
 
@@ -647,10 +647,10 @@ export function ArenaBattle({
             onClick={handleRestoreMidBossDemo}
             disabled={isBattling}
             variant="outline"
-            className="h-8 px-2.5 text-xs font-rajdhani font-semibold border-amber-500/40 text-amber-300 bg-amber-950/40 hover:bg-amber-900/60"
+            className="h-7 sm:h-8 px-2 sm:px-2.5 text-[11px] sm:text-xs font-rajdhani font-semibold border-amber-500/40 text-amber-300 bg-amber-950/40 hover:bg-amber-900/60"
             title="Restore Hackathon Demo State: 2 of 4 tasks cleared, Boss at 50/100 HP"
           >
-            <Zap className="w-3.5 h-3.5 mr-1 text-amber-400" />
+            <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 text-amber-400" />
             <span>50 HP Demo</span>
           </Button>
 
@@ -659,10 +659,10 @@ export function ArenaBattle({
             onClick={handleResetBossDemo}
             disabled={isBattling}
             variant="outline"
-            className="h-8 px-2.5 text-xs font-rajdhani font-semibold border-indigo-400/40 text-indigo-200 bg-indigo-950/40 hover:bg-indigo-900/60"
+            className="h-7 sm:h-8 px-2 sm:px-2.5 text-[11px] sm:text-xs font-rajdhani font-semibold border-indigo-400/40 text-indigo-200 bg-indigo-950/40 hover:bg-indigo-900/60"
             title="Reset Daily Boss HP to 100/100 (0 of 4 tasks cleared)"
           >
-            <RotateCcw className="w-3.5 h-3.5 mr-1 text-indigo-300" />
+            <RotateCcw className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 text-indigo-300" />
             <span>Reset (100 HP)</span>
           </Button>
         </div>
@@ -675,7 +675,7 @@ export function ArenaBattle({
         }}
         transition={{ duration: 0.4, ease: "easeOut" }}
         className={cn(
-          "relative w-full h-[490px] sm:h-[550px] rounded-3xl overflow-hidden border-2 border-amber-400/60 shadow-[0_0_60px_rgba(0,0,0,0.85)] flex flex-col justify-between transition-all",
+          "relative w-full h-[390px] xs:h-[430px] sm:h-[500px] md:h-[550px] rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-amber-400/60 shadow-[0_0_60px_rgba(0,0,0,0.85)] flex flex-col justify-between transition-all",
           screenShake && "animate-[bounce_0.2s_infinite]"
         )}
       >
@@ -704,13 +704,13 @@ export function ArenaBattle({
               transition={{ duration: 0.45 }}
               className="absolute inset-0 z-40 bg-black/50 backdrop-blur-xs flex flex-col items-center justify-center pointer-events-none p-4 text-center"
             >
-              <span className="text-xs font-mono font-bold tracking-widest text-amber-300 uppercase bg-[#0d143b]/90 px-4 py-1.5 rounded-full border border-amber-400/60 shadow-[0_0_20px_rgba(245,158,11,0.5)] mb-3">
+              <span className="text-[10px] sm:text-xs font-mono font-bold tracking-widest text-amber-300 uppercase bg-[#0d143b]/90 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full border border-amber-400/60 shadow-[0_0_20px_rgba(245,158,11,0.5)] mb-2 sm:mb-3">
                 ⚔️ TODAY&apos;S 3D RAID BOSS
               </span>
-              <h2 className="text-3xl sm:text-5xl font-black font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-rose-300 to-amber-400 drop-shadow-[0_0_30px_rgba(245,158,11,0.9)]">
+              <h2 className="text-2xl sm:text-5xl font-black font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-rose-300 to-amber-400 drop-shadow-[0_0_30px_rgba(245,158,11,0.9)]">
                 {enemyInfo.name}
               </h2>
-              <p className="text-xs sm:text-sm font-rajdhani font-semibold text-slate-200 mt-1 max-w-md">
+              <p className="text-[11px] sm:text-sm font-rajdhani font-semibold text-slate-200 mt-1 max-w-md">
                 {enemyInfo.title} &bull; Digital Twin Encounter
               </p>
             </motion.div>
@@ -718,18 +718,18 @@ export function ArenaBattle({
         </AnimatePresence>
 
         {/* HUD TOP ROW: HERO & BOSS VITALITY GAUGES */}
-        <div className="relative z-30 p-4 sm:p-6 flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-4">
+        <div className="relative z-30 p-2 sm:p-6 flex flex-col gap-2 sm:gap-3">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
             {/* Left: Hero Vitality Gauge */}
-            <div className="flex-1 max-w-xs sm:max-w-sm flex flex-col gap-1.5 p-2 rounded-xl bg-slate-950/65 border border-cyan-400/40 backdrop-blur-md">
-              <div className="flex items-center justify-between text-xs font-rajdhani">
-                <span className="font-bold text-cyan-200 flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-cyan-400" />
-                  {character?.username || "Hero"} ({heroArchetype.name})
+            <div className="flex-1 min-w-0 max-w-[48%] sm:max-w-sm flex flex-col gap-1 sm:gap-1.5 p-1.5 sm:p-2 rounded-xl bg-slate-950/75 border border-cyan-400/40 backdrop-blur-md">
+              <div className="flex items-center justify-between text-[11px] sm:text-xs font-rajdhani gap-1">
+                <span className="font-bold text-cyan-200 flex items-center gap-1 sm:gap-1.5 truncate">
+                  <Shield className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-400 shrink-0" />
+                  <span className="truncate">{character?.username || "Hero"} ({heroArchetype.name})</span>
                 </span>
-                <span className="font-mono font-black text-cyan-100">{heroHp} / 100 HP</span>
+                <span className="font-mono font-black text-cyan-100 shrink-0 text-[10px] sm:text-xs">{heroHp}/100</span>
               </div>
-              <div className="relative h-4 w-full rounded-full bg-slate-950/80 border border-cyan-500/50 overflow-hidden shadow-inner p-0.5">
+              <div className="relative h-3 sm:h-4 w-full rounded-full bg-slate-950/80 border border-cyan-500/50 overflow-hidden shadow-inner p-0.5">
                 <motion.div
                   className="h-full rounded-full bg-cyan-400/30"
                   animate={{ width: `${heroTrailingHp}%` }}
@@ -751,15 +751,15 @@ export function ArenaBattle({
             </div>
 
             {/* Right: Daily Boss Health Gauge */}
-            <div className="flex-1 max-w-xs sm:max-w-sm flex flex-col gap-1.5 items-end p-2 rounded-xl bg-slate-950/65 border border-rose-500/40 backdrop-blur-md">
-              <div className="flex items-center justify-between w-full text-xs font-rajdhani">
-                <span className="font-mono font-black text-rose-200">{enemyHp} / 100 HP</span>
-                <span className="font-bold text-rose-300 flex items-center gap-1.5">
-                  {enemyInfo.name}
-                  <Skull className="w-3.5 h-3.5 text-rose-400" />
+            <div className="flex-1 min-w-0 max-w-[48%] sm:max-w-sm flex flex-col gap-1 sm:gap-1.5 items-end p-1.5 sm:p-2 rounded-xl bg-slate-950/75 border border-rose-500/40 backdrop-blur-md">
+              <div className="flex items-center justify-between w-full text-[11px] sm:text-xs font-rajdhani gap-1">
+                <span className="font-mono font-black text-rose-200 shrink-0 text-[10px] sm:text-xs">{enemyHp}/100</span>
+                <span className="font-bold text-rose-300 flex items-center gap-1 sm:gap-1.5 truncate">
+                  <span className="truncate">{enemyInfo.name}</span>
+                  <Skull className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-400 shrink-0" />
                 </span>
               </div>
-              <div className="relative h-4 w-full rounded-full bg-slate-950/80 border border-rose-500/50 overflow-hidden shadow-inner p-0.5">
+              <div className="relative h-3 sm:h-4 w-full rounded-full bg-slate-950/80 border border-rose-500/50 overflow-hidden shadow-inner p-0.5">
                 <motion.div
                   className="h-full rounded-full bg-rose-400/30 ml-auto"
                   animate={{ width: `${enemyTrailingHp}%` }}
@@ -781,7 +781,7 @@ export function ArenaBattle({
                 initial={{ opacity: 0, y: -8, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                className="self-center px-5 py-2 rounded-full bg-[#0c1236]/90 border border-amber-400/80 shadow-[0_0_25px_rgba(245,158,11,0.5)] text-xs sm:text-sm font-cinzel font-black text-amber-200 tracking-wider text-center backdrop-blur-md"
+                className="self-center max-w-[95%] px-3 sm:px-5 py-1.5 rounded-full bg-[#0c1236]/90 border border-amber-400/80 shadow-[0_0_25px_rgba(245,158,11,0.5)] text-[11px] sm:text-sm font-cinzel font-black text-amber-200 tracking-wider text-center backdrop-blur-md truncate"
               >
                 {combatAlert}
               </motion.div>
@@ -790,7 +790,7 @@ export function ArenaBattle({
         </div>
 
         {/* COMBAT CHARACTERS STAGE (Hero + Digital Boss) */}
-        <div className="relative z-10 w-full px-6 sm:px-14 flex items-end justify-between pb-8">
+        <div className="relative z-10 w-full px-2 sm:px-14 flex items-end justify-between pb-2 sm:pb-8 overflow-hidden">
           {/* Left: Player Champion Sprite (Position Shiftable via D-Pad) */}
           <motion.div
             animate={{ x: heroPosX }}
@@ -970,59 +970,59 @@ export function ArenaBattle({
       {/* ========================================================================= */}
       {/* 3. FIGHTING GAME ARCADE / CONSOLE CONTROLLER HUD DOCK                      */}
       {/* ========================================================================= */}
-      <div className="w-full p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-[#10173e]/95 via-[#162157]/95 to-[#10173e]/95 border-2 border-amber-400/40 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.7)] flex flex-col md:flex-row items-center justify-between gap-5">
+      <div className="w-full p-3 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#10173e]/95 via-[#162157]/95 to-[#10173e]/95 border-2 border-amber-400/40 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.7)] flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-5">
         {/* Left Side: Arcade D-Pad Cross */}
         <div className="flex items-center gap-3">
-          <div className="grid grid-cols-3 gap-1.5 p-2 rounded-2xl bg-black/50 border border-indigo-500/40 shadow-inner">
+          <div className="grid grid-cols-3 gap-1 sm:gap-1.5 p-1.5 sm:p-2 rounded-xl sm:rounded-2xl bg-black/50 border border-indigo-500/40 shadow-inner">
             <div />
             <button
               onClick={() => handleControllerMove(1)}
               className={cn(
-                "w-9 h-9 rounded-lg bg-indigo-950/80 border border-indigo-400/50 flex items-center justify-center text-indigo-300 hover:bg-indigo-800 hover:text-white transition-all active:scale-95 shadow-md",
+                "w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-indigo-950/80 border border-indigo-400/50 flex items-center justify-center text-indigo-300 hover:bg-indigo-800 hover:text-white transition-all active:scale-95 shadow-md",
                 activeButton === "UP" && "bg-indigo-500 text-white shadow-[0_0_12px_rgba(99,102,241,0.8)]"
               )}
               title="Jump / Stance [▲]"
             >
-              <ArrowUp className="w-4 h-4" />
+              <ArrowUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
             <div />
 
             <button
               onClick={() => handleControllerMove(-1)}
               className={cn(
-                "w-9 h-9 rounded-lg bg-indigo-950/80 border border-indigo-400/50 flex items-center justify-center text-indigo-300 hover:bg-indigo-800 hover:text-white transition-all active:scale-95 shadow-md",
+                "w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-indigo-950/80 border border-indigo-400/50 flex items-center justify-center text-indigo-300 hover:bg-indigo-800 hover:text-white transition-all active:scale-95 shadow-md",
                 activeButton === "LEFT" && "bg-indigo-500 text-white shadow-[0_0_12px_rgba(99,102,241,0.8)]"
               )}
               title="Step Back [◀ or Left Arrow]"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
-            <div className="w-9 h-9 rounded-lg bg-black/60 flex items-center justify-center text-[10px] font-mono text-indigo-400/60">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-black/60 flex items-center justify-center text-[10px] font-mono text-indigo-400/60">
               •
             </div>
 
             <button
               onClick={() => handleControllerMove(1)}
               className={cn(
-                "w-9 h-9 rounded-lg bg-indigo-950/80 border border-indigo-400/50 flex items-center justify-center text-indigo-300 hover:bg-indigo-800 hover:text-white transition-all active:scale-95 shadow-md",
+                "w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-indigo-950/80 border border-indigo-400/50 flex items-center justify-center text-indigo-300 hover:bg-indigo-800 hover:text-white transition-all active:scale-95 shadow-md",
                 activeButton === "RIGHT" && "bg-indigo-500 text-white shadow-[0_0_12px_rgba(99,102,241,0.8)]"
               )}
               title="Advance Forward [▶ or Right Arrow]"
             >
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
             <div />
             <button
               onClick={() => handleControllerMove(-1)}
               className={cn(
-                "w-9 h-9 rounded-lg bg-indigo-950/80 border border-indigo-400/50 flex items-center justify-center text-indigo-300 hover:bg-indigo-800 hover:text-white transition-all active:scale-95 shadow-md",
+                "w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-indigo-950/80 border border-indigo-400/50 flex items-center justify-center text-indigo-300 hover:bg-indigo-800 hover:text-white transition-all active:scale-95 shadow-md",
                 activeButton === "DOWN" && "bg-indigo-500 text-white shadow-[0_0_12px_rgba(99,102,241,0.8)]"
               )}
               title="Crouch / Guard [▼]"
             >
-              <ArrowDown className="w-4 h-4" />
+              <ArrowDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
             <div />
           </div>
@@ -1038,22 +1038,22 @@ export function ArenaBattle({
         </div>
 
         {/* Right Side: Arcade Fighting Action Cluster */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5">
+        <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2.5">
           {/* Action [A]: ATTACK */}
           <button
             onClick={handleControllerAttack}
             disabled={isBattling}
             className={cn(
-              "group relative flex items-center gap-2 px-4 py-2.5 rounded-xl border font-cinzel text-xs font-black transition-all active:scale-95 shadow-lg",
+              "group relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border font-cinzel text-[11px] sm:text-xs font-black transition-all active:scale-95 shadow-lg",
               activeButton === "ATTACK"
                 ? "bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.9)] scale-105"
                 : "bg-gradient-to-b from-[#241a45] to-[#161131] border-amber-500/50 text-amber-200 hover:border-amber-400 hover:shadow-[0_0_15px_rgba(245,158,11,0.4)]"
             )}
           >
-            <span className="w-5 h-5 rounded-md bg-amber-500/20 border border-amber-400/60 flex items-center justify-center text-[10px] font-mono text-amber-300">
+            <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-md bg-amber-500/20 border border-amber-400/60 flex items-center justify-center text-[9px] sm:text-[10px] font-mono text-amber-300">
               A
             </span>
-            <Sword className="w-4 h-4 text-amber-400" />
+            <Sword className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
             <span>ATTACK</span>
           </button>
 
@@ -1062,16 +1062,16 @@ export function ArenaBattle({
             onClick={handleControllerSpecial}
             disabled={isBattling}
             className={cn(
-              "group relative flex items-center gap-2 px-4 py-2.5 rounded-xl border font-cinzel text-xs font-black transition-all active:scale-95 shadow-lg",
+              "group relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border font-cinzel text-[11px] sm:text-xs font-black transition-all active:scale-95 shadow-lg",
               activeButton === "SPECIAL"
                 ? "bg-purple-500 text-white border-purple-300 shadow-[0_0_20px_rgba(168,85,247,0.9)] scale-105"
                 : "bg-gradient-to-b from-[#26134b] to-[#170c30] border-purple-500/50 text-purple-200 hover:border-purple-400 hover:shadow-[0_0_15px_rgba(168,85,247,0.4)]"
             )}
           >
-            <span className="w-5 h-5 rounded-md bg-purple-500/20 border border-purple-400/60 flex items-center justify-center text-[10px] font-mono text-purple-300">
+            <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-md bg-purple-500/20 border border-purple-400/60 flex items-center justify-center text-[9px] sm:text-[10px] font-mono text-purple-300">
               S
             </span>
-            <Sparkles className="w-4 h-4 text-purple-400" />
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-400" />
             <span>SPECIAL</span>
           </button>
 
@@ -1080,16 +1080,16 @@ export function ArenaBattle({
             onClick={handleControllerDodge}
             disabled={isBattling}
             className={cn(
-              "group relative flex items-center gap-2 px-4 py-2.5 rounded-xl border font-cinzel text-xs font-black transition-all active:scale-95 shadow-lg",
+              "group relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border font-cinzel text-[11px] sm:text-xs font-black transition-all active:scale-95 shadow-lg",
               activeButton === "DODGE"
                 ? "bg-cyan-500 text-slate-950 border-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.9)] scale-105"
                 : "bg-gradient-to-b from-[#122847] to-[#0c1a30] border-cyan-500/50 text-cyan-200 hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(6,182,212,0.4)]"
             )}
           >
-            <span className="w-5 h-5 rounded-md bg-cyan-500/20 border border-cyan-400/60 flex items-center justify-center text-[10px] font-mono text-cyan-300">
+            <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-md bg-cyan-500/20 border border-cyan-400/60 flex items-center justify-center text-[9px] sm:text-[10px] font-mono text-cyan-300">
               D
             </span>
-            <Zap className="w-4 h-4 text-cyan-400" />
+            <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
             <span>DODGE</span>
           </button>
 
@@ -1098,16 +1098,16 @@ export function ArenaBattle({
             onClick={handleQuickDemoComplete}
             disabled={isBattling}
             className={cn(
-              "group relative flex items-center gap-2 px-5 py-2.5 rounded-xl border font-cinzel text-xs font-black transition-all active:scale-95 shadow-lg",
+              "group relative flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl border font-cinzel text-[11px] sm:text-xs font-black transition-all active:scale-95 shadow-lg",
               activeButton === "FINISHER"
                 ? "bg-rose-500 text-white border-rose-300 shadow-[0_0_25px_rgba(244,63,94,0.9)] scale-105"
                 : "bg-gradient-to-r from-amber-500 via-rose-600 to-amber-600 text-slate-950 border-amber-300 hover:brightness-110 shadow-[0_0_20px_rgba(245,158,11,0.5)]"
             )}
           >
-            <span className="w-5 h-5 rounded-md bg-black/30 border border-black/50 flex items-center justify-center text-[10px] font-mono text-white">
+            <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-md bg-black/30 border border-black/50 flex items-center justify-center text-[9px] sm:text-[10px] font-mono text-white">
               F
             </span>
-            <Flame className="w-4 h-4 text-slate-950 fill-slate-950" />
+            <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-950 fill-slate-950" />
             <span>FINISHER</span>
           </button>
         </div>

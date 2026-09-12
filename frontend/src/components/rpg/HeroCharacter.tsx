@@ -30,10 +30,10 @@ export function HeroCharacter({
 
   // Dimension scaling
   const sizeClasses = {
-    sm: "w-28 h-36",
-    md: "w-36 h-48 sm:w-44 sm:h-56",
-    lg: "w-48 h-64 sm:w-56 sm:h-72",
-    xl: "w-60 h-80 sm:w-72 sm:h-96",
+    sm: "w-24 h-32 sm:w-28 sm:h-36",
+    md: "w-28 h-40 sm:w-44 sm:h-56",
+    lg: "w-32 h-44 sm:w-56 sm:h-72",
+    xl: "w-44 h-60 sm:w-72 sm:h-96",
   };
 
   // Theme overrides if cosmetic theme equipped

@@ -691,7 +691,7 @@ export function Boss3DModel({
   return (
     <div
       ref={containerRef}
-      className={`relative w-72 h-80 sm:w-96 sm:h-[420px] lg:w-[440px] lg:h-[460px] flex items-center justify-center select-none pointer-events-none ${className}`}
+      className={`relative w-40 h-48 xs:w-52 xs:h-60 sm:w-80 sm:h-[380px] lg:w-[440px] lg:h-[460px] flex items-center justify-center select-none pointer-events-none ${className}`}
     >
       <canvas ref={canvasRef} className="w-full h-full block" />
     </div>

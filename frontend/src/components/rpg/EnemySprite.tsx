@@ -81,7 +81,7 @@ export function EnemySprite({
           repeat: Infinity,
           ease: "easeInOut",
         }}
-        className="absolute -bottom-6 w-56 sm:w-72 h-14 rounded-full pointer-events-none z-0"
+        className="absolute -bottom-6 w-36 sm:w-72 h-10 sm:h-14 rounded-full pointer-events-none z-0"
         style={{
           background: `radial-gradient(ellipse at center, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.45) 50%, transparent 75%)`,
         }}
@@ -89,7 +89,7 @@ export function EnemySprite({
 
       {/* 2. Concentric Magic Rune Stage Ring */}
       <div
-        className="absolute -bottom-5 w-52 sm:w-68 h-10 rounded-full border border-slate-600/40 opacity-70 pointer-events-none z-0 animate-pulse"
+        className="absolute -bottom-5 w-32 sm:w-68 h-8 sm:h-10 rounded-full border border-slate-600/40 opacity-70 pointer-events-none z-0 animate-pulse"
         style={{
           background: `radial-gradient(ellipse at center, ${archetype.glowColor}, transparent 70%)`,
         }}
