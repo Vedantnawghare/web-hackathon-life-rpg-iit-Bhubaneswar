@@ -4,7 +4,7 @@ import { motion, Variants, useReducedMotion } from "framer-motion";
 import { getHeroArchetype, HeroArchetype } from "@/lib/hero-data";
 import { cn } from "@/lib/utils";
 
-export type HeroCombatState = "IDLE" | "READY" | "ATTACK" | "HIT" | "VICTORY";
+export type HeroCombatState = "IDLE" | "READY" | "APPROACH" | "ATTACK" | "ATTACK_COMBO" | "ATTACK_FINISHER" | "HIT" | "VICTORY";
 
 interface HeroCharacterProps {
   heroId?: string;
@@ -80,22 +80,52 @@ export function HeroCharacter({
             ease: "easeInOut",
           },
         },
-    ATTACK: shouldReduceMotion
-      ? { x: 45 }
+    APPROACH: shouldReduceMotion
+      ? { x: 30 }
       : {
-          x: [0, -15, 80, 55, 0],
+          x: [0, 45, 30],
+          y: [0, -6, 0],
+          transition: { duration: 0.5, ease: "easeOut" },
+        },
+    ATTACK: shouldReduceMotion
+      ? { x: 60 }
+      : {
+          x: [0, -15, 95, 60, 0],
           y: [0, -4, -14, -2, 0],
           transition: {
-            duration: 1.1,
+            duration: 0.85,
             times: [0, 0.2, 0.55, 0.8, 1],
+            ease: "easeOut",
+          },
+        },
+    ATTACK_COMBO: shouldReduceMotion
+      ? { x: 70 }
+      : {
+          x: [0, 60, 30, 105, 70, 0],
+          y: [0, -10, 0, -16, -4, 0],
+          transition: {
+            duration: 0.95,
+            times: [0, 0.25, 0.45, 0.7, 0.85, 1],
+            ease: "easeOut",
+          },
+        },
+    ATTACK_FINISHER: shouldReduceMotion
+      ? { x: 90, scale: 1.15 }
+      : {
+          x: [0, -20, 120, 80, 0],
+          y: [0, -18, -25, -6, 0],
+          scale: [1, 1.05, 1.3, 1.15, 1],
+          transition: {
+            duration: 1.1,
+            times: [0, 0.25, 0.6, 0.85, 1],
             ease: "easeOut",
           },
         },
     HIT: shouldReduceMotion
       ? { opacity: 0.65, x: -15 }
       : {
-          x: [0, -28, -14, 0],
-          rotate: [0, -6, -2, 0],
+          x: [0, -32, -16, 0],
+          rotate: [0, -8, -2, 0],
           transition: {
             duration: 0.5,
             ease: "easeOut",
@@ -124,10 +154,24 @@ export function HeroCharacter({
       rotate: [0, -12, 0],
       transition: { duration: 1.2, repeat: Infinity, ease: "easeInOut" },
     },
+    APPROACH: {
+      rotate: [-10, -25, -15],
+      transition: { duration: 0.5 },
+    },
     ATTACK: {
-      rotate: hero.weaponType === "bow" ? [0, -15, 10, -5, 0] : [0, -45, 75, 30, 0],
-      scale: [1, 1.25, 1.4, 1.1, 1],
-      transition: { duration: 1.1, times: [0, 0.2, 0.55, 0.8, 1] },
+      rotate: hero.weaponType === "bow" ? [0, -20, 15, -5, 0] : [0, -50, 85, 30, 0],
+      scale: [1, 1.25, 1.45, 1.1, 1],
+      transition: { duration: 0.85, times: [0, 0.2, 0.55, 0.8, 1] },
+    },
+    ATTACK_COMBO: {
+      rotate: hero.weaponType === "bow" ? [0, -25, 20, -10, 0] : [-30, 60, -40, 90, 0],
+      scale: [1, 1.3, 1.1, 1.4, 1],
+      transition: { duration: 0.95 },
+    },
+    ATTACK_FINISHER: {
+      rotate: hero.weaponType === "bow" ? [0, -35, 25, 0] : [-60, 110, 40, 0],
+      scale: [1, 1.4, 1.6, 1.1, 1],
+      transition: { duration: 1.1 },
     },
     HIT: {
       rotate: [0, -20, 0],
@@ -161,6 +205,58 @@ export function HeroCharacter({
         animate={state}
         className={cn("relative z-10 flex items-center justify-center", sizeClasses[size])}
       >
+        {/* Dynamic Class-Specific Attack Visual Effects */}
+        {(state === "ATTACK" || state === "ATTACK_COMBO" || state === "ATTACK_FINISHER") && (
+          <motion.div
+            initial={{ opacity: 0, x: -10, scale: 0.7 }}
+            animate={{
+              opacity: [0, 1, 0],
+              x: state === "ATTACK_FINISHER" ? 110 : 75,
+              scale: state === "ATTACK_FINISHER" ? [0.8, 1.8, 2.2] : [0.7, 1.4, 1.6],
+            }}
+            transition={{ duration: 0.55, times: [0, 0.45, 1] }}
+            className="absolute -right-16 top-1/4 z-40 pointer-events-none flex items-center justify-center"
+          >
+            {hero.weaponType === "bow" ? (
+              /* Mystic Emerald Arrow Projectile */
+              <svg viewBox="0 0 100 40" className="w-24 h-10 filter drop-shadow-[0_0_12px_rgba(52,211,153,0.9)]">
+                <path d="M0 20 L80 20 M70 12 L90 20 L70 28" stroke="#34d399" strokeWidth="4" strokeLinecap="round" />
+                <circle cx="85" cy="20" r="5" fill="#ffffff" />
+              </svg>
+            ) : hero.weaponType === "staff" ? (
+              /* Arcane Cosmic Energy Orb */
+              <div className="relative flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400 blur-sm shadow-[0_0_25px_rgba(168,85,247,0.9)]" />
+                <div className="absolute w-8 h-8 rounded-full bg-white animate-ping" />
+              </div>
+            ) : hero.weaponType === "dual_blades" ? (
+              /* Shadow Cross Slash */
+              <svg viewBox="0 0 100 100" className="w-24 h-24 filter drop-shadow-[0_0_15px_rgba(192,132,252,0.9)]">
+                <path d="M15 15 L85 85 M85 15 L15 85" stroke="#c084fc" strokeWidth="6" strokeLinecap="round" />
+                <path d="M25 25 L75 75 M75 25 L25 75" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+              </svg>
+            ) : (
+              /* Vanguard Golden Blade Cleave Crescent */
+              <svg viewBox="0 0 120 120" className="w-28 h-28 filter drop-shadow-[0_0_20px_rgba(245,158,11,0.9)]">
+                <path
+                  d="M20 20 C 50 40, 85 75, 105 110 C 80 80, 45 45, 10 25 Z"
+                  fill="url(#vanguard-cleave-grad)"
+                />
+                <path
+                  d="M30 15 C 60 35, 95 70, 115 105 C 90 75, 55 40, 20 20 Z"
+                  fill="#ffffff"
+                  opacity="0.9"
+                />
+                <defs>
+                  <linearGradient id="vanguard-cleave-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#fbbf24" />
+                    <stop offset="100%" stopColor="#f59e0b" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            )}
+          </motion.div>
+        )}
         <svg
           viewBox="0 0 160 200"
           fill="none"

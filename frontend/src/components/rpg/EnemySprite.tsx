@@ -4,7 +4,7 @@ import { motion, Variants, useReducedMotion } from "framer-motion";
 import { CharacterAttribute, QuestDifficulty } from "@/types/quest";
 import { cn } from "@/lib/utils";
 
-export type EnemyBattleState = "IDLE" | "HIT" | "DEFEATED";
+export type EnemyBattleState = "IDLE" | "APPROACH" | "ATTACK" | "HIT" | "DEFEATED";
 
 interface EnemySpriteProps {
   state: EnemyBattleState;
@@ -88,12 +88,31 @@ export function EnemySprite({
             ease: "easeInOut",
           },
         },
+    APPROACH: shouldReduceMotion
+      ? { x: -30 }
+      : {
+          x: [0, -40, -30],
+          y: [0, -4, 0],
+          transition: { duration: 0.5, ease: "easeOut" },
+        },
+    ATTACK: shouldReduceMotion
+      ? { x: -70, scale: 1.1 }
+      : {
+          x: [0, 15, -100, -70, 0],
+          y: [0, -10, -5, 0, 0],
+          scale: [1, 1.05, 1.25, 1.1, 1],
+          transition: {
+            duration: 0.95,
+            times: [0, 0.2, 0.5, 0.75, 1],
+            ease: "easeOut",
+          },
+        },
     HIT: shouldReduceMotion
       ? { opacity: 0.5 }
       : {
-          x: [0, 28, -12, 18, 0],
-          y: [0, -6, 2, -2, 0],
-          scale: [1, 0.92, 1.05, 0.98, 1],
+          x: [0, 35, -10, 20, 0],
+          y: [0, -8, 4, -2, 0],
+          scale: [1, 0.9, 1.05, 0.98, 1],
           transition: {
             duration: 0.6,
             ease: "easeInOut",
@@ -133,11 +152,34 @@ export function EnemySprite({
         {/* Flash Effect on HIT */}
         {state === "HIT" && (
           <motion.div
-            initial={{ opacity: 0.9 }}
-            animate={{ opacity: 0 }}
+            initial={{ opacity: 0.9, scale: 1.1 }}
+            animate={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.35 }}
-            className="absolute inset-0 bg-white/70 rounded-full blur-md z-30 pointer-events-none"
+            className="absolute inset-0 bg-rose-500/70 rounded-full blur-md z-30 pointer-events-none"
           />
+        )}
+
+        {/* Threat Strike VFX on ATTACK */}
+        {state === "ATTACK" && (
+          <motion.div
+            initial={{ opacity: 0, x: 20, scale: 0.6 }}
+            animate={{ opacity: [0, 1, 0], x: -60, scale: [0.8, 1.4, 1.6] }}
+            transition={{ duration: 0.5, times: [0, 0.4, 1] }}
+            className="absolute -left-12 top-1/3 z-40 pointer-events-none flex items-center justify-center"
+          >
+            <svg viewBox="0 0 100 100" className="w-24 h-24 filter drop-shadow-[0_0_12px_rgba(244,63,94,0.8)]">
+              <path
+                d="M80 15 C 50 35, 20 65, 5 95 C 35 70, 65 45, 90 20 Z"
+                fill={archetype.primaryColor}
+                opacity="0.9"
+              />
+              <path
+                d="M95 10 C 60 40, 30 70, 15 90 C 40 75, 75 45, 100 15 Z"
+                fill="#ffffff"
+                opacity="0.8"
+              />
+            </svg>
+          </motion.div>
         )}
 
         {/* Dynamic Archetype Vector SVG */}

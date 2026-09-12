@@ -155,8 +155,11 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           title={character?.title}
         />
 
-        <main className={cn("flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 transition-colors duration-500", activeThemeBg)}>
-          <div className="max-w-7xl mx-auto space-y-6">{children}</div>
+        <main className={cn("flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 transition-colors duration-500 relative", activeThemeBg)}>
+          {/* Subtle Overland Cartography Grid & Ambient Glow */}
+          <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:28px_28px] opacity-20" />
+          <div className="fixed top-0 right-1/4 w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(245,158,11,0.04),transparent_70%)] pointer-events-none" />
+          <div className="max-w-7xl mx-auto space-y-6 relative z-10">{children}</div>
         </main>
 
         {/* Mobile Bottom RPG Action Dock */}

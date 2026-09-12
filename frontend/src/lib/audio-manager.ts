@@ -416,6 +416,199 @@ class AudioManager {
   }
 
   /**
+   * Heavy Sword Swing / Slash SFX for Vanguard
+   */
+  public playSwordSlash() {
+    if (!this.isSfxEnabled || this.isMuted) return;
+    this.unlockContext();
+    if (!this.ctx || !this.sfxGain) return;
+    const now = this.ctx.currentTime;
+
+    // Whoosh filter sweep
+    const bufferSize = this.ctx.sampleRate * 0.15;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(600, now);
+    filter.frequency.exponentialRampToValueAtTime(3200, now + 0.08);
+    filter.frequency.exponentialRampToValueAtTime(400, now + 0.15);
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.sfxGain);
+    noise.start(now);
+    noise.stop(now + 0.16);
+  }
+
+  /**
+   * Fast Dual Blade Flurry SFX for Shadow Blade
+   */
+  public playDualBladeCombo() {
+    if (!this.isSfxEnabled || this.isMuted) return;
+    this.unlockContext();
+    if (!this.ctx || !this.sfxGain) return;
+
+    [0, 0.09].forEach((delay) => {
+      const now = this.ctx!.currentTime + delay;
+      const osc = this.ctx!.createOscillator();
+      const gain = this.ctx!.createGain();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.exponentialRampToValueAtTime(240, now + 0.08);
+
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+      osc.connect(gain);
+      gain.connect(this.sfxGain!);
+      osc.start(now);
+      osc.stop(now + 0.09);
+    });
+  }
+
+  /**
+   * Magic Spell Charge & Projectile Launch SFX for Arcane Weaver
+   */
+  public playMagicCast() {
+    if (!this.isSfxEnabled || this.isMuted) return;
+    this.unlockContext();
+    if (!this.ctx || !this.sfxGain) return;
+    const now = this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(300, now);
+    osc.frequency.exponentialRampToValueAtTime(1400, now + 0.18);
+
+    gain.gain.setValueAtTime(0.28, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.23);
+  }
+
+  /**
+   * Magic Projectile Impact Explosion SFX
+   */
+  public playMagicImpact() {
+    if (!this.isSfxEnabled || this.isMuted) return;
+    this.unlockContext();
+    if (!this.ctx || !this.sfxGain) return;
+    const now = this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(580, now);
+    osc.frequency.exponentialRampToValueAtTime(80, now + 0.28);
+
+    gain.gain.setValueAtTime(0.4, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.31);
+  }
+
+  /**
+   * Bow String Release & Arrow Whistle SFX for Mystic Huntress
+   */
+  public playBowShot() {
+    if (!this.isSfxEnabled || this.isMuted) return;
+    this.unlockContext();
+    if (!this.ctx || !this.sfxGain) return;
+    const now = this.ctx.currentTime;
+
+    // String snap
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(620, now);
+    osc.frequency.exponentialRampToValueAtTime(180, now + 0.08);
+
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.11);
+  }
+
+  /**
+   * Monster Strike / Beast Claw SFX for Enemy Attack
+   */
+  public playEnemyAttack() {
+    if (!this.isSfxEnabled || this.isMuted) return;
+    this.unlockContext();
+    if (!this.ctx || !this.sfxGain) return;
+    const now = this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(160, now);
+    osc.frequency.exponentialRampToValueAtTime(60, now + 0.2);
+
+    gain.gain.setValueAtTime(0.38, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.24);
+  }
+
+  /**
+   * Critical Finisher Strike with Screen Shake Rumble
+   */
+  public playFinisherImpact() {
+    if (!this.isSfxEnabled || this.isMuted) return;
+    this.unlockContext();
+    if (!this.ctx || !this.sfxGain) return;
+    const now = this.ctx.currentTime;
+
+    // Low sub rumble
+    const subOsc = this.ctx.createOscillator();
+    const subGain = this.ctx.createGain();
+    subOsc.type = "sine";
+    subOsc.frequency.setValueAtTime(120, now);
+    subOsc.frequency.exponentialRampToValueAtTime(25, now + 0.45);
+    subGain.gain.setValueAtTime(0.65, now);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    subOsc.connect(subGain);
+    subGain.connect(this.sfxGain);
+    subOsc.start(now);
+    subOsc.stop(now + 0.52);
+
+    // High metal clash
+    const clashOsc = this.ctx.createOscillator();
+    const clashGain = this.ctx.createGain();
+    clashOsc.type = "sawtooth";
+    clashOsc.frequency.setValueAtTime(1800, now);
+    clashOsc.frequency.exponentialRampToValueAtTime(400, now + 0.25);
+    clashGain.gain.setValueAtTime(0.4, now);
+    clashGain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+    clashOsc.connect(clashGain);
+    clashGain.connect(this.sfxGain);
+    clashOsc.start(now);
+    clashOsc.stop(now + 0.3);
+  }
+
+  /**
    * Enemy Defeat / Dissolve sound effect
    */
   public playDefeatSound() {
