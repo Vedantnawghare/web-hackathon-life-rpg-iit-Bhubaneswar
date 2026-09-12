@@ -223,11 +223,9 @@ async def reset_demo_boss(
     Deletes today's completion records for this character so all daily tasks are incomplete,
     resetting the Daily Boss HP back to 100/100 for hackathon demonstrations.
     """
-    today = date.today()
     stmt = delete(QuestCompletion).where(
         QuestCompletion.character_id == current_character.id,
-        QuestCompletion.completion_date == today,
     )
     await db.execute(stmt)
     await db.commit()
-    return {"message": "Daily Boss HP reset to 100/100", "reset_date": str(today)}
+    return {"message": "Daily Boss HP reset to 100/100"}

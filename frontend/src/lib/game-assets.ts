@@ -1,8 +1,8 @@
 /**
  * Life RPG Central Game Assets Configuration
  * All game visual environments, backgrounds, and enemy creatures are defined here.
- * To replace any background or creature manually, drop a file with the same filename
- * into public/assets/world/ or public/assets/enemies/.
+ * To replace any background, creature or 3D model manually, drop a file with the same filename
+ * into public/assets/world/, public/assets/enemies/, or public/assets/models/enemies/.
  */
 
 export const GAME_ASSETS = {
@@ -21,6 +21,9 @@ export const GAME_ASSETS = {
     voidBrute: '/assets/enemies/void-brute.png',
     voidArchon: '/assets/enemies/void-archon.png',
     crystalHorror: '/assets/enemies/crystal-horror.png',
+  },
+  models: {
+    enemyBoss: '/assets/models/enemies/arcane-boss.glb',
   },
 } as const;
 

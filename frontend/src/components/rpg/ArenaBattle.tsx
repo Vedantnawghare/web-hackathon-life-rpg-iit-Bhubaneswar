@@ -97,6 +97,29 @@ export function ArenaBattle({
   const [redScreenFlash, setRedScreenFlash] = useState(false);
   const [activeButton, setActiveButton] = useState<string | null>(null);
 
+  // Cinematic Boss Encounter Intro on Mount (2.5s)
+  const [showBossIntro, setShowBossIntro] = useState(true);
+  const introPlayedRef = useRef(false);
+
+  useEffect(() => {
+    if (!introPlayedRef.current) {
+      introPlayedRef.current = true;
+      setCameraZoom(true);
+      setShowBossIntro(true);
+      const tRoar = setTimeout(() => {
+        audioManager.playEnemyRoar();
+      }, 500);
+      const tEnd = setTimeout(() => {
+        setCameraZoom(false);
+        setShowBossIntro(false);
+      }, 2600);
+      return () => {
+        clearTimeout(tRoar);
+        clearTimeout(tEnd);
+      };
+    }
+  }, []);
+
   // Battle Flow & Results
   const [isBattling, setIsBattling] = useState(false);
   const [completedReward, setCompletedReward] = useState<QuestCompleteResponse | null>(null);
@@ -605,6 +628,29 @@ export function ArenaBattle({
         {redScreenFlash && (
           <div className="absolute inset-0 bg-rose-600/30 pointer-events-none z-20 animate-pulse" />
         )}
+
+        {/* Cinematic 3D Boss Intro Overlay */}
+        <AnimatePresence>
+          {showBossIntro && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 1.1, y: -30 }}
+              transition={{ duration: 0.45 }}
+              className="absolute inset-0 z-40 bg-black/50 backdrop-blur-xs flex flex-col items-center justify-center pointer-events-none p-4 text-center"
+            >
+              <span className="text-xs font-mono font-bold tracking-widest text-amber-300 uppercase bg-[#0d143b]/90 px-4 py-1.5 rounded-full border border-amber-400/60 shadow-[0_0_20px_rgba(245,158,11,0.5)] mb-3">
+                ⚔️ TODAY&apos;S 3D RAID BOSS
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-black font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-rose-300 to-amber-400 drop-shadow-[0_0_30px_rgba(245,158,11,0.9)]">
+                {enemyInfo.name}
+              </h2>
+              <p className="text-xs sm:text-sm font-rajdhani font-semibold text-slate-200 mt-1 max-w-md">
+                {enemyInfo.title} &bull; Digital Twin Encounter
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* HUD TOP ROW: HERO & BOSS VITALITY GAUGES */}
         <div className="relative z-30 p-4 sm:p-6 flex flex-col gap-3">
