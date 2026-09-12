@@ -10,6 +10,9 @@ Thumbs.db
 !.env.example
 *.pem
 *.key
+*.db
+*.sqlite
+*.sqlite3
 
 # Python
 __pycache__/

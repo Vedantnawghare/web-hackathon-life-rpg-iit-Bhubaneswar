@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Flame, Lock, Mail, ArrowRight, AlertCircle } from "lucide-react";
+import { Flame, Lock, Mail, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,9 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [verificationSentTo, setVerificationSentTo] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,12 +34,15 @@ export default function SignupPage() {
         return;
       }
 
+      // Case 1: Session immediately returned (Email confirmation disabled / auto-confirmed)
       if (data.session) {
-        // Logged in immediately, proceed to onboarding
         router.push("/onboarding");
-      } else {
-        // Confirmation required or session created
-        router.push("/onboarding");
+        return;
+      }
+
+      // Case 2: Email confirmation required (session is null until verified)
+      if (data.user) {
+        setVerificationSentTo(email);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to create account. Please try again.");
@@ -56,7 +60,7 @@ export default function SignupPage() {
             <div className="h-10 w-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
               <Flame className="h-6 w-6 fill-amber-400/20" />
             </div>
-            <span className="font-bold text-xl tracking-wider text-slate-100 uppercase">
+            <span className="font-bold text-xl tracking-wider text-slate-100 uppercase font-display">
               Life RPG
             </span>
           </Link>
@@ -65,9 +69,47 @@ export default function SignupPage() {
           </p>
         </div>
 
-        <Card className="border-slate-800 bg-slate-900/90 shadow-xl">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-xl">Create Adventurer Profile</CardTitle>
+        {verificationSentTo ? (
+          <Card className="border-slate-800 bg-slate-900/90 shadow-xl text-center">
+            <CardHeader className="space-y-2 pb-4">
+              <div className="mx-auto h-12 w-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-1">
+                <CheckCircle2 className="h-6 w-6" />
+              </div>
+              <CardTitle className="text-xl font-display text-slate-100">
+                Check Your Email
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-300">
+                A verification link has been dispatched to:
+              </CardDescription>
+              <p className="text-sm font-semibold font-mono text-amber-300 break-all">
+                {verificationSentTo}
+              </p>
+            </CardHeader>
+            <CardContent className="text-xs text-slate-400 space-y-3 pb-6">
+              <p>
+                Click the confirmation link in your email to verify your adventurer account. Once confirmed, sign in to forge your character and begin your campaign.
+              </p>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-3 border-t border-slate-800 pt-4">
+              <Link href="/login" className="w-full">
+                <Button variant="gold" className="w-full gap-2">
+                  Proceed to Sign In <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-xs text-slate-400 hover:text-slate-200"
+                onClick={() => setVerificationSentTo(null)}
+              >
+                Use a different email address
+              </Button>
+            </CardFooter>
+          </Card>
+        ) : (
+          <Card className="border-slate-800 bg-slate-900/90 shadow-xl">
+            <CardHeader className="space-y-1">
+            <CardTitle className="text-xl font-display">Create Adventurer Profile</CardTitle>
             <CardDescription>
               Register to synchronize your character, quests, and stats across devices
             </CardDescription>
@@ -76,17 +118,24 @@ export default function SignupPage() {
           <form onSubmit={handleSignup}>
             <CardContent className="space-y-4">
               {error && (
-                <div className="flex items-center gap-2 p-3 rounded-md bg-rose-950/50 border border-rose-800/80 text-rose-300 text-xs">
+                <div
+                  role="alert"
+                  aria-live="assertive"
+                  className="flex items-center gap-2 p-3 rounded-md bg-rose-950/50 border border-rose-800/80 text-rose-300 text-xs"
+                >
                   <AlertCircle className="h-4 w-4 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Email Address</label>
+                <label htmlFor="signup-email" className="text-xs font-semibold text-slate-300">
+                  Email Address
+                </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
                   <Input
+                    id="signup-email"
                     type="email"
                     placeholder="hero@realm.com"
                     value={email}
@@ -98,10 +147,13 @@ export default function SignupPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Password</label>
+                <label htmlFor="signup-password" className="text-xs font-semibold text-slate-300">
+                  Password
+                </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
                   <Input
+                    id="signup-password"
                     type="password"
                     placeholder="At least 6 characters"
                     value={password}
@@ -128,6 +180,7 @@ export default function SignupPage() {
             </CardFooter>
           </form>
         </Card>
+        )}
       </div>
     </div>
   );

@@ -64,11 +64,10 @@ export function StatRadar({
     .join(" ");
 
   return (
-    <div className="flex flex-col items-center justify-center p-2 select-none">
+    <div className="flex flex-col items-center justify-center p-2 select-none w-full">
       <svg
-        width={size}
-        height={size}
-        className="overflow-visible"
+        viewBox={`0 0 ${size} ${size}`}
+        className="w-full max-w-[260px] h-auto overflow-visible"
         role="img"
         aria-label="Character Attribute Pentagonal Radar Chart"
       >

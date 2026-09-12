@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Flame, Lock, Mail, ArrowRight, AlertCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { apiClient, ApiError } from "@/lib/api-client";
+import { Character } from "@/types/character";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +17,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +35,17 @@ export default function LoginPage() {
         return;
       }
 
-      router.push("/dashboard");
+      // Check if user already initialized their character
+      try {
+        await apiClient<Character>("/characters/me");
+        router.push("/dashboard");
+      } catch (err) {
+        if (err instanceof ApiError && err.code === "CHARACTER_NOT_FOUND") {
+          router.push("/onboarding");
+        } else {
+          router.push("/dashboard");
+        }
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to sign in. Please try again.");
     } finally {
@@ -50,7 +62,7 @@ export default function LoginPage() {
             <div className="h-10 w-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
               <Flame className="h-6 w-6 fill-amber-400/20" />
             </div>
-            <span className="font-bold text-xl tracking-wider text-slate-100 uppercase">
+            <span className="font-bold text-xl tracking-wider text-slate-100 uppercase font-display">
               Life RPG
             </span>
           </Link>
@@ -61,7 +73,7 @@ export default function LoginPage() {
 
         <Card className="border-slate-800 bg-slate-900/90 shadow-xl">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-xl">Sign in to your account</CardTitle>
+            <CardTitle className="text-xl font-display">Sign in to your account</CardTitle>
             <CardDescription>
               Enter your email and password to resume your campaign
             </CardDescription>
@@ -70,17 +82,24 @@ export default function LoginPage() {
           <form onSubmit={handleLogin}>
             <CardContent className="space-y-4">
               {error && (
-                <div className="flex items-center gap-2 p-3 rounded-md bg-rose-950/50 border border-rose-800/80 text-rose-300 text-xs">
+                <div
+                  role="alert"
+                  aria-live="assertive"
+                  className="flex items-center gap-2 p-3 rounded-md bg-rose-950/50 border border-rose-800/80 text-rose-300 text-xs"
+                >
                   <AlertCircle className="h-4 w-4 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Email Address</label>
+                <label htmlFor="login-email" className="text-xs font-semibold text-slate-300">
+                  Email Address
+                </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
                   <Input
+                    id="login-email"
                     type="email"
                     placeholder="hero@realm.com"
                     value={email}
@@ -92,10 +111,13 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Password</label>
+                <label htmlFor="login-password" className="text-xs font-semibold text-slate-300">
+                  Password
+                </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
                   <Input
+                    id="login-password"
                     type="password"
                     placeholder="••••••••••••"
                     value={password}

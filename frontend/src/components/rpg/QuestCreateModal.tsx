@@ -215,7 +215,11 @@ export function QuestCreateModal({
 
         {/* Error Alert */}
         {errorMessage && (
-          <div className="flex items-start gap-2.5 p-3 rounded-md bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="flex items-start gap-2.5 p-3 rounded-md bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs"
+          >
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-rose-400" />
             <span>{errorMessage}</span>
           </div>
@@ -225,16 +229,21 @@ export function QuestCreateModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Title */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            <label
+              htmlFor="quest-title"
+              className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+            >
               Quest Title <span className="text-amber-400">*</span>
             </label>
             <Input
+              id="quest-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Complete 2 LeetCode Mediums or 30m Workout"
               maxLength={120}
               required
+              autoFocus
               className="bg-slate-900 border-slate-800 focus:border-amber-500 text-slate-100"
             />
             <span className="text-[10px] text-slate-500 block text-right mt-1">
@@ -244,10 +253,14 @@ export function QuestCreateModal({
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            <label
+              htmlFor="quest-desc"
+              className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+            >
               Description / Victory Conditions (Optional)
             </label>
             <textarea
+              id="quest-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Specify the rules of engagement or notes for this challenge..."
@@ -261,10 +274,14 @@ export function QuestCreateModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Category */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+              <label
+                htmlFor="quest-cat"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+              >
                 Category
               </label>
               <select
+                id="quest-cat"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full h-10 rounded-md bg-slate-900 border border-slate-800 px-3 text-xs text-slate-100 focus:outline-none focus:border-amber-500"
@@ -355,10 +372,14 @@ export function QuestCreateModal({
 
           {/* Optional Due Date */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            <label
+              htmlFor="quest-due"
+              className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+            >
               Target Due Date (Optional)
             </label>
             <Input
+              id="quest-due"
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}

@@ -1,6 +1,7 @@
 import uuid
 from typing import Any, Dict
 import jwt
+from jwt import PyJWKClient
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
@@ -12,14 +13,50 @@ from app.models.character import Character
 
 http_bearer = HTTPBearer(auto_error=False)
 
+# Cached JWKS client for asymmetric JWT verification (ES256 / RS256)
+_jwks_client: PyJWKClient | None = None
+
+
+def get_jwks_client() -> PyJWKClient | None:
+    global _jwks_client
+    if _jwks_client is None and settings.SUPABASE_URL:
+        jwks_url = f"{settings.SUPABASE_URL.rstrip('/')}/auth/v1/.well-known/jwks.json"
+        try:
+            _jwks_client = PyJWKClient(jwks_url, cache_keys=True)
+        except Exception:
+            _jwks_client = None
+    return _jwks_client
+
 
 def decode_supabase_jwt(token: str) -> Dict[str, Any]:
     """
     Decodes and cryptographically validates the Supabase JWT token.
-    Extracts the claims including subject (`sub`), expiration (`exp`), and role.
+    Supports:
+    - Asymmetric ES256 / RS256 signatures via Supabase project JWKS.
+    - Symmetric HS256 signatures via SUPABASE_JWT_SECRET (for tests and HS256 projects).
     """
     try:
-        # Supabase uses HS256 with project JWT Secret and sets aud to "authenticated"
+        # Inspect the token algorithm from unverified header
+        unverified_header = jwt.get_unverified_header(token)
+        alg = unverified_header.get("alg", "HS256")
+
+        if alg in ("ES256", "RS256"):
+            jwks_client = get_jwks_client()
+            if jwks_client:
+                signing_key = jwks_client.get_signing_key_from_jwt(token)
+                payload = jwt.decode(
+                    token,
+                    signing_key.key,
+                    algorithms=[alg],
+                    options={
+                        "verify_exp": True,
+                        "verify_signature": True,
+                        "verify_aud": False,
+                    },
+                )
+                return payload
+
+        # Fallback to HS256 with configured secret (used in tests and standard HS256 projects)
         payload = jwt.decode(
             token,
             settings.SUPABASE_JWT_SECRET,
@@ -27,7 +64,7 @@ def decode_supabase_jwt(token: str) -> Dict[str, Any]:
             options={
                 "verify_exp": True,
                 "verify_signature": True,
-                "verify_aud": False,  # Supabase aud can be 'authenticated' or custom
+                "verify_aud": False,
             },
         )
         return payload

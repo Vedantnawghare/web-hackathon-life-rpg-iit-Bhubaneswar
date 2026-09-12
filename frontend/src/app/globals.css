@@ -17,11 +17,71 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Custom dark fantasy scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Game World Surfaces */
+  .game-panel {
+    background: radial-gradient(ellipse at top, rgba(30, 41, 59, 0.4), rgba(2, 6, 23, 0.95)), #020617;
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .game-panel-gold {
+    background: radial-gradient(ellipse at top, rgba(120, 53, 15, 0.25), rgba(2, 6, 23, 0.95)), #020617;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8), 0 0 15px rgba(245, 158, 11, 0.1), inset 0 1px 0 rgba(251, 191, 36, 0.15);
+  }
+
+  .game-hud {
+    background: rgba(2, 6, 23, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(245, 158, 11, 0.25);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  }
+
+  .loot-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-family: var(--font-rajdhani), monospace;
+    font-weight: 700;
+    font-size: 0.75rem;
+    border-width: 1px;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

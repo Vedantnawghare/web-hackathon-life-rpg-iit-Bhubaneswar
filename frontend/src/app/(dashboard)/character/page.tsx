@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { StatRadar } from "@/components/rpg/StatRadar";
 import { CosmeticFrame } from "@/components/rpg/CosmeticFrame";
 import { StreakCalendar } from "@/components/rpg/StreakCalendar";
+import { getMasteryTier } from "@/components/rpg/RealmMap";
 import {
   Shield,
   Coins,
@@ -22,9 +23,10 @@ import {
   Sparkles,
   ArrowRight,
   Backpack,
+  Store,
 } from "lucide-react";
 import Link from "next/link";
-import { formatGold, formatXP } from "@/lib/utils";
+import { cn, formatGold, formatXP } from "@/lib/utils";
 
 export default function CharacterPage() {
   const { data: character, isLoading: isCharLoading } = useQuery<Character>({
@@ -32,7 +34,7 @@ export default function CharacterPage() {
     queryFn: () => apiClient<Character>("/characters/me"),
   });
 
-  const { data: achievements = [], isLoading: isAchLoading } = useQuery<Achievement[]>({
+  const { data: achievements = [] } = useQuery<Achievement[]>({
     queryKey: ["achievements"],
     queryFn: () => apiClient<Achievement[]>("/achievements"),
   });
@@ -40,10 +42,10 @@ export default function CharacterPage() {
   if (isCharLoading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-44 bg-slate-900 rounded-xl border border-slate-800" />
+        <div className="h-48 bg-slate-900/80 rounded-2xl border border-slate-800" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="h-80 bg-slate-900 rounded-xl border border-slate-800" />
-          <div className="h-80 bg-slate-900 rounded-xl border border-slate-800 lg:col-span-2" />
+          <div className="h-80 bg-slate-900/80 rounded-xl border border-slate-800" />
+          <div className="h-80 bg-slate-900/80 rounded-xl border border-slate-800 lg:col-span-2" />
         </div>
       </div>
     );
@@ -60,38 +62,48 @@ export default function CharacterPage() {
   const attributesList = [
     {
       name: "Strength",
+      attrKey: "STRENGTH",
       value: str,
       icon: Dumbbell,
       color: "text-rose-400",
-      desc: "Physical stamina, workout challenges, and raw endurance.",
+      desc: "Physical stamina, workout challenges, and bodily endurance.",
+      mastery: getMasteryTier(str),
     },
     {
       name: "Intellect",
+      attrKey: "INTELLECT",
       value: int,
       icon: Brain,
       color: "text-sky-400",
-      desc: "Analytical power, algorithmic coding, and continuous learning.",
+      desc: "Analytical power, algorithmic coding, and continuous study.",
+      mastery: getMasteryTier(int),
     },
     {
       name: "Discipline",
+      attrKey: "DISCIPLINE",
       value: dis,
       icon: Compass,
       color: "text-emerald-400",
       desc: "Consistency of execution, habit adherence, and mindful order.",
+      mastery: getMasteryTier(dis),
     },
     {
       name: "Vitality",
+      attrKey: "VITALITY",
       value: vit,
       icon: Heart,
       color: "text-amber-400",
       desc: "Sleep hygiene, nutrition, recovery, and overall life balance.",
+      mastery: getMasteryTier(vit),
     },
     {
       name: "Creativity",
+      attrKey: "CREATIVITY",
       value: cre,
       icon: Palette,
       color: "text-purple-400",
       desc: "Artistic output, writing, open innovation, and lateral design.",
+      mastery: getMasteryTier(cre),
     },
   ];
 
@@ -103,40 +115,50 @@ export default function CharacterPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header Profile Hero Card */}
-      <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-6 md:p-8 shadow-xl">
+      {/* 1. HERO SANCTUM PEDESTAL */}
+      <section className="relative rounded-2xl border border-amber-500/30 bg-gradient-to-r from-slate-950 via-slate-900 to-amber-950/20 p-6 md:p-8 shadow-[0_10px_35px_rgba(0,0,0,0.6)] overflow-hidden">
         {/* Glow Accent */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative flex flex-col sm:flex-row items-center sm:items-start gap-6">
+        <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-6">
           {/* Avatar with Equipped Frame */}
-          <CosmeticFrame
-            frameKey={character?.equipped_frame}
-            badgeKey={character?.equipped_badge}
-            size="xl"
-            username={character?.username}
-          />
+          <div className="shrink-0 p-2 rounded-2xl bg-slate-950/60 border border-slate-800 shadow-xl">
+            <CosmeticFrame
+              frameKey={character?.equipped_frame}
+              badgeKey={character?.equipped_badge}
+              size="xl"
+              username={character?.username}
+            />
+          </div>
 
-          <div className="flex-1 text-center sm:text-left space-y-3">
+          <div className="flex-1 text-center sm:text-left space-y-3.5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <div className="flex items-center justify-center sm:justify-start gap-3">
-                  <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+                <div className="flex items-center justify-center sm:justify-start gap-3 flex-wrap">
+                  <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white font-display">
                     {character?.username}
                   </h1>
-                  <Badge variant="gold" className="text-xs px-2.5 py-0.5">
-                    Level {character?.current_level ?? 1}
+                  <Badge
+                    variant="outline"
+                    className="bg-amber-500/20 text-amber-300 border-amber-500/50 font-mono font-bold text-xs shadow-[0_0_10px_rgba(245,158,11,0.2)]"
+                  >
+                    Rank {character?.current_level ?? 1}
                   </Badge>
                 </div>
-                <p className="text-sm text-amber-300/90 font-medium mt-0.5">
+                <p className="text-sm text-amber-400 font-display font-medium mt-0.5">
                   {character?.title || "Novice Adventurer"}
                 </p>
               </div>
 
-              <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center justify-center gap-2.5 flex-wrap">
                 <Link href="/inventory">
-                  <Button variant="outline" size="sm" className="gap-2 text-xs">
-                    <Backpack className="h-4 w-4" /> Manage Relics
+                  <Button variant="outline" size="sm" className="gap-2 text-xs font-mono border-slate-700 hover:border-amber-500/40">
+                    <Backpack className="h-4 w-4 text-amber-400" /> Relic Vault
+                  </Button>
+                </Link>
+                <Link href="/shop">
+                  <Button variant="gold" size="sm" className="gap-2 text-xs font-display font-bold">
+                    <Store className="h-4 w-4" /> Guild Bazaar
                   </Button>
                 </Link>
               </div>
@@ -144,50 +166,59 @@ export default function CharacterPage() {
 
             {/* XP Progress Bar */}
             <div className="space-y-1.5 max-w-xl">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
-                  Progression to Level {(character?.current_level ?? 1) + 1}
+              <div className="flex justify-between items-center text-xs font-mono">
+                <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
+                  Progression to Rank {(character?.current_level ?? 1) + 1}
                 </span>
-                <span className="font-mono text-amber-300 text-[11px] font-bold">
+                <span className="font-mono text-amber-300 text-xs font-bold">
                   {formatXP(xpIntoLevel)} / {formatXP(xpRequired)} XP ({xpPercentage}%)
                 </span>
               </div>
-              <div className="h-2.5 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+              <div
+                role="progressbar"
+                aria-valuenow={xpPercentage}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`Level progression: ${xpPercentage} percent`}
+                className="h-2.5 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800 p-[1px]"
+              >
                 <div
-                  className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 rounded-full transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]"
                   style={{ width: `${xpPercentage}%` }}
                 />
               </div>
             </div>
 
-            {/* Currency & Metadata Badges */}
-            <div className="flex items-center justify-center sm:justify-start gap-4 pt-1 flex-wrap text-xs">
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-950/40 border border-amber-500/20 text-amber-300 font-mono font-bold">
-                <Coins className="h-3.5 w-3.5 text-amber-400" />
+            {/* Currency & Trophies Badges */}
+            <div className="flex items-center justify-center sm:justify-start gap-3 pt-1 flex-wrap text-xs">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-950/50 border border-amber-500/30 text-amber-300 font-mono font-bold shadow-sm">
+                <Coins className="h-4 w-4 text-amber-400" />
                 <span>{formatGold(character?.gold ?? 0)} Gold</span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-300 font-mono">
-                <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono">
+                <Sparkles className="h-4 w-4 text-amber-400" />
                 <span>{formatXP(character?.lifetime_xp ?? 0)} Lifetime XP</span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-300">
-                <Trophy className="h-3.5 w-3.5 text-amber-400" />
-                <span>{unlockedAchievements.length} Achievements</span>
-              </div>
+              <Link href="/achievements">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:border-amber-500/30 hover:text-amber-300 transition-colors cursor-pointer">
+                  <Trophy className="h-4 w-4 text-amber-400" />
+                  <span>{unlockedAchievements.length} Trophies</span>
+                </div>
+              </Link>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Attributes & Radar Grid */}
+      {/* 2. ATTRIBUTE MATRIX & BREAKDOWN */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Pentagonal Radar Chart Card */}
-        <Card className="lg:col-span-1 bg-slate-900/60 border-slate-800">
+        {/* Pentagonal Astrolabe Radar */}
+        <Card className="lg:col-span-1 bg-slate-950/80 border-slate-800 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Shield className="h-4 w-4 text-amber-400" /> Attribute Matrix
+            <CardTitle className="text-base flex items-center gap-2 font-display">
+              <Shield className="h-4 w-4 text-amber-400" /> Astrolabe Matrix
             </CardTitle>
-            <CardDescription>Pentagonal balance of your 5 core attributes</CardDescription>
+            <CardDescription>Pentagonal harmony of your 5 Ascension Domains</CardDescription>
           </CardHeader>
           <CardContent className="flex items-center justify-center pt-2">
             <StatRadar
@@ -201,12 +232,12 @@ export default function CharacterPage() {
           </CardContent>
         </Card>
 
-        {/* Detailed Attribute Breakdown */}
-        <Card className="lg:col-span-2 bg-slate-900/60 border-slate-800">
+        {/* Detailed Attribute Mastery List */}
+        <Card className="lg:col-span-2 bg-slate-950/80 border-slate-800 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-base">Attribute Breakdown & Mastery</CardTitle>
+            <CardTitle className="text-base font-display">Territorial Mastery & Domain Ranks</CardTitle>
             <CardDescription>
-              Attributes increase permanently when clearing quests aligned with their domain.
+              Each domain increases permanently upon claiming bounties aligned with its realm.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -217,27 +248,32 @@ export default function CharacterPage() {
               return (
                 <div
                   key={attr.name}
-                  className="p-3.5 rounded-lg border border-slate-800 bg-slate-950/50 hover:border-slate-700 transition-colors space-y-2"
+                  className="p-3.5 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-slate-700 transition-all space-y-2"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className={`p-1.5 rounded-md bg-slate-900 ${attr.color}`}>
+                      <div className={cn("p-2 rounded-lg bg-slate-950 border border-slate-800", attr.color)}>
                         <Icon className="h-4 w-4" />
                       </div>
                       <div>
-                        <span className="text-xs font-bold text-slate-200 block">
-                          {attr.name}
-                        </span>
-                        <span className="text-[11px] text-slate-400">{attr.desc}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-100 font-display">
+                            {attr.name}
+                          </span>
+                          <span className={cn("text-[9px] font-mono uppercase px-1.5 py-0.2 rounded border font-semibold", attr.mastery.badgeColor)}>
+                            {attr.mastery.title}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-slate-400 font-sans">{attr.desc}</span>
                       </div>
                     </div>
-                    <span className="font-mono font-black text-sm text-slate-100">
-                      {attr.value}
+                    <span className="font-mono font-black text-sm text-slate-100 shrink-0 pl-2">
+                      {attr.value} <span className="text-[10px] text-slate-400 font-normal">pts</span>
                     </span>
                   </div>
-                  <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                  <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800">
                     <div
-                      className="h-full bg-amber-400 rounded-full transition-all duration-300"
+                      className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full transition-all duration-300"
                       style={{ width: `${percent}%` }}
                     />
                   </div>
@@ -248,121 +284,59 @@ export default function CharacterPage() {
         </Card>
       </div>
 
-      {/* Streak Tracker & Equipped Cosmetics */}
+      {/* 3. STREAK CADENCE & ACTIVE RELIC LOADOUT */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Streak Calendar Component */}
         <StreakCalendar
           currentStreak={character?.current_streak ?? 0}
-          longestStreak={character?.current_streak ?? 0}
+          longestStreak={character?.longest_streak ?? 0}
         />
 
-        {/* Equipped Cosmetics Roster */}
-        <Card className="bg-slate-900/60 border-slate-800">
+        {/* Equipped Relic Loadout */}
+        <Card className="bg-slate-950/80 border-slate-800 shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-amber-400" /> Active Loadout
+              <CardTitle className="text-base flex items-center gap-2 font-display">
+                <Sparkles className="h-4 w-4 text-amber-400" /> Adorned Relics
               </CardTitle>
               <Link
                 href="/inventory"
-                className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold"
+                className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 font-mono font-semibold"
               >
-                <span>Inventory</span>
+                <span>Relic Vault</span>
                 <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
-            <CardDescription>Cosmetic relics currently adorned by your champion</CardDescription>
+            <CardDescription>Active gear & titles currently displayed across the realm</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-xs">
-            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-              <span className="text-slate-400">Equipped Theme</span>
-              <span className="font-mono font-semibold text-amber-300 capitalize">
-                {character?.equipped_theme?.replace(/_/g, " ")}
+          <CardContent className="space-y-3 text-xs font-mono">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+              <span className="text-slate-400">Leyline Theme</span>
+              <span className="font-bold text-amber-300 capitalize">
+                {character?.equipped_theme?.replace(/_/g, " ") || "Default Slate"}
               </span>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-950/60 border border-slate-800">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
               <span className="text-slate-400">Avatar Frame</span>
-              <span className="font-mono font-semibold text-amber-300 capitalize">
-                {character?.equipped_frame?.replace(/_/g, " ")}
+              <span className="font-bold text-amber-300 capitalize">
+                {character?.equipped_frame?.replace(/_/g, " ") || "Standard Frame"}
               </span>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-              <span className="text-slate-400">Adorned Badge</span>
-              <span className="font-mono font-semibold text-amber-300 capitalize">
-                {character?.equipped_badge?.replace(/_/g, " ")}
+            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+              <span className="text-slate-400">Adorned Crest Badge</span>
+              <span className="font-bold text-amber-300 capitalize">
+                {character?.equipped_badge?.replace(/_/g, " ") || "Default Badge"}
               </span>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-950/60 border border-slate-800">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
               <span className="text-slate-400">Champion Title</span>
-              <span className="font-semibold text-purple-300">
+              <span className="font-bold text-purple-300 font-display">
                 {character?.title || "Novice Adventurer"}
               </span>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Unlocked Achievements Gallery Showcase */}
-      <Card className="bg-slate-900/60 border-slate-800">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-amber-400" /> Trophies of Honor
-            </CardTitle>
-            <Link
-              href="/achievements"
-              className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold"
-            >
-              <span>View All Achievements ({achievements.length})</span>
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-          <CardDescription>
-            {unlockedAchievements.length} of {achievements.length} realm milestones unlocked
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isAchLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-24 bg-slate-900 rounded-lg animate-pulse" />
-              ))}
-            </div>
-          ) : unlockedAchievements.length === 0 ? (
-            <div className="p-8 text-center border border-dashed border-slate-800 rounded-xl">
-              <Trophy className="h-8 w-8 text-slate-600 mx-auto mb-2" />
-              <p className="text-sm text-slate-300 font-medium">No trophies forged yet</p>
-              <p className="text-xs text-slate-500 mt-1">
-                Clear your first quest or maintain a daily streak to unlock legendary honors.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {unlockedAchievements.slice(0, 6).map((ach) => (
-                <div
-                  key={ach.id}
-                  className="p-3.5 rounded-lg border border-amber-500/30 bg-slate-950/80 flex items-start gap-3 shadow-sm"
-                >
-                  <div className="p-2 rounded-lg bg-amber-500/15 text-amber-400 shrink-0">
-                    <Trophy className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs font-bold text-slate-200 block truncate">
-                      {ach.title}
-                    </span>
-                    <span className="text-[10px] text-slate-400 line-clamp-1 block mt-0.5">
-                      {ach.description}
-                    </span>
-                    <span className="text-[10px] font-mono text-amber-400 font-bold block mt-1">
-                      +{ach.reward_gold} G • +{ach.reward_xp} XP
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }

@@ -1,39 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { Character } from "@/types/character";
-import { Quest, QuestCompleteResponse } from "@/types/quest";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Quest, QuestCompleteResponse, CharacterAttribute } from "@/types/quest";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LevelUpModal } from "@/components/rpg/LevelUpModal";
 import { CosmeticFrame } from "@/components/rpg/CosmeticFrame";
 import { StreakCalendar } from "@/components/rpg/StreakCalendar";
+import { RealmMap } from "@/components/rpg/RealmMap";
+import { QuestCard } from "@/components/rpg/QuestCard";
 import {
-  Dumbbell,
-  Brain,
-  Compass,
-  Heart,
-  Palette,
   Sword,
   Trophy,
   CheckCircle2,
   Sparkles,
   Coins,
-  Loader2,
   ArrowRight,
   Flame,
   Shield,
   ShoppingBag,
+  Backpack,
+  BookOpen,
   X,
+  Compass,
+  Scroll,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
   const queryClient = useQueryClient();
+  const [selectedZone, setSelectedZone] = useState<CharacterAttribute | null>(null);
+  const [filterType, setFilterType] = useState<"ALL" | "DAILY" | "WEEKLY">("ALL");
   const [completingQuestId, setCompletingQuestId] = useState<string | null>(null);
   const [lastCompletion, setLastCompletion] = useState<QuestCompleteResponse | null>(null);
   const [levelUpState, setLevelUpState] = useState<{
@@ -89,112 +90,152 @@ export default function DashboardPage() {
     },
   });
 
+  // Filter quests by selected zone and recurrence
+  const filteredQuests = useMemo(() => {
+    return quests.filter((q) => {
+      if (selectedZone && q.primary_attribute !== selectedZone) {
+        return false;
+      }
+      if (filterType === "DAILY" && q.recurrence !== "DAILY") return false;
+      if (filterType === "WEEKLY" && q.recurrence !== "WEEKLY") return false;
+      return true;
+    });
+  }, [quests, selectedZone, filterType]);
+
   if (isCharacterLoading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-10 w-48 bg-slate-800 rounded"></div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="h-44 bg-slate-900 rounded-lg border border-slate-800"></div>
-          <div className="h-44 bg-slate-900 rounded-lg border border-slate-800"></div>
-          <div className="h-44 bg-slate-900 rounded-lg border border-slate-800"></div>
+        <div className="h-32 bg-slate-900/80 rounded-2xl border border-slate-800" />
+        <div className="h-96 bg-slate-900/80 rounded-2xl border border-slate-800" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="h-44 bg-slate-900/80 rounded-xl border border-slate-800" />
+          <div className="h-44 bg-slate-900/80 rounded-xl border border-slate-800" />
         </div>
       </div>
     );
   }
 
-  const attributes = [
-    { name: "Strength", value: character?.strength ?? 10, icon: Dumbbell, color: "text-rose-400", border: "border-rose-500/20" },
-    { name: "Intellect", value: character?.intellect ?? 10, icon: Brain, color: "text-blue-400", border: "border-blue-500/20" },
-    { name: "Discipline", value: character?.discipline ?? 10, icon: Compass, color: "text-emerald-400", border: "border-emerald-500/20" },
-    { name: "Vitality", value: character?.vitality ?? 10, icon: Heart, color: "text-amber-400", border: "border-amber-500/20" },
-    { name: "Creativity", value: character?.creativity ?? 10, icon: Palette, color: "text-purple-400", border: "border-purple-500/20" },
-  ];
-
-  // Up to 4 active quests for quick access, prioritized by uncompleted first
-  const activeQuests = [...quests]
-    .sort((a, b) => {
-      if (a.is_completed_for_period === b.is_completed_for_period) return 0;
-      return a.is_completed_for_period ? 1 : -1;
-    })
-    .slice(0, 4);
+  // Calculate Streak Bonus percentage
+  const streakMultiplierPercent = character?.current_streak
+    ? Math.min(50, character.current_streak * 2)
+    : 0;
 
   return (
     <div className="space-y-8">
-      {/* Welcome Banner with Cosmetic Avatar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
-        <div className="flex items-center gap-4">
-          <CosmeticFrame
-            size="md"
-            username={character?.username || "Adventurer"}
-            frameKey={character?.equipped_frame || "default_frame"}
-            badgeKey={character?.equipped_badge || "default_badge"}
-          />
-          <div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-100">
-                {character?.username || "Adventurer"}
-              </h1>
-              <Badge variant="gold">Level {character?.current_level || 1}</Badge>
+      {/* 1. HERO SANCTUM & STATUS PEDESTAL */}
+      <section className="relative rounded-2xl border border-amber-500/30 bg-gradient-to-r from-slate-950 via-slate-900/90 to-amber-950/20 p-5 sm:p-7 shadow-[0_10px_35px_rgba(0,0,0,0.6)] overflow-hidden">
+        {/* Ambient Pedestal Light */}
+        <div className="absolute top-0 right-1/4 w-96 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          {/* Hero Avatar & Identity */}
+          <div className="flex items-center gap-5">
+            <div className="relative shrink-0">
+              <CosmeticFrame
+                size="lg"
+                username={character?.username || "Adventurer"}
+                frameKey={character?.equipped_frame || "default_frame"}
+                badgeKey={character?.equipped_badge || "default_badge"}
+              />
             </div>
-            <p className="text-sm text-slate-400 mt-1">{character?.title || "Novice Adventurer"}</p>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white font-display">
+                  {character?.username || "Adventurer"}
+                </h1>
+                <Badge
+                  variant="outline"
+                  className="bg-amber-500/20 text-amber-300 border-amber-500/50 font-mono font-bold text-xs shadow-[0_0_10px_rgba(245,158,11,0.2)]"
+                >
+                  Rank {character?.current_level || 1}
+                </Badge>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-amber-400/90 font-display">
+                <span>{character?.title || "Novice Adventurer"}</span>
+                <span className="text-slate-600">•</span>
+                <span className="text-xs text-slate-400 font-mono">
+                  {character?.timezone || "UTC"} Leyline
+                </span>
+              </div>
+
+              {/* Active Streak Multiplier Callout */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-orange-950/40 border border-orange-500/30 text-orange-300 text-xs font-mono font-semibold">
+                <Flame className="h-3.5 w-3.5 fill-orange-400/40 animate-pulse text-orange-400" />
+                <span>
+                  {character?.current_streak || 0}-Day Streak Multiplier:{" "}
+                  <strong className="text-orange-200">+{streakMultiplierPercent}% XP</strong>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Action Portals */}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <Link href="/quests">
+              <Button
+                variant="gold"
+                size="sm"
+                className="gap-2 font-display font-bold tracking-wider shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+              >
+                <Scroll className="h-4 w-4" /> Inscribe Bounty
+              </Button>
+            </Link>
+            <Link href="/character">
+              <Button variant="secondary" size="sm" className="gap-1.5 font-medium border border-slate-700">
+                <Shield className="h-4 w-4 text-amber-400" /> Hero Sheet
+              </Button>
+            </Link>
+            <Link href="/shop">
+              <Button variant="outline" size="sm" className="gap-1.5 font-medium border-slate-700 hover:border-amber-500/40">
+                <ShoppingBag className="h-4 w-4 text-amber-300" /> Guild Bazaar
+              </Button>
+            </Link>
           </div>
         </div>
+      </section>
 
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <Link href="/quests">
-            <Button variant="gold" size="sm" className="gap-2 font-semibold shadow-sm">
-              <Sword className="h-4 w-4" /> Open Quest Board
-            </Button>
-          </Link>
-          <Link href="/character">
-            <Button variant="secondary" size="sm" className="gap-1.5 font-medium">
-              <Shield className="h-4 w-4 text-amber-400" /> Character Sheet
-            </Button>
-          </Link>
-          <Link href="/shop">
-            <Button variant="outline" size="sm" className="gap-1.5 font-medium border-slate-700">
-              <ShoppingBag className="h-4 w-4 text-amber-300" /> Guild Bazaar
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Floating Victory Toast / Banner if quest was just cleared */}
+      {/* 2. VICTORY CELEBRATION TOAST */}
       {lastCompletion && (
-        <div className="relative flex items-center justify-between p-4 rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-950/40 via-slate-900 to-amber-950/30 shadow-lg shadow-amber-500/10 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400">
-              <CheckCircle2 className="h-5 w-5" />
+        <div
+          role="status"
+          aria-live="polite"
+          className="relative flex items-center justify-between p-4 rounded-xl border border-amber-500/50 bg-gradient-to-r from-amber-950/50 via-slate-900 to-amber-950/40 shadow-[0_0_25px_rgba(245,158,11,0.2)] animate-in fade-in slide-in-from-top-2 duration-300"
+        >
+          <div className="flex items-center gap-3.5 flex-wrap">
+            <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow">
+              <CheckCircle2 className="h-6 w-6 text-amber-400" />
             </div>
             <div>
-              <span className="text-xs font-bold text-slate-200 block">
-                Quest Cleared: &ldquo;{lastCompletion.quest_title}&rdquo;
+              <span className="text-xs font-bold text-amber-200 block font-display tracking-wide uppercase">
+                Bounty Conquered: &ldquo;{lastCompletion.quest_title}&rdquo;
               </span>
-              <div className="flex items-center gap-3 text-xs font-mono font-bold mt-0.5 flex-wrap">
-                <span className="text-amber-400 flex items-center gap-1">
-                  <Sparkles className="h-3.5 w-3.5" /> +{lastCompletion.earned_xp} XP
+              <div className="flex items-center gap-3 text-xs font-mono font-bold mt-1 flex-wrap">
+                <span className="text-amber-300 flex items-center gap-1 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-400" /> +{lastCompletion.earned_xp} XP
                   {lastCompletion.xp_multiplier > 1.0 && (
-                    <span className="text-[10px] font-sans font-normal text-amber-300/80">
-                      ({lastCompletion.xp_multiplier}x streak)
+                    <span className="text-[10px] text-amber-400/90 font-normal">
+                      ({lastCompletion.xp_multiplier}x)
                     </span>
                   )}
                 </span>
-                <span className="text-amber-300 flex items-center gap-1">
-                  <Coins className="h-3.5 w-3.5" /> +{lastCompletion.earned_gold} G
+                <span className="text-yellow-300 flex items-center gap-1 bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/30">
+                  <Coins className="h-3.5 w-3.5 text-yellow-400" /> +{lastCompletion.earned_gold} G
                 </span>
-                <span className="text-emerald-400">
+                <span className="text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
                   +{lastCompletion.attribute_gain} {lastCompletion.attribute_increased}
                 </span>
                 {lastCompletion.streak_extended && (
-                  <span className="text-orange-400 flex items-center gap-1 font-sans">
+                  <span className="text-orange-300 flex items-center gap-1 font-sans bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/30">
                     <Flame className="h-3.5 w-3.5 fill-orange-400/40" />
                     {lastCompletion.current_streak}d Streak!
                   </span>
                 )}
                 {lastCompletion.unlocked_achievements && lastCompletion.unlocked_achievements.length > 0 && (
-                  <span className="text-yellow-300 flex items-center gap-1 font-sans font-bold bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/40">
-                    <Trophy className="h-3.5 w-3.5" />
-                    Achievement Unlocked: {lastCompletion.unlocked_achievements[0].title}!
+                  <span className="text-yellow-200 flex items-center gap-1 font-sans font-bold bg-amber-500/25 px-2.5 py-0.5 rounded-lg border border-amber-400/50 shadow">
+                    <Trophy className="h-3.5 w-3.5 text-amber-400" />
+                    Trophy Unlocked: {lastCompletion.unlocked_achievements[0].title}!
                   </span>
                 )}
               </div>
@@ -203,210 +244,214 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setLastCompletion(null)}
-            className="p-1 text-slate-400 hover:text-slate-100 rounded-md"
-            aria-label="Dismiss banner"
+            className="p-1.5 text-slate-400 hover:text-slate-100 rounded-md hover:bg-slate-800/80 transition-colors"
+            aria-label="Dismiss completion notice"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </button>
         </div>
       )}
 
-      {/* Attributes Overview */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-          Core Character Attributes
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          {attributes.map((attr) => {
-            const Icon = attr.icon;
-            return (
-              <Card key={attr.name} className={`bg-slate-900/60 ${attr.border}`}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className={`p-2 rounded-md bg-slate-800 ${attr.color}`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <span className="text-xs text-slate-400 block">{attr.name}</span>
-                    <span className="text-lg font-bold text-slate-100 font-mono">
-                      {attr.value}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+      {/* 3. THE REALM OF ASCENSION (Interactive World Map) */}
+      <section aria-label="The Realm of Ascension">
+        <RealmMap
+          attributes={{
+            strength: character?.strength ?? 10,
+            intellect: character?.intellect ?? 10,
+            discipline: character?.discipline ?? 10,
+            vitality: character?.vitality ?? 10,
+            creativity: character?.creativity ?? 10,
+          }}
+          quests={quests}
+          selectedZone={selectedZone}
+          onSelectZone={setSelectedZone}
+        />
       </section>
 
-      {/* Today's Quests & Campaign Progress Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Active Quests Card */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Sword className="h-4 w-4 text-amber-400" /> Active Quests
-              </CardTitle>
-              <Link
-                href="/quests"
-                className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold"
+      {/* 4. ADVENTURER'S GUILD BOUNTY BOARD */}
+      <section className="space-y-4" aria-label="Adventurer's Guild Bounty Board">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-800">
+          <div className="flex items-center gap-2">
+            <Sword className="h-5 w-5 text-amber-400" />
+            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-slate-100 font-display">
+              Guild Bounty Board
+            </h2>
+            <span className="text-xs font-mono text-slate-400 ml-1">
+              ({filteredQuests.length} {filteredQuests.length === 1 ? "bounty" : "bounties"})
+            </span>
+          </div>
+
+          {/* Filter Tabs & Link to All */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="inline-flex rounded-lg border border-slate-800 bg-slate-950 p-1 text-xs font-mono">
+              <button
+                type="button"
+                onClick={() => setFilterType("ALL")}
+                className={cn(
+                  "px-2.5 py-1 rounded-md transition-colors cursor-pointer",
+                  filterType === "ALL"
+                    ? "bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40"
+                    : "text-slate-400 hover:text-slate-200"
+                )}
               >
-                <span>View All ({quests.length})</span>
-                <ArrowRight className="h-3 w-3" />
+                All
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterType("DAILY")}
+                className={cn(
+                  "px-2.5 py-1 rounded-md transition-colors cursor-pointer",
+                  filterType === "DAILY"
+                    ? "bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40"
+                    : "text-slate-400 hover:text-slate-200"
+                )}
+              >
+                Daily Mandates
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterType("WEEKLY")}
+                className={cn(
+                  "px-2.5 py-1 rounded-md transition-colors cursor-pointer",
+                  filterType === "WEEKLY"
+                    ? "bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40"
+                    : "text-slate-400 hover:text-slate-200"
+                )}
+              >
+                Weekly Crusades
+              </button>
+            </div>
+
+            <Link
+              href="/quests"
+              className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 font-mono font-semibold pl-1"
+            >
+              <span>Full Archive</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Quests Grid */}
+        {isQuestsLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-44 rounded-xl bg-slate-900/80 animate-pulse border border-slate-800" />
+            ))}
+          </div>
+        ) : filteredQuests.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-dashed border-slate-800 bg-slate-950/60">
+            <div className="p-3 rounded-full bg-slate-900 border border-slate-800 text-slate-600 mb-3">
+              <Scroll className="h-8 w-8" />
+            </div>
+            <h3 className="text-base font-bold text-slate-200 font-display">
+              No Active Bounties in this Territory
+            </h3>
+            <p className="text-xs text-slate-400 mt-1.5 max-w-md font-sans">
+              {selectedZone
+                ? `You have conquered all current challenges in this realm zone or have not posted any bounties yet.`
+                : `Your ledger is clear. Visit the Guild Quest Board to inscribe your next habit or milestone.`}
+            </p>
+            <div className="flex items-center gap-3 mt-5">
+              {selectedZone && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedZone(null)}
+                  className="text-xs font-mono border-slate-700"
+                >
+                  Clear Realm Filter
+                </Button>
+              )}
+              <Link href="/quests">
+                <Button variant="gold" size="sm" className="text-xs font-display font-bold">
+                  Inscribe New Bounty
+                </Button>
               </Link>
             </div>
-            <CardDescription>
-              Conquer these challenges today to advance your character
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isQuestsLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-16 rounded-md bg-slate-900 animate-pulse" />
-                ))}
-              </div>
-            ) : activeQuests.length === 0 ? (
-              <div className="flex flex-col items-center justify-center p-8 text-center border border-dashed border-slate-800 rounded-lg">
-                <Sword className="h-8 w-8 text-slate-600 mb-3" />
-                <p className="text-sm text-slate-300 font-medium">No active quests logged yet</p>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                  Begin your journey by creating your first daily habit or productivity challenge.
-                </p>
-                <Link href="/quests" className="mt-4">
-                  <Button variant="secondary" size="sm">
-                    Inscribe Quest
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {activeQuests.map((quest) => {
-                  const isCompleted = quest.is_completed_for_period;
-                  const isCompleting = completingQuestId === quest.id;
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+            {filteredQuests.map((quest) => (
+              <QuestCard
+                key={quest.id}
+                quest={quest}
+                onComplete={(id) => completeMutation.mutate(id)}
+                isCompleting={completingQuestId === quest.id}
+              />
+            ))}
+          </div>
+        )}
+      </section>
 
-                  return (
-                    <div
-                      key={quest.id}
-                      className={cn(
-                        "flex items-center justify-between gap-4 p-3.5 rounded-lg border transition-colors",
-                        isCompleted
-                          ? "bg-slate-900/30 border-slate-800/60 opacity-80"
-                          : "bg-slate-900/70 border-slate-800 hover:border-slate-700"
-                      )}
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span
-                            className={cn(
-                              "font-semibold text-xs sm:text-sm truncate text-slate-100",
-                              isCompleted && "line-through text-slate-400"
-                            )}
-                          >
-                            {quest.title}
-                          </span>
-                          <Badge variant="outline" className="text-[10px] uppercase font-semibold">
-                            {quest.difficulty}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-3 text-[11px] text-slate-400 font-mono mt-1">
-                          <span className="text-amber-400 flex items-center gap-1">
-                            <Sparkles className="h-3 w-3" /> +{quest.base_xp} XP
-                          </span>
-                          <span className="text-amber-300 flex items-center gap-1">
-                            <Coins className="h-3 w-3" /> +{quest.base_gold} G
-                          </span>
-                          <span className="text-slate-500">•</span>
-                          <span className="text-slate-400 font-sans uppercase text-[10px]">
-                            {quest.category}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="shrink-0">
-                        {isCompleted ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400 bg-emerald-950/30 border border-emerald-500/20 px-2.5 py-1 rounded-md">
-                            <CheckCircle2 className="h-3.5 w-3.5" /> Cleared
-                          </span>
-                        ) : (
-                          <Button
-                            variant="gold"
-                            size="sm"
-                            disabled={isCompleting}
-                            onClick={() => completeMutation.mutate(quest.id)}
-                            className="h-8 text-xs font-semibold gap-1.5"
-                          >
-                            {isCompleting ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <>
-                                <Sword className="h-3.5 w-3.5" />
-                                <span>Clear</span>
-                              </>
-                            )}
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Campaign Progress Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-amber-400" /> Campaign Progress
-            </CardTitle>
-            <CardDescription>Overall progression statistics</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm">
-            <div className="flex justify-between py-2 border-b border-slate-800/80">
-              <span className="text-slate-400">Total Lifetime XP</span>
-              <span className="font-mono font-semibold text-slate-200">
-                {character?.lifetime_xp ?? 0} XP
-              </span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-slate-800/80">
-              <span className="text-slate-400">Current Gold</span>
-              <span className="font-mono font-semibold text-amber-300">
-                {character?.gold ?? 0} G
-              </span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-slate-800/80">
-              <span className="text-slate-400">XP to Next Level</span>
-              <span className="font-mono font-semibold text-amber-400">
-                {character?.xp_required_for_next_level
-                  ? character.xp_required_for_next_level - character.xp_into_current_level
-                  : 100}{" "}
-                XP
-              </span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-slate-800/80">
-              <span className="text-slate-400">Active Daily Streak</span>
-              <span className="font-mono font-semibold text-orange-400 flex items-center gap-1">
-                <Flame className="h-3.5 w-3.5 fill-orange-400/30" />
-                {character?.current_streak ?? 0} days
-              </span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span className="text-slate-400">Timezone</span>
-              <span className="font-mono text-slate-300">{character?.timezone ?? "UTC"}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Daily Streak & Multiplier Cadence Tracker */}
+      {/* 5. STREAK CALENDAR & CADENCE TRACKER */}
       <StreakCalendar
         currentStreak={character?.current_streak ?? 0}
         longestStreak={character?.longest_streak ?? 0}
       />
 
-      {/* Level Up Celebration Modal */}
+      {/* 6. REALM PORTALS & FAST EXPEDITIONS */}
+      <section className="space-y-4" aria-label="Realm Fast Portals">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 font-display flex items-center gap-2">
+          <Compass className="h-4 w-4 text-amber-400" /> Realm Portals & Sanctuaries
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link
+            href="/shop"
+            className="group relative p-4 rounded-xl border border-amber-500/20 bg-gradient-to-b from-slate-900/90 to-slate-950 hover:border-amber-500/50 hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] transition-all flex items-center gap-3.5"
+          >
+            <div className="p-2.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 group-hover:scale-110 transition-transform">
+              <ShoppingBag className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="font-bold text-sm text-slate-100 font-display block">Guild Bazaar</span>
+              <span className="text-[11px] text-slate-400 font-mono">Unlock Relics & Themes</span>
+            </div>
+          </Link>
+
+          <Link
+            href="/inventory"
+            className="group relative p-4 rounded-xl border border-slate-800 bg-gradient-to-b from-slate-900/90 to-slate-950 hover:border-sky-500/40 hover:shadow-[0_0_20px_rgba(56,189,248,0.15)] transition-all flex items-center gap-3.5"
+          >
+            <div className="p-2.5 rounded-lg bg-sky-500/15 border border-sky-500/30 text-sky-300 group-hover:scale-110 transition-transform">
+              <Backpack className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="font-bold text-sm text-slate-100 font-display block">Relic Vault</span>
+              <span className="text-[11px] text-slate-400 font-mono">Equip Frame & Badges</span>
+            </div>
+          </Link>
+
+          <Link
+            href="/achievements"
+            className="group relative p-4 rounded-xl border border-slate-800 bg-gradient-to-b from-slate-900/90 to-slate-950 hover:border-purple-500/40 hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] transition-all flex items-center gap-3.5"
+          >
+            <div className="p-2.5 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-300 group-hover:scale-110 transition-transform">
+              <Trophy className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="font-bold text-sm text-slate-100 font-display block">Hall of Trophies</span>
+              <span className="text-[11px] text-slate-400 font-mono">Realm Milestones</span>
+            </div>
+          </Link>
+
+          <Link
+            href="/history"
+            className="group relative p-4 rounded-xl border border-slate-800 bg-gradient-to-b from-slate-900/90 to-slate-950 hover:border-emerald-500/40 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-all flex items-center gap-3.5"
+          >
+            <div className="p-2.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 group-hover:scale-110 transition-transform">
+              <BookOpen className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="font-bold text-sm text-slate-100 font-display block">Chronicles</span>
+              <span className="text-[11px] text-slate-400 font-mono">Ledger of Deeds</span>
+            </div>
+          </Link>
+        </div>
+      </section>
+
+      {/* 7. LEVEL UP CELEBRATION MODAL */}
       <LevelUpModal
         isOpen={levelUpState.isOpen}
         onClose={() => setLevelUpState((prev) => ({ ...prev, isOpen: false }))}

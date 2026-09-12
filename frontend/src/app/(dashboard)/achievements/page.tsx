@@ -44,7 +44,7 @@ export default function AchievementsPage() {
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-100 flex items-center gap-2.5">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-100 flex items-center gap-2.5 font-display">
             <Trophy className="h-6 w-6 text-amber-400" /> Hall of Trophies
           </h1>
           <p className="text-xs text-slate-400 mt-1">
@@ -64,7 +64,14 @@ export default function AchievementsPage() {
                 {unlockedCount} / {totalCount}
               </span>
             </div>
-            <div className="h-1.5 w-36 bg-slate-950 rounded-full overflow-hidden border border-slate-800 mt-1">
+            <div
+              role="progressbar"
+              aria-valuenow={progressPercent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`Achievements unlocked: ${progressPercent} percent`}
+              className="h-1.5 w-36 bg-slate-950 rounded-full overflow-hidden border border-slate-800 mt-1"
+            >
               <div
                 className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full transition-all duration-500"
                 style={{ width: `${progressPercent}%` }}

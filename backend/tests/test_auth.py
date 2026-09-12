@@ -109,3 +109,43 @@ async def test_character_onboarding_and_fetch_flow(client: AsyncClient):
     )
     assert res_duplicate.status_code == 409
     assert res_duplicate.json()["code"] == "CHARACTER_ALREADY_EXISTS"
+
+
+@pytest.mark.asyncio
+async def test_onboarding_route_missing_token(client: AsyncClient):
+    """
+    Verifies that calling POST /characters/me/onboarding without an Authorization
+    Bearer header returns 401 with MISSING_TOKEN and 'Authentication bearer token required.'.
+    """
+    response = await client.post(
+        "/api/v1/characters/me/onboarding",
+        json={
+            "username": "UnauthenticatedHero",
+            "title": "Novice Adventurer",
+            "timezone": "UTC",
+        },
+    )
+    assert response.status_code == 401
+    data = response.json()
+    assert data["code"] == "MISSING_TOKEN"
+    assert data["detail"] == "Authentication bearer token required."
+
+
+@pytest.mark.asyncio
+async def test_onboarding_route_invalid_token(client: AsyncClient):
+    """
+    Verifies that calling POST /characters/me/onboarding with an invalid token
+    returns 401 with INVALID_TOKEN.
+    """
+    response = await client.post(
+        "/api/v1/characters/me/onboarding",
+        headers={"Authorization": "Bearer not.a.valid.jwt"},
+        json={
+            "username": "UnauthenticatedHero",
+            "title": "Novice Adventurer",
+            "timezone": "UTC",
+        },
+    )
+    assert response.status_code == 401
+    data = response.json()
+    assert data["code"] == "INVALID_TOKEN"

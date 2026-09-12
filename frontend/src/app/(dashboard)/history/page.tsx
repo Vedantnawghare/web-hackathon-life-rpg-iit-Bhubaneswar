@@ -85,7 +85,7 @@ export default function HistoryPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-100 flex items-center gap-2.5">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-100 flex items-center gap-2.5 font-display">
             <History className="h-6 w-6 text-amber-400" /> Completion Chronicles
           </h1>
           <p className="text-xs text-slate-400 mt-1">
@@ -130,6 +130,7 @@ export default function HistoryPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Filter past deeds..."
+            aria-label="Filter past deeds"
             className="h-8 pl-8 text-xs bg-slate-900 border-slate-800 focus:border-amber-500 text-slate-200"
           />
         </div>
@@ -138,7 +139,7 @@ export default function HistoryPage() {
       {/* Main Ledger Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Chronicles of Past Deeds</CardTitle>
+          <CardTitle className="text-base font-display">Chronicles of Past Deeds</CardTitle>
           <CardDescription>
             Permanent immutable records generated from completed one-off, daily, and weekly cycles.
           </CardDescription>
@@ -242,6 +243,7 @@ export default function HistoryPage() {
               size="sm"
               disabled={page === 0}
               onClick={() => setPage((p) => Math.max(0, p - 1))}
+              aria-label="Previous page of deeds"
               className="h-8 gap-1"
             >
               <ChevronLeft className="h-3.5 w-3.5" /> Previous
@@ -251,6 +253,7 @@ export default function HistoryPage() {
               size="sm"
               disabled={page >= totalPages - 1}
               onClick={() => setPage((p) => p + 1)}
+              aria-label="Next page of deeds"
               className="h-8 gap-1"
             >
               Next <ChevronRight className="h-3.5 w-3.5" />

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Quest, QuestDifficulty, CharacterAttribute } from "@/types/quest";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +19,7 @@ import {
   Trash2,
   Loader2,
   Clock,
+  Scroll,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,45 +31,88 @@ interface QuestCardProps {
   isArchiving?: boolean;
 }
 
-const difficultyStyles: Record<
-  QuestDifficulty,
-  { bg: string; text: string; border: string; label: string }
-> = {
+interface DifficultyTheme {
+  label: string;
+  rarityTier: string;
+  cardStyle: string;
+  badgeStyle: string;
+  headerAccent: string;
+  waxSealColor: string;
+}
+
+const difficultyThemes: Record<QuestDifficulty, DifficultyTheme> = {
   EASY: {
-    bg: "bg-emerald-500/10",
-    text: "text-emerald-400",
-    border: "border-emerald-500/20",
-    label: "Easy",
+    label: "Common Notice",
+    rarityTier: "Rank I",
+    cardStyle:
+      "border-slate-700/70 bg-gradient-to-b from-slate-900/95 via-slate-950 to-slate-950 hover:border-emerald-500/50 hover:shadow-[0_4px_20px_rgba(16,185,129,0.12)]",
+    badgeStyle: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30",
+    headerAccent: "bg-emerald-500/60",
+    waxSealColor: "hover:bg-emerald-600 hover:border-emerald-400",
   },
   MEDIUM: {
-    bg: "bg-sky-500/10",
-    text: "text-sky-400",
-    border: "border-sky-500/20",
-    label: "Medium",
+    label: "Uncommon Bounty",
+    rarityTier: "Rank II",
+    cardStyle:
+      "border-sky-500/40 bg-gradient-to-b from-sky-950/20 via-slate-900/95 to-slate-950 hover:border-sky-400/70 hover:shadow-[0_4px_25px_rgba(56,189,248,0.2)]",
+    badgeStyle: "bg-sky-500/15 text-sky-300 border-sky-500/40",
+    headerAccent: "bg-gradient-to-r from-sky-500 to-indigo-500",
+    waxSealColor: "hover:bg-sky-600 hover:border-sky-400",
   },
   HARD: {
-    bg: "bg-amber-500/10",
-    text: "text-amber-400",
-    border: "border-amber-500/20",
-    label: "Hard",
+    label: "Rare Crusade",
+    rarityTier: "Rank III",
+    cardStyle:
+      "border-amber-500/50 bg-gradient-to-b from-amber-950/25 via-slate-900/95 to-slate-950 shadow-[0_4px_25px_rgba(245,158,11,0.15)] hover:border-amber-400 hover:shadow-[0_6px_30px_rgba(245,158,11,0.3)]",
+    badgeStyle: "bg-amber-500/20 text-amber-300 border-amber-500/50 font-bold",
+    headerAccent: "bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600",
+    waxSealColor: "hover:bg-amber-600 hover:border-yellow-400",
   },
   EPIC: {
-    bg: "bg-purple-500/10",
-    text: "text-purple-400",
-    border: "border-purple-500/20",
-    label: "Epic",
+    label: "Legendary Decree",
+    rarityTier: "Rank IV",
+    cardStyle:
+      "border-purple-500/60 bg-gradient-to-b from-purple-950/30 via-slate-900/95 to-slate-950 shadow-[0_4px_30px_rgba(168,85,247,0.25)] hover:border-purple-400 hover:shadow-[0_8px_40px_rgba(168,85,247,0.45)] ring-1 ring-purple-500/30",
+    badgeStyle: "bg-purple-500/20 text-purple-300 border-purple-500/50 font-bold",
+    headerAccent: "bg-gradient-to-r from-purple-500 via-pink-500 to-amber-400",
+    waxSealColor: "hover:bg-purple-600 hover:border-purple-400",
   },
 };
 
-const attributeIcons: Record<
+const attributeDetails: Record<
   CharacterAttribute,
-  { icon: typeof Dumbbell; label: string; color: string }
+  { icon: typeof Dumbbell; label: string; tagColor: string; chipStyle: string }
 > = {
-  STRENGTH: { icon: Dumbbell, label: "Strength", color: "text-rose-400" },
-  INTELLECT: { icon: Brain, label: "Intellect", color: "text-blue-400" },
-  DISCIPLINE: { icon: Compass, label: "Discipline", color: "text-emerald-400" },
-  VITALITY: { icon: Heart, label: "Vitality", color: "text-amber-400" },
-  CREATIVITY: { icon: Palette, label: "Creativity", color: "text-purple-400" },
+  STRENGTH: {
+    icon: Dumbbell,
+    label: "Strength",
+    tagColor: "text-rose-400",
+    chipStyle: "bg-rose-500/10 border-rose-500/30 text-rose-300",
+  },
+  INTELLECT: {
+    icon: Brain,
+    label: "Intellect",
+    tagColor: "text-sky-400",
+    chipStyle: "bg-sky-500/10 border-sky-500/30 text-sky-300",
+  },
+  DISCIPLINE: {
+    icon: Compass,
+    label: "Discipline",
+    tagColor: "text-emerald-400",
+    chipStyle: "bg-emerald-500/10 border-emerald-500/30 text-emerald-300",
+  },
+  VITALITY: {
+    icon: Heart,
+    label: "Vitality",
+    tagColor: "text-amber-400",
+    chipStyle: "bg-amber-500/10 border-amber-500/30 text-amber-300",
+  },
+  CREATIVITY: {
+    icon: Palette,
+    label: "Creativity",
+    tagColor: "text-purple-400",
+    chipStyle: "bg-purple-500/10 border-purple-500/30 text-purple-300",
+  },
 };
 
 const attributeBonusByDifficulty: Record<QuestDifficulty, number> = {
@@ -87,223 +130,225 @@ export function QuestCard({
   isArchiving = false,
 }: QuestCardProps) {
   const [confirmArchive, setConfirmArchive] = useState(false);
-  const diff = difficultyStyles[quest.difficulty] || difficultyStyles.EASY;
-  const attrInfo = attributeIcons[quest.primary_attribute] || attributeIcons.INTELLECT;
+  const theme = difficultyThemes[quest.difficulty] || difficultyThemes.EASY;
+  const attrInfo = attributeDetails[quest.primary_attribute] || attributeDetails.INTELLECT;
   const AttrIcon = attrInfo.icon;
   const attrBonus = attributeBonusByDifficulty[quest.difficulty] || 1;
 
   const isCompleted = quest.is_completed_for_period;
 
+  const getRecurrenceBadge = () => {
+    switch (quest.recurrence) {
+      case "DAILY":
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[10px] font-mono font-bold tracking-wide">
+            <Repeat className="h-3 w-3" /> Daily Mandate
+          </span>
+        );
+      case "WEEKLY":
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-300 text-[10px] font-mono font-bold tracking-wide">
+            <Calendar className="h-3 w-3" /> Weekly Crusade
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300 text-[10px] font-mono font-medium">
+            <Scroll className="h-3 w-3 text-slate-400" /> Quest Bounty
+          </span>
+        );
+    }
+  };
+
   const getCompletionBadgeLabel = () => {
-    if (quest.recurrence === "DAILY") return "Cleared Today";
-    if (quest.recurrence === "WEEKLY") return "Cleared This Week";
-    return "Completed";
+    if (quest.recurrence === "DAILY") return "Deed Sealed Today";
+    if (quest.recurrence === "WEEKLY") return "Crusade Accomplished";
+    return "Deed Conquered";
   };
 
   return (
-    <Card
+    <article
       className={cn(
-        "relative transition-all duration-200 overflow-hidden",
+        "relative rounded-xl border transition-all duration-300 overflow-hidden flex flex-col justify-between",
         isCompleted
-          ? "bg-slate-900/40 border-slate-800/60 opacity-85"
-          : "bg-slate-900/80 border-slate-800 hover:border-slate-700/90 hover:shadow-lg hover:shadow-amber-500/5"
+          ? "bg-slate-950/60 border-slate-800/80 opacity-80 backdrop-blur-sm"
+          : cn("backdrop-blur-md", theme.cardStyle)
       )}
     >
-      {/* Top Border Accent */}
+      {/* Ornate Top Accent Bar */}
       <div
         className={cn(
-          "h-1 w-full",
-          isCompleted
-            ? "bg-emerald-500/40"
-            : quest.difficulty === "EPIC"
-            ? "bg-gradient-to-r from-purple-500 via-pink-500 to-amber-500"
-            : quest.difficulty === "HARD"
-            ? "bg-amber-500"
-            : quest.difficulty === "MEDIUM"
-            ? "bg-sky-500"
-            : "bg-emerald-500"
+          "h-1.5 w-full",
+          isCompleted ? "bg-emerald-500/40" : theme.headerAccent
         )}
       />
 
-      <CardContent className="p-5 space-y-4">
-        {/* Header Row: Category, Recurrence, Difficulty */}
-        <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-slate-300 uppercase tracking-wider text-[11px]">
-              {quest.category}
-            </span>
-            <span className="text-slate-600">•</span>
-            {quest.recurrence === "DAILY" ? (
-              <span className="inline-flex items-center gap-1 text-amber-400 font-medium">
-                <Repeat className="h-3 w-3" /> Daily
-              </span>
-            ) : quest.recurrence === "WEEKLY" ? (
-              <span className="inline-flex items-center gap-1 text-sky-400 font-medium">
-                <Calendar className="h-3 w-3" /> Weekly
-              </span>
-            ) : (
-              <span className="text-slate-400 font-medium">One-Off</span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <Badge
-              variant="outline"
-              className={cn(diff.bg, diff.text, diff.border, "font-semibold")}
-            >
-              {diff.label}
-            </Badge>
-
-            {isCompleted && (
-              <Badge
-                variant="outline"
-                className="bg-emerald-950/40 text-emerald-300 border-emerald-500/30 gap-1 font-medium"
-              >
-                <CheckCircle2 className="h-3 w-3" />
-                {getCompletionBadgeLabel()}
-              </Badge>
-            )}
-          </div>
-        </div>
-
-        {/* Quest Title & Description */}
+      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
+        {/* Top Metadata Row: Recurrence, Category Stamp, Difficulty */}
         <div>
+          <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
+            <div className="flex items-center gap-2">
+              {getRecurrenceBadge()}
+              <span className="text-slate-600 font-bold">•</span>
+              <span className="text-[10px] uppercase font-mono tracking-wider font-bold text-slate-400 px-2 py-0.5 rounded bg-slate-900/80 border border-slate-800">
+                {quest.category}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <Badge variant="outline" className={cn("text-[10px] font-mono", theme.badgeStyle)}>
+                {theme.rarityTier} • {theme.label}
+              </Badge>
+            </div>
+          </div>
+
+          {/* Title & Description */}
           <h3
             className={cn(
-              "font-bold text-base text-slate-100 leading-snug",
+              "font-bold text-base sm:text-lg text-slate-100 font-display leading-snug tracking-tight",
               isCompleted && "line-through text-slate-400"
             )}
           >
             {quest.title}
           </h3>
+
           {quest.description && (
-            <p className="text-xs text-slate-400 mt-1.5 line-clamp-2 leading-relaxed">
+            <p className="text-xs text-slate-400 mt-2 line-clamp-3 leading-relaxed font-sans">
               {quest.description}
             </p>
           )}
         </div>
 
-        {/* Rewards & Attribute Gains Row */}
-        <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-800/80 text-xs">
-          <div className="flex items-center gap-3">
-            {/* XP Reward */}
-            <div
-              className="flex items-center gap-1 text-amber-400 font-mono font-semibold"
-              title="Base XP earned upon completion"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>+{quest.base_xp} XP</span>
-            </div>
-
-            {/* Gold Reward */}
-            <div
-              className="flex items-center gap-1 text-amber-300 font-mono font-semibold"
-              title="Gold earned upon completion"
-            >
-              <Coins className="h-3.5 w-3.5" />
-              <span>+{quest.base_gold} G</span>
-            </div>
-
-            {/* Primary Attribute Reward */}
-            <div
-              className={cn("flex items-center gap-1 font-mono font-semibold", attrInfo.color)}
-              title={`${attrInfo.label} attribute increase`}
-            >
-              <AttrIcon className="h-3.5 w-3.5" />
-              <span>+{attrBonus}</span>
-            </div>
-          </div>
-
-          {/* Due date if set */}
-          {quest.due_date && (
-            <div
-              className="flex items-center gap-1 text-slate-400 text-[11px]"
-              title={`Due: ${quest.due_date}`}
-            >
-              <Clock className="h-3 w-3 text-slate-500" />
-              <span>{quest.due_date}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Action Controls */}
-        <div className="flex items-center justify-between gap-3 pt-2">
-          {/* Archive / Delete confirmation toggle */}
-          {onArchive && (
-            <div>
-              {confirmArchive ? (
-                <div className="flex items-center gap-1.5">
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    className="h-8 text-xs px-2.5"
-                    disabled={isArchiving}
-                    onClick={() => onArchive(quest.id)}
-                  >
-                    {isArchiving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Confirm Archive"}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 text-xs px-2 text-slate-400 hover:text-slate-200"
-                    onClick={() => setConfirmArchive(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-slate-500 hover:text-rose-400 hover:bg-slate-800"
-                  title="Archive Quest"
-                  onClick={() => setConfirmArchive(true)}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              )}
-            </div>
-          )}
-
-          {/* Clear / Complete Button */}
-          <div className="ml-auto">
-            {isCompleted ? (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled
-                className="gap-1.5 text-xs text-emerald-400 border-emerald-500/20 bg-emerald-950/20 cursor-not-allowed opacity-80"
+        {/* Tangible Loot Chips & Expiry */}
+        <div className="space-y-3 pt-3 border-t border-slate-800/80">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            {/* Loot Chips */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* XP Loot Chip */}
+              <div
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono font-bold text-xs shadow-sm"
+                title="Authoritative Base XP Bounty"
               >
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                {getCompletionBadgeLabel()}
-              </Button>
-            ) : (
-              <Button
-                variant="gold"
-                size="sm"
-                className="gap-1.5 text-xs font-semibold shadow-sm hover:shadow-amber-500/20"
-                disabled={isCompleting}
-                onClick={() => onComplete(quest.id)}
+                <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                <span>+{quest.base_xp} XP</span>
+              </div>
+
+              {/* Gold Loot Chip */}
+              <div
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 font-mono font-bold text-xs shadow-sm"
+                title="Authoritative Gold Treasury Bounty"
               >
-                {isCompleting ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    <span>Clearing...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sword className="h-3.5 w-3.5" />
-                    <span>Clear Quest</span>
-                  </>
+                <Coins className="h-3.5 w-3.5 text-yellow-400" />
+                <span>+{quest.base_gold} G</span>
+              </div>
+
+              {/* Primary Attribute Chip */}
+              <div
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border font-mono font-bold text-xs shadow-sm",
+                  attrInfo.chipStyle
                 )}
-              </Button>
+                title={`${attrInfo.label} realm progression score`}
+              >
+                <AttrIcon className="h-3.5 w-3.5" />
+                <span>+{attrBonus} {quest.primary_attribute.slice(0, 3)}</span>
+              </div>
+            </div>
+
+            {/* Due date timestamp if present */}
+            {quest.due_date && (
+              <div
+                className="flex items-center gap-1 text-[11px] font-mono text-slate-400"
+                title={`Contract expiration: ${quest.due_date}`}
+              >
+                <Clock className="h-3 w-3 text-slate-500" />
+                <span>{quest.due_date}</span>
+              </div>
             )}
           </div>
+
+          {/* Action Row: Archive & Claim Bounty */}
+          <div className="flex items-center justify-between gap-3 pt-2">
+            {/* Archive / Abandon Contract Button */}
+            {onArchive ? (
+              <div>
+                {confirmArchive ? (
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="h-9 text-xs px-2.5 font-mono"
+                      disabled={isArchiving}
+                      onClick={() => onArchive(quest.id)}
+                    >
+                      {isArchiving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Confirm Archive"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-9 text-xs px-2 text-slate-400 hover:text-slate-200"
+                      onClick={() => setConfirmArchive(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmArchive(true)}
+                    className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-slate-900 transition-colors cursor-pointer border border-transparent hover:border-rose-500/20"
+                    title="Archive this bounty notice"
+                    aria-label={`Archive bounty: ${quest.title}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div />
+            )}
+
+            {/* Completion Button / Wax Seal */}
+            <div>
+              {isCompleted ? (
+                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold shadow-[0_0_12px_rgba(16,185,129,0.15)]">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  <span>{getCompletionBadgeLabel()}</span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  disabled={isCompleting}
+                  onClick={() => onComplete(quest.id)}
+                  aria-label={`Claim bounty for ${quest.title}`}
+                  className={cn(
+                    "min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-display text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md disabled:cursor-not-allowed",
+                    quest.difficulty === "EPIC"
+                      ? "bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 text-white hover:brightness-110 shadow-[0_0_15px_rgba(168,85,247,0.4)] border border-purple-400/50"
+                      : quest.difficulty === "HARD"
+                      ? "bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 text-slate-950 font-black hover:brightness-110 shadow-[0_0_15px_rgba(245,158,11,0.4)] border border-yellow-300/60"
+                      : "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold hover:brightness-110 border border-amber-400/40"
+                  )}
+                >
+                  {isCompleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin text-current" />
+                      <span>Sealing Deed...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sword className="h-4 w-4 text-current" />
+                      <span>Claim Bounty</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </article>
   );
 }
