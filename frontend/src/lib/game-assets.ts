@@ -24,6 +24,12 @@ export const GAME_ASSETS = {
   },
   models: {
     enemyBoss: '/assets/models/enemies/arcane-boss.glb',
+    heroes: {
+      vanguard: '/assets/models/heroes/valen-vanguard.glb',
+      rogue: '/assets/models/heroes/kaelen-rogue.glb',
+      mage: '/assets/models/heroes/lyra-mage.glb',
+      ranger: '/assets/models/heroes/aria-ranger.glb',
+    },
   },
 } as const;
 

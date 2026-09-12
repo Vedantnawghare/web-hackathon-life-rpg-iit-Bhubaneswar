@@ -358,27 +358,33 @@ export function Boss3DModel({
     laserGroup.visible = false;
     headGroup.add(laserGroup);
 
+    // Target coordinate: hero chest position across the arena in world space
+    const targetHeroWorld = new THREE.Vector3(-4.6, 0.95, 0.3);
+
+    const coreBeamGeo = new THREE.CylinderGeometry(0.018, 0.028, 6.5, 8);
+    coreBeamGeo.rotateX(Math.PI / 2);
+    coreBeamGeo.translate(0, 0, 3.25);
+
+    const sheathBeamGeo = new THREE.CylinderGeometry(0.045, 0.08, 6.5, 8);
+    sheathBeamGeo.rotateX(Math.PI / 2);
+    sheathBeamGeo.translate(0, 0, 3.25);
+
     const laserBeams: THREE.Group[] = [];
     [-0.09, 0.09].forEach((lx) => {
       const beamUnit = new THREE.Group();
       beamUnit.position.set(lx, 0, 0);
-      // Angle beam forward-left toward the player
-      beamUnit.rotation.y = 0.25;
-      beamUnit.rotation.x = Math.PI / 2;
 
       // Inner intense core beam
-      const coreBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.025, 4.8, 8), laserCoreMat);
-      coreBeam.position.y = 2.4;
+      const coreBeam = new THREE.Mesh(coreBeamGeo, laserCoreMat);
       beamUnit.add(coreBeam);
 
       // Outer glowing plasma sheath
-      const sheathBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.075, 4.8, 8), laserSheathMat);
-      sheathBeam.position.y = 2.4;
+      const sheathBeam = new THREE.Mesh(sheathBeamGeo, laserSheathMat);
       beamUnit.add(sheathBeam);
 
       // Eye flare halo
       const flare = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), laserCoreMat);
-      flare.position.y = 0.05;
+      flare.position.z = 0.04;
       beamUnit.add(flare);
 
       laserGroup.add(beamUnit);
@@ -573,11 +579,15 @@ export function Boss3DModel({
         mandibleLeft.rotation.z = 0.65;
         mandibleRight.rotation.z = -0.65;
 
-        // 3. EYE LASER BEAM BLAST: visible, vibrating and illuminating the arena!
+        // 3. EYE LASER BEAM BLAST: dynamically locked onto hero chest in world space, never shoots to the sky!
         laserGroup.visible = true;
         const laserVibe = 1.0 + Math.sin(elapsedTime * 35) * 0.35;
         laserBeams.forEach((beam) => {
-          beam.scale.set(laserVibe, 1.0, laserVibe);
+          if (beam.parent) {
+            const localTarget = beam.parent.worldToLocal(targetHeroWorld.clone());
+            beam.lookAt(localTarget);
+          }
+          beam.scale.set(laserVibe, laserVibe, 1.0);
         });
         eyeLaserLight.intensity = 8.0 + Math.sin(elapsedTime * 30) * 4.0;
 
@@ -671,6 +681,8 @@ export function Boss3DModel({
       throatMat.dispose();
       laserCoreMat.dispose();
       laserSheathMat.dispose();
+      coreBeamGeo.dispose();
+      sheathBeamGeo.dispose();
       particleGeo.dispose();
       particleMat.dispose();
     };
