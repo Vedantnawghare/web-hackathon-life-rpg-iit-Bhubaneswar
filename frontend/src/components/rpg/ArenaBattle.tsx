@@ -213,11 +213,19 @@ export function ArenaBattle({
 
     const damageAmount = Math.max(1, enemyHp - calculatedNewHp);
 
-    setCombatAlert(` ${heroArchetype.name} channels ${heroArchetype.signatureMove}!`);
+    // PHASE 1 (0.0s - 1.2s): Stance & Focus Anticipation
     setHeroState("READY");
     setCameraZoom(true);
+    setCombatAlert(`⚔️ ${heroArchetype.name} channels willpower into ${heroArchetype.signatureMove}!`);
 
+    // PHASE 2 (1.2s - 2.8s): Approach / Lunge Forward
     const t0 = setTimeout(() => {
+      setHeroState("APPROACH");
+      setCombatAlert(`⚔️ ${heroArchetype.name} advances into striking range!`);
+    }, 1200);
+
+    // PHASE 3 (2.8s - 5.5s): Weapon Attack & Projectile Traversal
+    const t1 = setTimeout(() => {
       triggerHeroAttackSound();
       setHeroState(isRogue ? "ATTACK_COMBO" : "ATTACK");
 
@@ -230,55 +238,59 @@ export function ArenaBattle({
       } else {
         setActiveProjectile("sword_arc");
       }
-    }, 600);
+      setCombatAlert(`💥 ${heroArchetype.name} executes ${heroArchetype.signatureMove}!`);
+    }, 2800);
 
-    const t1 = setTimeout(() => {
+    // PHASE 4 (5.5s - 7.0s): Impact on Boss, Screen Shake & Damage Roll
+    const t2 = setTimeout(() => {
       setActiveProjectile(null);
       triggerHeroImpactSound();
       audioManager.playEnemyHurt();
       setScreenShake(true);
       setEnemyState("HIT");
       setEnemyHp(calculatedNewHp);
-      setCombatAlert(` ${damageAmount} DAMAGE CRUSHES THE ADVERSARY!`);
+      setCombatAlert(`🔥 ${damageAmount} CRITICAL DAMAGE SHATTERS THE BOSS!`);
       setDamageNumber({
         text: `-${damageAmount} HP`,
         isCrit: calculatedNewHp === 0,
         isHero: false,
       });
 
-      setTimeout(() => setEnemyTrailingHp(calculatedNewHp), 450);
-      setTimeout(() => setScreenShake(false), 380);
-    }, 2000);
+      setTimeout(() => setEnemyTrailingHp(calculatedNewHp), 500);
+      setTimeout(() => setScreenShake(false), 450);
+    }, 5500);
 
-    const t2 = setTimeout(() => {
+    // PHASE 5 (7.0s - 8.5s): Hero Recovery & Boss Stagger / Enrage
+    const t3 = setTimeout(() => {
       setHeroState("READY");
       setCombatAlert(null);
       setDamageNumber(null);
-      setCameraZoom(false);
 
       if (calculatedNewHp > 0) {
         audioManager.playEnemyRoar();
         setEnemyState("APPROACH");
-        setCombatAlert(` ${enemyInfo.name} ROARS & COUNTERATTACKS!`);
+        setCombatAlert(`⚠️ ${enemyInfo.name} ROARS & CHARGES OCULAR DEATH BEAM!`);
       } else {
         setEnemyState("DEFEATED");
         audioManager.playEnemyDeathRoar();
         audioManager.playDefeatSound();
         audioManager.playFanfare();
-        setCombatAlert("🏆 VICTORY! DAILY BOSS DEFEATED!");
+        setCombatAlert("🏆 VICTORY! DAILY RAID BOSS DEFEATED!");
       }
-    }, 3200);
+    }, 7000);
 
-    let t3: NodeJS.Timeout | null = null;
     let t4: NodeJS.Timeout | null = null;
+    let t5: NodeJS.Timeout | null = null;
 
     if (calculatedNewHp > 0) {
-      t3 = setTimeout(() => {
+      // PHASE 6 (8.5s - 10.5s): Boss Counterattack - Eye Laser Locks onto Hero
+      t4 = setTimeout(() => {
         setEnemyState("ATTACK");
         audioManager.playEnemyLaserBeam();
         audioManager.playEnemyCounterImpact();
-        setCombatAlert(`⚡ ${enemyInfo.name} UNLEASHES OCULAR DEATH BEAM & CLAW CLEAVE!`);
+        setCombatAlert(`⚡ ${enemyInfo.name} FIRES CONCENTRATED OCULAR LASER AT HERO!`);
 
+        // Laser connects with Hero chest
         const tRetaliate = setTimeout(() => {
           setHeroState("HIT");
           setHeroHp((prev) => Math.max(20, prev - 12));
@@ -290,19 +302,21 @@ export function ArenaBattle({
             isHero: true,
           });
 
-          setTimeout(() => setHeroTrailingHp((prev) => Math.max(20, prev - 12)), 350);
-          setTimeout(() => setRedScreenFlash(false), 300);
-          setTimeout(() => setScreenShake(false), 350);
-        }, 600);
+          setTimeout(() => setHeroTrailingHp((prev) => Math.max(20, prev - 12)), 400);
+          setTimeout(() => setRedScreenFlash(false), 400);
+          setTimeout(() => setScreenShake(false), 450);
+        }, 800);
 
         timeoutRefs.current.push(tRetaliate);
-      }, 4200);
+      }, 8500);
 
-      t4 = setTimeout(() => {
+      // PHASE 7 (11.5s): Round Concludes & Smooth Return to Idle
+      t5 = setTimeout(() => {
         setEnemyState("IDLE");
         setHeroState("IDLE");
         setCombatAlert(null);
         setDamageNumber(null);
+        setCameraZoom(false);
         setIsBattling(false);
         audioManager.startAmbientMusic();
 
@@ -313,11 +327,13 @@ export function ArenaBattle({
             levelsGained: data.levels_gained,
           });
         }
-      }, 5800);
+      }, 11500);
     } else {
-      t4 = setTimeout(() => {
+      // Boss Defeated Path
+      t5 = setTimeout(() => {
         setIsBattling(false);
         setShowLoot(true);
+        setCameraZoom(false);
         audioManager.startAmbientMusic();
 
         if (data.has_leveled_up && onLevelUp) {
@@ -327,12 +343,12 @@ export function ArenaBattle({
             levelsGained: data.levels_gained,
           });
         }
-      }, 4800);
+      }, 9500);
     }
 
-    timeoutRefs.current.push(t0, t1, t2);
-    if (t3) timeoutRefs.current.push(t3);
+    timeoutRefs.current.push(t0, t1, t2, t3);
     if (t4) timeoutRefs.current.push(t4);
+    if (t5) timeoutRefs.current.push(t5);
   }, [
     activeHeroClass,
     enemyHp,
@@ -767,7 +783,7 @@ export function ArenaBattle({
                   opacity: [0, 1, 1, 0],
                   scale: [0.7, 1.5, 2.0],
                 }}
-                transition={{ duration: 1.35, ease: "easeInOut" }}
+                transition={{ duration: 2.6, ease: "easeInOut" }}
                 className="absolute"
               >
                 <div className="relative w-16 h-16 flex items-center justify-center">
@@ -785,9 +801,9 @@ export function ArenaBattle({
                   x: [20, 300, 580],
                   y: [8, -14, 0],
                   opacity: [0, 1, 1, 0],
-                  scale: [0.8, 1.2, 1.4],
+                  scale: [0.8, 1.3, 1.5],
                 }}
-                transition={{ duration: 1.25, ease: "easeIn" }}
+                transition={{ duration: 2.5, ease: "easeIn" }}
                 className="absolute"
               >
                 <div className="relative w-24 h-8 flex items-center">
@@ -799,12 +815,12 @@ export function ArenaBattle({
 
             {activeProjectile === "sword_arc" && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.4, x: 340 }}
-                animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1.5, 1.8] }}
-                transition={{ duration: 0.8 }}
+                initial={{ opacity: 0, scale: 0.4, x: 220 }}
+                animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1.6, 2.0], x: [220, 380, 480] }}
+                transition={{ duration: 1.8 }}
                 className="absolute"
               >
-                <svg className="w-44 h-44 text-amber-300 drop-shadow-[0_0_35px_rgba(245,158,11,1)]" viewBox="0 0 100 100">
+                <svg className="w-48 h-48 text-amber-300 drop-shadow-[0_0_35px_rgba(245,158,11,1)]" viewBox="0 0 100 100">
                   <path d="M 15 85 A 50 50 0 0 1 85 15" fill="none" stroke="currentColor" strokeWidth="11" strokeLinecap="round" />
                 </svg>
               </motion.div>
@@ -812,31 +828,33 @@ export function ArenaBattle({
 
             {activeProjectile === "dual_slash" && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.4, x: 340 }}
-                animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1.4, 1.7] }}
-                transition={{ duration: 0.75 }}
+                initial={{ opacity: 0, scale: 0.4, x: 220 }}
+                animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1.5, 1.9], x: [220, 380, 480] }}
+                transition={{ duration: 1.8 }}
                 className="absolute"
               >
-                <svg className="w-40 h-40 text-cyan-300 drop-shadow-[0_0_35px_rgba(6,182,212,1)]" viewBox="0 0 100 100">
+                <svg className="w-44 h-44 text-cyan-300 drop-shadow-[0_0_35px_rgba(6,182,212,1)]" viewBox="0 0 100 100">
                   <line x1="15" y1="15" x2="85" y2="85" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
                   <line x1="85" y1="15" x2="15" y2="85" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
                 </svg>
               </motion.div>
             )}
 
-            {/* Boss Ocular Laser Beam Attack (Shoots across arena from eyes to player) */}
+            {/* Boss Ocular Laser Beam Attack (Shoots directly from boss eyes to player chest) */}
             {enemyState === "ATTACK" && (
               <motion.div
                 initial={{ opacity: 0, scaleY: 0.2 }}
-                animate={{ opacity: [0, 1, 1, 0.85, 0], scaleY: [0.2, 1.6, 1.0, 1.4, 0] }}
-                transition={{ duration: 1.2, times: [0, 0.15, 0.5, 0.8, 1] }}
-                className="absolute inset-x-2 sm:inset-x-8 bottom-12 sm:bottom-16 h-20 pointer-events-none z-30 flex items-center"
+                animate={{ opacity: [0, 1, 1, 0.9, 0], scaleY: [0.2, 1.6, 1.1, 1.4, 0] }}
+                transition={{ duration: 1.8, times: [0, 0.15, 0.5, 0.8, 1] }}
+                className="absolute inset-x-4 sm:inset-x-12 bottom-16 sm:bottom-24 h-24 pointer-events-none z-30 flex items-center origin-right -rotate-2"
               >
                 <div className="w-full h-5 sm:h-7 bg-gradient-to-r from-cyan-400 via-rose-500 to-amber-300 shadow-[0_0_40px_rgba(244,63,94,1)] rounded-full blur-[1px] relative">
                   <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-2 sm:h-3 bg-white rounded-full shadow-[0_0_25px_rgba(255,255,255,1)]" />
                 </div>
-                <div className="absolute right-0 w-20 h-20 rounded-full bg-rose-400 blur-md animate-ping" />
-                <div className="absolute left-0 w-24 h-24 rounded-full bg-cyan-300 blur-lg animate-pulse" />
+                {/* Corona flare at boss eye source */}
+                <div className="absolute right-0 w-24 h-24 rounded-full bg-rose-400 blur-md animate-ping" />
+                {/* Searing impact flare directly on player hero */}
+                <div className="absolute left-0 w-28 h-28 rounded-full bg-cyan-300 blur-lg animate-pulse" />
               </motion.div>
             )}
           </div>

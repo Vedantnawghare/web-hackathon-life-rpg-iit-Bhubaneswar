@@ -7,6 +7,7 @@
 
 export const GAME_ASSETS = {
   backgrounds: {
+    home: '/assets/world/home-background.png',
     worldMap: '/assets/world/world-background.png',
     arena: '/assets/world/arena-background.png',
     quests: '/assets/world/quests-background.png',
@@ -16,6 +17,13 @@ export const GAME_ASSETS = {
     achievements: '/assets/world/achievements-background.png',
     login: '/assets/world/login-background.png',
     heroSelect: '/assets/world/hero-select-background.png',
+  },
+  zones: {
+    mindpeak: '/assets/world/zone-mindpeak.png',
+    ironCrags: '/assets/world/zone-iron-crags.png',
+    discipline: '/assets/world/zone-discipline.png',
+    vitalis: '/assets/world/zone-vitalis.png',
+    arcanum: '/assets/world/zone-arcanum.png',
   },
   enemies: {
     voidBrute: '/assets/enemies/void-brute.png',
