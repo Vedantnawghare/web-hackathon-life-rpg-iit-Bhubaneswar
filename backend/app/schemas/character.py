@@ -43,6 +43,7 @@ class CharacterOut(BaseModel):
     xp_required_for_next_level: int
     gold: int
     current_streak: int = 0
+    longest_streak: int = 0
 
     # 5 Attributes
     strength: int

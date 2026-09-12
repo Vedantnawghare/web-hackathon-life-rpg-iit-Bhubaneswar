@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion, type Transition } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Trophy, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
 
@@ -22,6 +22,8 @@ export function LevelUpModal({
   levelsGained = 1,
   characterName = "Adventurer",
 }: LevelUpModalProps) {
+  const shouldReduceMotion = useReducedMotion();
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -32,16 +34,20 @@ export function LevelUpModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
+  const modalTransition: Transition = shouldReduceMotion
+    ? { duration: 0.05 }
+    : { type: "spring", stiffness: 350, damping: 25 };
+
   return (
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
           {/* Animated Card Container */}
           <motion.div
-            initial={{ scale: 0.8, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.85, opacity: 0, y: 20 }}
-            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+            initial={shouldReduceMotion ? { opacity: 0 } : { scale: 0.8, opacity: 0, y: 20 }}
+            animate={shouldReduceMotion ? { opacity: 1 } : { scale: 1, opacity: 1, y: 0 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { scale: 0.85, opacity: 0, y: 20 }}
+            transition={modalTransition}
             className="relative w-full max-w-md rounded-2xl border-2 border-amber-500/60 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 p-8 shadow-[0_0_60px_rgba(245,158,11,0.25)] text-center overflow-hidden"
             role="dialog"
             aria-modal="true"
@@ -51,9 +57,17 @@ export function LevelUpModal({
 
             {/* Celebratory Icon Crest */}
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1, rotate: [0, -10, 10, 0] }}
-              transition={{ delay: 0.15, type: "spring", stiffness: 300, damping: 15 }}
+              initial={shouldReduceMotion ? { opacity: 0 } : { scale: 0 }}
+              animate={
+                shouldReduceMotion
+                  ? { opacity: 1 }
+                  : { scale: 1, rotate: [0, -10, 10, 0] }
+              }
+              transition={
+                shouldReduceMotion
+                  ? { duration: 0.05 }
+                  : { delay: 0.15, type: "spring", stiffness: 300, damping: 15 }
+              }
               className="relative mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-600 via-amber-400 to-yellow-300 p-0.5 shadow-[0_0_30px_rgba(245,158,11,0.4)]"
             >
               <div className="flex h-full w-full items-center justify-center rounded-2xl bg-slate-950">

@@ -16,6 +16,7 @@ This file maintains verified license and attribution records for third-party lib
 | **Lucide React** | UI & RPG Iconography | ISC | Lucide Contributors | https://github.com/lucide-icons/lucide |
 | **@supabase/supabase-js** | Supabase JavaScript Client | MIT | Supabase, Inc. | https://github.com/supabase/supabase-js |
 | **@supabase/ssr** | Supabase Next.js SSR Auth Helper | MIT | Supabase, Inc. | https://github.com/supabase/ssr |
+| **@tanstack/react-query** | Async State & Server Cache Management | MIT | Tanner Linsley | https://github.com/TanStack/query |
 | **clsx** | Utility for conditional classnames | MIT | Luke Edwards | https://github.com/lukeed/clsx |
 | **tailwind-merge** | Utility to merge Tailwind classes | MIT | Dany Castillo | https://github.com/dcastil/tailwind-merge |
 

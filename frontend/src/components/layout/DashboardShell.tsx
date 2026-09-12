@@ -34,6 +34,14 @@ const navigationItems = [
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
+const themeGradients: Record<string, string> = {
+  default_slate: "bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900/50",
+  theme_abyssal_dark: "bg-gradient-to-b from-black via-slate-950 to-purple-950/25",
+  theme_sunfire_gold: "bg-gradient-to-b from-slate-950 via-amber-950/15 to-slate-900/60",
+  theme_emerald_forest: "bg-gradient-to-b from-slate-950 via-emerald-950/15 to-slate-900/60",
+  theme_arcane_violet: "bg-gradient-to-b from-slate-950 via-purple-950/25 to-slate-900/60",
+};
+
 export function DashboardShell({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
   const { isMobileSidebarOpen, setMobileSidebarOpen } = useUiStore();
@@ -45,6 +53,10 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     queryFn: () => apiClient<Character>("/characters/me"),
     enabled: isAuthenticated,
   });
+
+  const activeThemeBg =
+    themeGradients[character?.equipped_theme || "default_slate"] ||
+    themeGradients.default_slate;
 
   return (
     <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
@@ -108,7 +120,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           title={character?.title}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900/50">
+        <main className={cn("flex-1 overflow-y-auto p-4 md:p-8 transition-colors duration-500", activeThemeBg)}>
           <div className="max-w-7xl mx-auto space-y-6">{children}</div>
         </main>
       </div>

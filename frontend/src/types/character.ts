@@ -11,6 +11,7 @@ export interface Character {
   xp_required_for_next_level: number;
   gold: number;
   current_streak?: number;
+  longest_streak?: number;
 
   // 5 Core Attributes
   strength: number;

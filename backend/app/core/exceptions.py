@@ -45,6 +45,11 @@ class InsufficientGoldException(DomainException):
         super().__init__(detail=detail, code=code, status_code=status.HTTP_400_BAD_REQUEST)
 
 
+class BadRequestException(DomainException):
+    def __init__(self, detail: str = "Invalid request.", code: str = "BAD_REQUEST"):
+        super().__init__(detail=detail, code=code, status_code=status.HTTP_400_BAD_REQUEST)
+
+
 async def domain_exception_handler(request: Request, exc: DomainException) -> JSONResponse:
     """RFC 7807 problem details error response handler."""
     content = {

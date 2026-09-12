@@ -59,6 +59,7 @@ export interface QuestCompleteResponse {
   levels_gained: number;
   current_streak: number;
   streak_extended: boolean;
+  unlocked_achievements?: import("./achievement").Achievement[];
   character: Character;
 }
 

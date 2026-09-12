@@ -7,6 +7,7 @@ import { QuestHistoryResponse, QuestDifficulty, CharacterAttribute } from "@/typ
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   History,
   Sparkles,
@@ -21,6 +22,7 @@ import {
   Palette,
   Clock,
   AlertCircle,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -49,6 +51,8 @@ const attributeIcons: Record<
 
 export default function HistoryPage() {
   const [page, setPage] = useState(0);
+  const [difficultyFilter, setDifficultyFilter] = useState<string>("ALL");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const offset = page * PAGE_SIZE;
 
@@ -58,7 +62,22 @@ export default function HistoryPage() {
   });
 
   const total = data?.total ?? 0;
-  const items = data?.items ?? [];
+  const rawItems = data?.items ?? [];
+
+  // Filter items
+  const items = rawItems.filter((item) => {
+    if (difficultyFilter !== "ALL" && item.difficulty !== difficultyFilter) {
+      return false;
+    }
+    if (searchQuery.trim()) {
+      const match =
+        item.quest_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.category.toLowerCase().includes(searchQuery.toLowerCase());
+      if (!match) return false;
+    }
+    return true;
+  });
+
   const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
 
   return (
@@ -78,6 +97,41 @@ export default function HistoryPage() {
           <Badge variant="outline" className="text-xs font-mono border-slate-800 text-slate-300">
             Total Quests Cleared: <span className="text-amber-400 ml-1 font-bold">{total}</span>
           </Badge>
+        </div>
+      </div>
+
+      {/* Filter Toolbar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-lg bg-slate-900/50 border border-slate-800 text-xs">
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
+          {["ALL", "EASY", "MEDIUM", "HARD", "EPIC"].map((tier) => {
+            const isSelected = difficultyFilter === tier;
+            return (
+              <button
+                key={tier}
+                type="button"
+                onClick={() => setDifficultyFilter(tier)}
+                className={cn(
+                  "px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap",
+                  isSelected
+                    ? "bg-amber-500/15 text-amber-300 border border-amber-500/30 font-semibold"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
+                )}
+              >
+                {tier === "ALL" ? "All Difficulties" : tier}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="relative flex-1 sm:w-56">
+          <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Filter past deeds..."
+            className="h-8 pl-8 text-xs bg-slate-900 border-slate-800 focus:border-amber-500 text-slate-200"
+          />
         </div>
       </div>
 

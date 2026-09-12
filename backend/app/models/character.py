@@ -62,6 +62,10 @@ class Character(Base):
     @property
     def current_streak(self) -> int:
         return self.streak.current_streak if self.streak else 0
+
+    @property
+    def longest_streak(self) -> int:
+        return self.streak.longest_streak if self.streak else 0
     inventory = relationship(
         "InventoryItem", back_populates="character", cascade="all, delete-orphan"
     )

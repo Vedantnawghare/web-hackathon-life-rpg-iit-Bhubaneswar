@@ -23,6 +23,10 @@ export interface InventoryItem {
 
 export interface PurchaseResponse {
   inventory_item: InventoryItem;
+  previous_gold: number;
+  gold_spent: number;
   remaining_gold: number;
+  newly_owned: boolean;
+  already_owned: boolean;
   detail: string;
 }

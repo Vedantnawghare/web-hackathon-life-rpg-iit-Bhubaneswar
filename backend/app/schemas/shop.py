@@ -31,5 +31,9 @@ class InventoryItemOut(BaseModel):
 
 class PurchaseResponse(BaseModel):
     inventory_item: InventoryItemOut
+    previous_gold: int
+    gold_spent: int
     remaining_gold: int
+    newly_owned: bool = True
+    already_owned: bool = False
     detail: str = "Item purchased successfully."

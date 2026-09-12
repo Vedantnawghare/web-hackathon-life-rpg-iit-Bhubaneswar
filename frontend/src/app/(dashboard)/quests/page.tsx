@@ -22,6 +22,7 @@ import {
   X,
   Flame,
   CheckCircle2,
+  Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -78,8 +79,11 @@ export default function QuestsPage() {
       queryClient.invalidateQueries({ queryKey: ["character", "me"] });
       // 2. Invalidate quests to reflect updated period completion status
       queryClient.invalidateQueries({ queryKey: ["quests"] });
+      // 3. Invalidate achievements and quest history
+      queryClient.invalidateQueries({ queryKey: ["achievements"] });
+      queryClient.invalidateQueries({ queryKey: ["quest-history"] });
 
-      // 3. Set reward celebration toast
+      // 4. Set reward celebration toast
       setLastCompletion(data);
 
       // 4. Trigger level up modal if leveled up
@@ -212,6 +216,12 @@ export default function QuestsPage() {
                   <span className="text-orange-400 flex items-center gap-1 font-sans">
                     <Flame className="h-3.5 w-3.5 fill-orange-400/40" />
                     {lastCompletion.current_streak}d Streak!
+                  </span>
+                )}
+                {lastCompletion.unlocked_achievements && lastCompletion.unlocked_achievements.length > 0 && (
+                  <span className="text-yellow-300 flex items-center gap-1 font-sans font-bold bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/40">
+                    <Trophy className="h-3.5 w-3.5" />
+                    Achievement Unlocked: {lastCompletion.unlocked_achievements[0].title}!
                   </span>
                 )}
               </div>

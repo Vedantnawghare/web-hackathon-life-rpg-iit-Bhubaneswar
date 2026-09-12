@@ -18,5 +18,6 @@ class AchievementOut(BaseModel):
     reward_title: Optional[str] = None
     is_unlocked: bool = False
     unlocked_at: Optional[datetime] = None
+    current_progress: int = 0
 
     model_config = ConfigDict(from_attributes=True)

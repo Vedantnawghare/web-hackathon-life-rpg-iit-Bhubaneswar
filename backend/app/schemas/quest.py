@@ -10,6 +10,7 @@ from app.models.enums import (
     QuestRecurrence,
 )
 from app.schemas.character import CharacterOut
+from app.schemas.achievement import AchievementOut
 
 
 def validate_plain_text(value: Optional[str], field_name: str) -> Optional[str]:
@@ -119,6 +120,7 @@ class QuestCompleteResponse(BaseModel):
     levels_gained: int
     current_streak: int
     streak_extended: bool
+    unlocked_achievements: List[AchievementOut] = []
     character: CharacterOut
 
 

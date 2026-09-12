@@ -75,3 +75,73 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
     fastapi_app.dependency_overrides.clear()
+
+
+@pytest.fixture
+async def concurrency_client() -> AsyncGenerator[AsyncClient, None]:
+    """
+    Provides an AsyncClient backed by a file-based SQLite database in WAL mode.
+    Allows genuine connection isolation for concurrent async transactions.
+    """
+    import os
+    import tempfile
+
+    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    db_path = tmp.name
+    tmp.close()
+
+    db_url = f"sqlite+aiosqlite:///{db_path}"
+    engine = create_async_engine(
+        db_url,
+        connect_args={"check_same_thread": False, "timeout": 30.0},
+    )
+
+    @event.listens_for(engine.sync_engine, "connect")
+    def set_sqlite_pragma(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA busy_timeout=30000")
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
+    session_factory = async_sessionmaker(
+        bind=engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autocommit=False,
+        autoflush=False,
+    )
+
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    from app.services.seed import seed_initial_catalog
+    async with session_factory() as session:
+        await seed_initial_catalog(session)
+
+    async def override_get_db():
+        async with session_factory() as session:
+            try:
+                yield session
+            except Exception:
+                await session.rollback()
+                raise
+            finally:
+                await session.close()
+
+    fastapi_app.dependency_overrides[get_db] = override_get_db
+    transport = ASGITransport(app=fastapi_app)
+
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        yield ac
+
+    fastapi_app.dependency_overrides.clear()
+    await engine.dispose()
+
+    for ext in ["", "-wal", "-shm"]:
+        f_path = db_path + ext
+        if os.path.exists(f_path):
+            try:
+                os.remove(f_path)
+            except OSError:
+                pass

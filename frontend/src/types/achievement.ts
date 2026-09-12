@@ -12,4 +12,5 @@ export interface Achievement {
   reward_title: string | null;
   is_unlocked: boolean;
   unlocked_at: string | null;
+  current_progress?: number;
 }

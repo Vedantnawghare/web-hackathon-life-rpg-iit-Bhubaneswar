@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LevelUpModal } from "@/components/rpg/LevelUpModal";
+import { CosmeticFrame } from "@/components/rpg/CosmeticFrame";
+import { StreakCalendar } from "@/components/rpg/StreakCalendar";
 import {
   Dumbbell,
   Brain,
@@ -23,6 +25,9 @@ import {
   Loader2,
   ArrowRight,
   Flame,
+  Shield,
+  ShoppingBag,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -30,6 +35,7 @@ import { cn } from "@/lib/utils";
 export default function DashboardPage() {
   const queryClient = useQueryClient();
   const [completingQuestId, setCompletingQuestId] = useState<string | null>(null);
+  const [lastCompletion, setLastCompletion] = useState<QuestCompleteResponse | null>(null);
   const [levelUpState, setLevelUpState] = useState<{
     isOpen: boolean;
     oldLevel: number;
@@ -64,6 +70,10 @@ export default function DashboardPage() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["character", "me"] });
       queryClient.invalidateQueries({ queryKey: ["quests"] });
+      queryClient.invalidateQueries({ queryKey: ["achievements"] });
+      queryClient.invalidateQueries({ queryKey: ["quest-history"] });
+
+      setLastCompletion(data);
 
       if (data.has_leveled_up) {
         setLevelUpState({
@@ -110,26 +120,96 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Welcome Banner */}
+      {/* Welcome Banner with Cosmetic Avatar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-100">
-              {character?.username || "Adventurer"}
-            </h1>
-            <Badge variant="gold">Level {character?.current_level || 1}</Badge>
+        <div className="flex items-center gap-4">
+          <CosmeticFrame
+            size="md"
+            username={character?.username || "Adventurer"}
+            frameKey={character?.equipped_frame || "default_frame"}
+            badgeKey={character?.equipped_badge || "default_badge"}
+          />
+          <div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-100">
+                {character?.username || "Adventurer"}
+              </h1>
+              <Badge variant="gold">Level {character?.current_level || 1}</Badge>
+            </div>
+            <p className="text-sm text-slate-400 mt-1">{character?.title || "Novice Adventurer"}</p>
           </div>
-          <p className="text-sm text-slate-400 mt-1">{character?.title || "Novice Adventurer"}</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <Link href="/quests">
-            <Button variant="gold" size="sm" className="gap-2 font-semibold">
+            <Button variant="gold" size="sm" className="gap-2 font-semibold shadow-sm">
               <Sword className="h-4 w-4" /> Open Quest Board
+            </Button>
+          </Link>
+          <Link href="/character">
+            <Button variant="secondary" size="sm" className="gap-1.5 font-medium">
+              <Shield className="h-4 w-4 text-amber-400" /> Character Sheet
+            </Button>
+          </Link>
+          <Link href="/shop">
+            <Button variant="outline" size="sm" className="gap-1.5 font-medium border-slate-700">
+              <ShoppingBag className="h-4 w-4 text-amber-300" /> Guild Bazaar
             </Button>
           </Link>
         </div>
       </div>
+
+      {/* Floating Victory Toast / Banner if quest was just cleared */}
+      {lastCompletion && (
+        <div className="relative flex items-center justify-between p-4 rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-950/40 via-slate-900 to-amber-950/30 shadow-lg shadow-amber-500/10 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-200 block">
+                Quest Cleared: &ldquo;{lastCompletion.quest_title}&rdquo;
+              </span>
+              <div className="flex items-center gap-3 text-xs font-mono font-bold mt-0.5 flex-wrap">
+                <span className="text-amber-400 flex items-center gap-1">
+                  <Sparkles className="h-3.5 w-3.5" /> +{lastCompletion.earned_xp} XP
+                  {lastCompletion.xp_multiplier > 1.0 && (
+                    <span className="text-[10px] font-sans font-normal text-amber-300/80">
+                      ({lastCompletion.xp_multiplier}x streak)
+                    </span>
+                  )}
+                </span>
+                <span className="text-amber-300 flex items-center gap-1">
+                  <Coins className="h-3.5 w-3.5" /> +{lastCompletion.earned_gold} G
+                </span>
+                <span className="text-emerald-400">
+                  +{lastCompletion.attribute_gain} {lastCompletion.attribute_increased}
+                </span>
+                {lastCompletion.streak_extended && (
+                  <span className="text-orange-400 flex items-center gap-1 font-sans">
+                    <Flame className="h-3.5 w-3.5 fill-orange-400/40" />
+                    {lastCompletion.current_streak}d Streak!
+                  </span>
+                )}
+                {lastCompletion.unlocked_achievements && lastCompletion.unlocked_achievements.length > 0 && (
+                  <span className="text-yellow-300 flex items-center gap-1 font-sans font-bold bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/40">
+                    <Trophy className="h-3.5 w-3.5" />
+                    Achievement Unlocked: {lastCompletion.unlocked_achievements[0].title}!
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setLastCompletion(null)}
+            className="p-1 text-slate-400 hover:text-slate-100 rounded-md"
+            aria-label="Dismiss banner"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {/* Attributes Overview */}
       <section className="space-y-3">
@@ -319,6 +399,12 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Daily Streak & Multiplier Cadence Tracker */}
+      <StreakCalendar
+        currentStreak={character?.current_streak ?? 0}
+        longestStreak={character?.longest_streak ?? 0}
+      />
 
       {/* Level Up Celebration Modal */}
       <LevelUpModal

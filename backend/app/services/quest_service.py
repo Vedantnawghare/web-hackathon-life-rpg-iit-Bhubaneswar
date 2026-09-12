@@ -25,6 +25,7 @@ from app.schemas.quest import (
     QuestHistoryResponse,
 )
 from app.schemas.character import CharacterOut
+from app.schemas.achievement import AchievementOut
 from app.services.rpg_engine import (
     get_difficulty_rewards,
     resolve_primary_attribute,
@@ -375,6 +376,29 @@ async def complete_quest(
 
     await db.refresh(character)
 
+    # 13. Evaluate and unlock any eligible achievements
+    from app.services.achievement_service import evaluate_and_unlock_achievements
+    unlocked_achs = await evaluate_and_unlock_achievements(db, character)
+    unlocked_out = [
+        AchievementOut(
+            id=a.id,
+            code=a.code,
+            title=a.title,
+            description=a.description,
+            category=a.category,
+            icon_name=a.icon_name,
+            condition_type=a.condition_type,
+            condition_threshold=a.condition_threshold,
+            reward_xp=a.reward_xp,
+            reward_gold=a.reward_gold,
+            reward_title=a.reward_title,
+            is_unlocked=True,
+            unlocked_at=datetime.utcnow(),
+            current_progress=a.condition_threshold,
+        )
+        for a in unlocked_achs
+    ]
+
     return QuestCompleteResponse(
         quest_id=quest.id,
         quest_title=quest.title,
@@ -389,6 +413,7 @@ async def complete_quest(
         levels_gained=progression.levels_gained,
         current_streak=new_streak,
         streak_extended=streak_extended,
+        unlocked_achievements=unlocked_out,
         character=CharacterOut.model_validate(character),
     )
 
