@@ -50,6 +50,7 @@ def decode_supabase_jwt(token: str) -> Dict[str, Any]:
                     algorithms=[alg],
                     options={
                         "verify_exp": True,
+                        "verify_iat": False,
                         "verify_signature": True,
                         "verify_aud": False,
                     },
@@ -63,6 +64,7 @@ def decode_supabase_jwt(token: str) -> Dict[str, Any]:
             algorithms=["HS256"],
             options={
                 "verify_exp": True,
+                "verify_iat": False,
                 "verify_signature": True,
                 "verify_aud": False,
             },

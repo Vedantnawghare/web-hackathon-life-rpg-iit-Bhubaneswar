@@ -78,6 +78,7 @@ async def purchase_item(
     # 6. Deduct gold and grant item
     previous_gold = character.gold
     gold_spent = shop_item.cost_gold
+    shop_item_name = shop_item.name
     character.gold -= gold_spent
 
     inventory_item = InventoryItem(
@@ -95,7 +96,7 @@ async def purchase_item(
         err_str = str(e).lower()
         if "unique" in err_str or "uq_character_shop_item" in err_str:
             raise ConflictException(
-                detail=f"You already possess the item '{shop_item.name}'.",
+                detail=f"You already possess the item '{shop_item_name}'.",
                 code="ITEM_ALREADY_OWNED",
             )
         raise
