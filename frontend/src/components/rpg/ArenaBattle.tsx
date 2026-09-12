@@ -216,18 +216,18 @@ export function ArenaBattle({
 
     const damageAmount = Math.max(1, enemyHp - calculatedNewHp);
 
-    // PHASE 1 (0.0s - 1.2s): Stance & Focus Anticipation
+    // PHASE 1 (0.0s): Stance & Focus Anticipation
     setHeroState("READY");
     setCameraZoom(true);
     setCombatAlert(`⚔️ ${heroArchetype.name} channels willpower into ${heroArchetype.signatureMove}!`);
 
-    // PHASE 2 (1.2s - 2.8s): Approach / Lunge Forward
+    // PHASE 2 (0.25s): Approach / Lunge Forward
     const t0 = setTimeout(() => {
       setHeroState("APPROACH");
       setCombatAlert(`⚔️ ${heroArchetype.name} advances into striking range!`);
-    }, 1200);
+    }, 250);
 
-    // PHASE 3 (2.8s - 5.5s): Weapon Attack & Projectile Traversal
+    // PHASE 3 (0.55s): Weapon Attack & Projectile Traversal
     const t1 = setTimeout(() => {
       triggerHeroAttackSound();
       setHeroState(isRogue ? "ATTACK_COMBO" : "ATTACK");
@@ -242,9 +242,9 @@ export function ArenaBattle({
         setActiveProjectile("sword_arc");
       }
       setCombatAlert(`💥 ${heroArchetype.name} executes ${heroArchetype.signatureMove}!`);
-    }, 2800);
+    }, 550);
 
-    // PHASE 4 (5.5s - 7.0s): Impact on Boss, Screen Shake & Damage Roll
+    // PHASE 4 (1.15s): Impact on Boss, Screen Shake & Damage Roll
     const t2 = setTimeout(() => {
       setActiveProjectile(null);
       triggerHeroImpactSound();
@@ -259,11 +259,11 @@ export function ArenaBattle({
         isHero: false,
       });
 
-      setTimeout(() => setEnemyTrailingHp(calculatedNewHp), 500);
-      setTimeout(() => setScreenShake(false), 450);
-    }, 5500);
+      setTimeout(() => setEnemyTrailingHp(calculatedNewHp), 200);
+      setTimeout(() => setScreenShake(false), 280);
+    }, 1150);
 
-    // PHASE 5 (7.0s - 8.5s): Hero Recovery & Boss Stagger / Enrage
+    // PHASE 5 (1.75s): Hero Recovery & Boss Stagger / Enrage
     const t3 = setTimeout(() => {
       setHeroState("READY");
       setCombatAlert(null);
@@ -280,13 +280,13 @@ export function ArenaBattle({
         audioManager.playFanfare();
         setCombatAlert("🏆 VICTORY! DAILY RAID BOSS DEFEATED!");
       }
-    }, 7000);
+    }, 1750);
 
     let t4: NodeJS.Timeout | null = null;
     let t5: NodeJS.Timeout | null = null;
 
     if (calculatedNewHp > 0) {
-      // PHASE 6 (8.5s - 10.5s): Boss Counterattack - Eye Laser Locks onto Hero
+      // PHASE 6 (2.3s): Boss Counterattack - Eye Laser Locks onto Hero
       t4 = setTimeout(() => {
         setEnemyState("ATTACK");
         audioManager.playEnemyLaserBeam();
@@ -305,15 +305,15 @@ export function ArenaBattle({
             isHero: true,
           });
 
-          setTimeout(() => setHeroTrailingHp((prev) => Math.max(20, prev - 12)), 400);
-          setTimeout(() => setRedScreenFlash(false), 400);
-          setTimeout(() => setScreenShake(false), 450);
-        }, 800);
+          setTimeout(() => setHeroTrailingHp((prev) => Math.max(20, prev - 12)), 200);
+          setTimeout(() => setRedScreenFlash(false), 250);
+          setTimeout(() => setScreenShake(false), 280);
+        }, 320);
 
         timeoutRefs.current.push(tRetaliate);
-      }, 8500);
+      }, 2300);
 
-      // PHASE 7 (11.5s): Round Concludes & Smooth Return to Idle
+      // PHASE 7 (3.3s): Round Concludes & Smooth Return to Idle
       t5 = setTimeout(() => {
         setEnemyState("IDLE");
         setHeroState("IDLE");
@@ -330,9 +330,9 @@ export function ArenaBattle({
             levelsGained: data.levels_gained,
           });
         }
-      }, 11500);
+      }, 3300);
     } else {
-      // Boss Defeated Path
+      // Boss Defeated Path (2.4s)
       t5 = setTimeout(() => {
         setIsBattling(false);
         setShowLoot(true);
@@ -346,7 +346,7 @@ export function ArenaBattle({
             levelsGained: data.levels_gained,
           });
         }
-      }, 9500);
+      }, 2400);
     }
 
     timeoutRefs.current.push(t0, t1, t2, t3);
@@ -830,7 +830,7 @@ export function ArenaBattle({
                   opacity: [0, 1, 1, 0],
                   scale: [0.7, 1.5, 2.0],
                 }}
-                transition={{ duration: 2.6, ease: "easeInOut" }}
+                transition={{ duration: 0.55, ease: "easeIn" }}
                 className="absolute"
               >
                 <div className="relative w-16 h-16 flex items-center justify-center">
@@ -850,7 +850,7 @@ export function ArenaBattle({
                   opacity: [0, 1, 1, 0],
                   scale: [0.8, 1.3, 1.5],
                 }}
-                transition={{ duration: 2.5, ease: "easeIn" }}
+                transition={{ duration: 0.55, ease: "easeIn" }}
                 className="absolute"
               >
                 <div className="relative w-24 h-8 flex items-center">
@@ -864,7 +864,7 @@ export function ArenaBattle({
               <motion.div
                 initial={{ opacity: 0, scale: 0.4, x: 220 }}
                 animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1.6, 2.0], x: [220, 380, 480] }}
-                transition={{ duration: 1.8 }}
+                transition={{ duration: 0.55 }}
                 className="absolute"
               >
                 <svg className="w-48 h-48 text-amber-300 drop-shadow-[0_0_35px_rgba(245,158,11,1)]" viewBox="0 0 100 100">
@@ -877,7 +877,7 @@ export function ArenaBattle({
               <motion.div
                 initial={{ opacity: 0, scale: 0.4, x: 220 }}
                 animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1.5, 1.9], x: [220, 380, 480] }}
-                transition={{ duration: 1.8 }}
+                transition={{ duration: 0.55 }}
                 className="absolute"
               >
                 <svg className="w-44 h-44 text-cyan-300 drop-shadow-[0_0_35px_rgba(6,182,212,1)]" viewBox="0 0 100 100">
@@ -892,7 +892,7 @@ export function ArenaBattle({
               <motion.div
                 initial={{ opacity: 0, scaleY: 0.2 }}
                 animate={{ opacity: [0, 1, 1, 0.9, 0], scaleY: [0.2, 1.6, 1.1, 1.4, 0] }}
-                transition={{ duration: 1.8, times: [0, 0.15, 0.5, 0.8, 1] }}
+                transition={{ duration: 0.7, times: [0, 0.15, 0.5, 0.8, 1] }}
                 className="absolute inset-x-4 sm:inset-x-12 bottom-16 sm:bottom-24 h-24 pointer-events-none z-30 flex items-center origin-right -rotate-2"
               >
                 <div className="w-full h-5 sm:h-7 bg-gradient-to-r from-cyan-400 via-rose-500 to-amber-300 shadow-[0_0_40px_rgba(244,63,94,1)] rounded-full blur-[1px] relative">

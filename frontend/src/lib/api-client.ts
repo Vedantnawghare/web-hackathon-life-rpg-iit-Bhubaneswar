@@ -80,10 +80,24 @@ export async function apiClient<T>(
 
   const url = `${API_BASE_URL}${normalizedEndpoint}`;
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+    });
+  } catch {
+    const isOffline = typeof window !== "undefined" && !window.navigator.onLine;
+    throw new ApiError({
+      type: "about:blank",
+      title: isOffline ? "Offline" : "Network Error",
+      status: 0,
+      detail: isOffline
+        ? "You are currently offline. Please check your internet connection."
+        : "Unable to connect to the realm server. Please check your connection and try again.",
+      code: isOffline ? "OFFLINE" : "NETWORK_ERROR",
+    });
+  }
 
   if (!response.ok) {
     let problem: ApiProblemDetails;

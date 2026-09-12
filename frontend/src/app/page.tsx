@@ -108,7 +108,7 @@ export default function LandingPage() {
           setHeroActionState("ATTACK_FINISHER");
           setTimeout(() => {
             setHeroActionState("READY");
-          }, 1100);
+          }, 450);
           return { ...q, completed: true };
         }
         return q;
@@ -442,6 +442,10 @@ export default function LandingPage() {
                       variant={q.completed ? "outline" : "gold"}
                       className="text-xs font-display uppercase tracking-wider"
                       disabled={q.completed}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCompleteDemoQuest(q.id);
+                      }}
                     >
                       {q.completed ? "Done" : "Strike"}
                     </Button>

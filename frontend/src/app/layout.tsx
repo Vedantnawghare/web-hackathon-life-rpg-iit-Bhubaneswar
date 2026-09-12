@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Cinzel, Rajdhani } from "next/font/google";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { AudioProvider } from "@/components/providers/audio-provider";
+import { NetworkStatusNotifier } from "@/components/layout/NetworkStatusNotifier";
 import "./globals.css";
 
 const inter = Inter({
@@ -80,6 +81,7 @@ export default function RootLayout({
     <html lang="en" className={`dark ${inter.variable} ${cinzel.variable} ${rajdhani.variable}`}>
       <body className="bg-slate-950 text-slate-100 min-h-screen antialiased selection:bg-amber-500/30 selection:text-amber-200 font-sans">
         <QueryProvider>
+          <NetworkStatusNotifier />
           <AudioProvider>{children}</AudioProvider>
         </QueryProvider>
       </body>
