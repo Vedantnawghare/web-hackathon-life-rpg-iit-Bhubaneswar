@@ -1,4 +1,6 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
+import { GAME_ASSETS } from "@/lib/game-assets";
 
 import { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -141,6 +143,25 @@ export function RealmMap({
   selectedZone,
   onSelectZone,
 }: RealmMapProps) {
+  // Active Boss & Today's Task HP Progression
+  const totalDailyTasks = (quests || []).length;
+  const completedDailyTasks = useMemo(() => {
+    return (quests || []).filter((q) => q.is_completed_for_period).length;
+  }, [quests]);
+
+  const dailyBossHp = useMemo(() => {
+    if (totalDailyTasks === 0) return 100;
+    return Math.max(0, Math.min(100, Math.round(100 * (1 - completedDailyTasks / totalDailyTasks))));
+  }, [totalDailyTasks, completedDailyTasks]);
+
+  const activeBossName = useMemo(() => {
+    if (selectedZone) {
+      const zone = ZONES.find((z) => z.id === selectedZone);
+      return zone ? `${zone.name} Guardian` : "Arcane Wolf";
+    }
+    return "Arcane Wolf";
+  }, [selectedZone]);
+
   // Count active quests per attribute/zone
   const zoneBountyCounts = useMemo(() => {
     const counts: Record<CharacterAttribute, number> = {
@@ -216,11 +237,38 @@ export function RealmMap({
         </div>
       </div>
 
-      {/* 2. HAND-PAINTED FANTASY OVERLAND WORLD MAP CANVAS (Ref Image 1) */}
-      <div className="relative z-10 hidden md:block my-4 h-[440px] w-full rounded-2xl bg-gradient-to-b from-[#0a1118] via-[#09151f] to-[#04090e] border-2 border-amber-950/70 overflow-hidden shadow-[inset_0_0_60px_rgba(0,0,0,0.8)]">
-        {/* Parchment & Ocean Wave Texture */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(217,119,6,0.08),transparent_65%)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-20 pointer-events-none" />
+      {/* 2. HAND-PAINTED FANTASY OVERLAND WORLD MAP CANVAS */}
+      <div className="relative z-10 hidden md:block my-4 h-[460px] w-full rounded-2xl border-2 border-amber-500/40 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)]">
+        {/* Real Fantasy World Map Background Image */}
+        <img
+          src={GAME_ASSETS.backgrounds.worldMap}
+          alt="Realm of Aethelgard Map"
+          className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[0.88] contrast-[1.05]"
+        />
+        {/* Atmosphere overlay ensuring interactive pins pop cleanly */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/40 pointer-events-none z-0" />
+
+        {/* Floating Active Encounter & Boss Progress Card */}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-xl bg-slate-950/90 backdrop-blur-md border border-amber-500/60 shadow-[0_4px_25px_rgba(0,0,0,0.8)] flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-rose-950/80 border border-rose-500/50 flex items-center justify-center text-rose-400 font-bold text-sm shadow-md">
+            ⚔️
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black font-cinzel text-amber-200 uppercase tracking-wide">
+                [ACTIVE BOSS] {activeBossName}
+              </span>
+              <span className={`text-[11px] font-mono font-bold ${dailyBossHp === 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                {dailyBossHp} / 100 HP
+              </span>
+            </div>
+            <div className="text-[10px] text-slate-300 font-rajdhani flex items-center gap-2 mt-0.5">
+              <span>Today&apos;s Tasks: <strong className="text-amber-300">{completedDailyTasks}/{totalDailyTasks} Complete</strong></span>
+              <span className="text-amber-500">•</span>
+              <span className="text-emerald-400 font-bold">{100 - dailyBossHp}% Damage Dealt</span>
+            </div>
+          </div>
+        </div>
 
         {/* ILLUSTRATED FANTASY MAP SVG CANVAS */}
         <svg

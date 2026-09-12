@@ -759,6 +759,87 @@ class AudioManager {
   /**
    * Monster Strike / Beast Claw SFX for Enemy Attack
    */
+  /**
+   * Heavy Greatsword Cleave & Clash SFX for Valen Vanguard
+   */
+  public playHeavySwordSlash() {
+    if (!this.isSfxEnabled || this.isMuted) return;
+    this.unlockContext();
+    if (!this.ctx || !this.sfxGain) return;
+    const now = this.ctx.currentTime;
+
+    // Whoosh swoosh
+    const whooshOsc = this.ctx.createOscillator();
+    const whooshGain = this.ctx.createGain();
+    whooshOsc.type = 'sawtooth';
+    whooshOsc.frequency.setValueAtTime(450, now);
+    whooshOsc.frequency.exponentialRampToValueAtTime(90, now + 0.18);
+    whooshGain.gain.setValueAtTime(0.35, now);
+    whooshGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+    whooshOsc.connect(whooshGain);
+    whooshGain.connect(this.sfxGain);
+    whooshOsc.start(now);
+    whooshOsc.stop(now + 0.22);
+
+    // Heavy blade metal crunch
+    const crunchOsc = this.ctx.createOscillator();
+    const crunchGain = this.ctx.createGain();
+    crunchOsc.type = 'triangle';
+    crunchOsc.frequency.setValueAtTime(140, now + 0.05);
+    crunchOsc.frequency.exponentialRampToValueAtTime(40, now + 0.35);
+    crunchGain.gain.setValueAtTime(0.5, now + 0.05);
+    crunchGain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+    crunchOsc.connect(crunchGain);
+    crunchGain.connect(this.sfxGain);
+    crunchOsc.start(now + 0.05);
+    crunchOsc.stop(now + 0.4);
+  }
+
+  /**
+   * Arrow Puncture Impact SFX for Aria Mystic Huntress
+   */
+  public playArrowImpact() {
+    if (!this.isSfxEnabled || this.isMuted) return;
+    this.unlockContext();
+    if (!this.ctx || !this.sfxGain) return;
+    const now = this.ctx.currentTime;
+
+    // Sharp snap puncture
+    const snapOsc = this.ctx.createOscillator();
+    const snapGain = this.ctx.createGain();
+    snapOsc.type = 'triangle';
+    snapOsc.frequency.setValueAtTime(880, now);
+    snapOsc.frequency.exponentialRampToValueAtTime(120, now + 0.12);
+    snapGain.gain.setValueAtTime(0.4, now);
+    snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    snapOsc.connect(snapGain);
+    snapGain.connect(this.sfxGain);
+    snapOsc.start(now);
+    snapOsc.stop(now + 0.16);
+  }
+
+  /**
+   * Enemy Heavy Counterattack Strike SFX
+   */
+  public playEnemyCounterImpact() {
+    if (!this.isSfxEnabled || this.isMuted) return;
+    this.unlockContext();
+    if (!this.ctx || !this.sfxGain) return;
+    const now = this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(220, now);
+    osc.frequency.exponentialRampToValueAtTime(45, now + 0.32);
+    gain.gain.setValueAtTime(0.45, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.38);
+  }
+
   public playEnemyAttack() {
     if (!this.isSfxEnabled || this.isMuted) return;
     this.unlockContext();

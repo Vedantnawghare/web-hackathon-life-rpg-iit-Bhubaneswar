@@ -290,3 +290,29 @@ async def test_quest_history_pagination(client: AsyncClient, authenticated_hero)
     res_hist2 = await client.get("/api/v1/quests/history?limit=2&offset=2", headers=headers)
     assert res_hist2.status_code == 200
     assert len(res_hist2.json()["items"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_demo_seed_and_reset(client: AsyncClient, authenticated_hero):
+    headers = authenticated_hero["headers"]
+
+    # 1. Seed demo quests
+    res_seed = await client.post("/api/v1/quests/demo-seed", headers=headers)
+    assert res_seed.status_code == 200
+    demo_quests = res_seed.json()
+    assert len(demo_quests) == 4
+
+    # 2. Complete the first quest
+    qid = demo_quests[0]["id"]
+    res_comp = await client.post(f"/api/v1/quests/{qid}/complete", headers=headers)
+    assert res_comp.status_code == 200
+
+    # 3. Reset demo boss
+    res_reset = await client.post("/api/v1/quests/demo-reset", headers=headers)
+    assert res_reset.status_code == 200
+    assert res_reset.json()["message"] == "Daily Boss HP reset to 100/100"
+
+    # Verify quest is now available again for today
+    res_list = await client.get("/api/v1/quests", headers=headers)
+    quest_after_reset = next(q for q in res_list.json() if q["id"] == qid)
+    assert quest_after_reset["is_completed_for_period"] is False

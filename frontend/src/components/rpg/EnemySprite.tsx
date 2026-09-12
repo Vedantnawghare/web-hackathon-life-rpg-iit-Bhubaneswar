@@ -12,6 +12,7 @@ interface EnemySpriteProps {
   difficulty: QuestDifficulty;
   name?: string;
   className?: string;
+  hp?: number; // 0 to 100: drives progressive visual battle fatigue
 }
 
 export function getEnemyArchetypeInfo(attribute: CharacterAttribute, difficulty: QuestDifficulty): {
@@ -71,6 +72,7 @@ export function EnemySprite({
   attribute,
   difficulty,
   className,
+  hp = 100,
 }: EnemySpriteProps) {
   const shouldReduceMotion = useReducedMotion();
   const archetype = getEnemyArchetypeInfo(attribute, difficulty);
@@ -81,9 +83,10 @@ export function EnemySprite({
     IDLE: shouldReduceMotion
       ? { scale: 1, x: 0, opacity: 1 }
       : {
-          y: [0, -8, 0],
+          // Progressive fatigue: heavily damaged enemies pant faster with desperate, jagged breathing
+          y: hp <= 25 ? [0, -4, 0, -2, 0] : hp <= 50 ? [0, -5, 0] : [0, -8, 0],
           transition: {
-            duration: 2.8,
+            duration: hp <= 25 ? 1.4 : hp <= 50 ? 1.9 : 2.8,
             repeat: Infinity,
             ease: "easeInOut",
           },
@@ -142,6 +145,20 @@ export function EnemySprite({
           background: `radial-gradient(ellipse at center, ${archetype.glowColor}, transparent 70%)`,
         }}
       />
+
+      {/* Critical Danger Aura (<25% HP): Pulsing Blood Rune Warning Ring */}
+      {hp <= 25 && hp > 0 && (
+        <div className="absolute -inset-3 rounded-full border-2 border-rose-600/70 bg-rose-950/20 blur-sm animate-pulse pointer-events-none z-0" />
+      )}
+
+      {/* Moderate to Severe Fatigue Smoke Wisps (<50% HP) */}
+      {hp <= 50 && hp > 0 && (
+        <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
+          <div className="absolute bottom-6 left-6 w-3 h-3 rounded-full bg-rose-500/40 blur-sm animate-ping" />
+          <div className="absolute bottom-10 right-8 w-4 h-4 rounded-full bg-slate-400/30 blur-sm animate-pulse" />
+          <div className="absolute top-12 left-10 w-2 h-2 rounded-full bg-amber-400/50 blur-xs animate-bounce" />
+        </div>
+      )}
 
       {/* Animated Enemy Vector Canvas */}
       <motion.div

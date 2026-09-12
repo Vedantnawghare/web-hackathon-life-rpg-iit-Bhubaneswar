@@ -1,36 +1,26 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Quest, QuestCompleteResponse } from "@/types/quest";
 import { Character, DailyProgress } from "@/types/character";
 import { HeroCharacter, HeroCombatState } from "@/components/rpg/HeroCharacter";
 import { EnemySprite, EnemyBattleState, getEnemyArchetypeInfo } from "@/components/rpg/EnemySprite";
-import { ArenaBackground } from "@/components/rpg/ArenaBackground";
 import { audioManager } from "@/lib/audio-manager";
 import { getHeroArchetype } from "@/lib/hero-data";
-import { isQuestOverdue, getQuestOverdueDetails } from "@/lib/quest-utils";
+import { GAME_ASSETS } from "@/lib/game-assets";
 import { Button } from "@/components/ui/button";
 import {
   Sword,
-  Sparkles,
-  Coins,
-  ChevronLeft,
-  ChevronRight,
-  Trophy,
   Loader2,
-  AlertCircle,
-  X,
-  Volume2,
-  VolumeX,
-  FastForward,
-  Flame,
   Shield,
-  Clock,
-  Zap,
   Swords,
   Skull,
-  Award,
+  CheckCircle2,
+  Circle,
+  Play,
+  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -48,138 +38,81 @@ interface ArenaBattleProps {
 export function ArenaBattle({
   character,
   quests = [],
-  dailyProgress,
   onCompleteQuest,
   isCompleting = false,
   onLevelUp,
-  onSelectQuest,
   focusedQuestId,
 }: ArenaBattleProps) {
-  const shouldReduceMotion = useReducedMotion();
+  // const shouldReduceMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Synchronize with external focusedQuestId from Daily Roadmap if provided
-  useEffect(() => {
-    if (focusedQuestId) {
-      const idx = quests.findIndex((q) => q.id === focusedQuestId);
-      if (idx !== -1) {
-        setActiveIndex(idx);
-      }
-    }
-  }, [focusedQuestId, quests]);
+  // Showcase Demo Overrides
+  const [demoHeroClass, setDemoHeroClass] = useState<string | null>(null);
+  const activeHeroClass = demoHeroClass || character?.hero_class || "vanguard_male";
+
+  // Filter available active quests
+  const availableQuests = useMemo(() => {
+    return quests.filter((q) => q.status === "ACTIVE");
+  }, [quests]);
+
+  const activeQuest = availableQuests[activeIndex] || availableQuests[0] || null;
+
+  // Daily Tasks & Boss HP Calculation
+  const totalDailyTasks = quests.length;
+  const completedDailyTasks = useMemo(() => {
+    return quests.filter((q) => q.is_completed_for_period).length;
+  }, [quests]);
+
+  // Target Daily Boss HP: 100 * (1 - completedDailyTasks / totalDailyTasks)
+  const targetBossHp = useMemo(() => {
+    if (totalDailyTasks === 0) return 100;
+    return Math.max(0, Math.min(100, Math.round(100 * (1 - completedDailyTasks / totalDailyTasks))));
+  }, [totalDailyTasks, completedDailyTasks]);
 
   // Combat States
   const [heroState, setHeroState] = useState<HeroCombatState>("IDLE");
   const [enemyState, setEnemyState] = useState<EnemyBattleState>("IDLE");
-  const [enemyHp, setEnemyHp] = useState(100);
-  const [enemyTrailingHp, setEnemyTrailingHp] = useState(100);
+  const [enemyHp, setEnemyHp] = useState(targetBossHp);
+  const [enemyTrailingHp, setEnemyTrailingHp] = useState(targetBossHp);
   const [heroHp, setHeroHp] = useState(100);
   const [heroTrailingHp, setHeroTrailingHp] = useState(100);
-  const [focusMeter, setFocusMeter] = useState(0); // 0 to 100%
-  const [roundTimer, setRoundTimer] = useState(99);
+  // const [focusMeter, setFocusMeter] = useState(0);
 
-  // Overdue Enemy Ambush Attack State
-  const [ambushedQuestId, setAmbushedQuestId] = useState<string | null>(null);
+  // Projectile Flight Animation State
+  const [activeProjectile, setActiveProjectile] = useState<"arcane_orb" | "arrow" | "sword_arc" | "dual_slash" | null>(null);
 
-  // Dynamic Fighting Game Alerts
+  // Fighting Alerts & VFX
   const [combatAlert, setCombatAlert] = useState<string | null>(null);
   const [damageNumber, setDamageNumber] = useState<{ text: string; isCrit: boolean; isHero: boolean } | null>(null);
-  const [combatClash, setCombatClash] = useState<"NONE" | "HERO_HIT" | "ENEMY_COUNTER" | "FINISHER">("NONE");
   const [screenShake, setScreenShake] = useState(false);
+  const [redScreenFlash, setRedScreenFlash] = useState(false);
 
   // Battle Flow & Results
   const [isBattling, setIsBattling] = useState(false);
   const [completedReward, setCompletedReward] = useState<QuestCompleteResponse | null>(null);
   const [showLoot, setShowLoot] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
-
-  // Audio & Accessibility State
-  const [isAudioMuted, setIsAudioMuted] = useState(false);
-  const [srAnnouncement, setSrAnnouncement] = useState("");
+  const [, setActionError] = useState<string | null>(null);
 
   const timeoutRefs = useRef<NodeJS.Timeout[]>([]);
   const intervalRefs = useRef<NodeJS.Timeout[]>([]);
 
-  // Filter available active quests
-  const availableQuests = useMemo(() => {
-    return quests.filter((q) => q.status === "ACTIVE" && !q.is_completed_for_period);
-  }, [quests]);
-
-  const activeQuest = availableQuests[activeIndex] || availableQuests[0] || null;
-
-  // Check if current active quest is overdue (e.g. morning due_time passed and incomplete)
-  const isOverdue = useMemo(() => isQuestOverdue(activeQuest), [activeQuest]);
-  const overdueDetails = useMemo(() => getQuestOverdueDetails(activeQuest), [activeQuest]);
-
-  // Trigger Overdue Enemy Ambush Attack when viewing a missed deadline quest
+  // Synchronize Boss HP when target changes outside of active battle
   useEffect(() => {
-    if (!activeQuest || !isOverdue || isBattling) {
-      if (!isOverdue && !isBattling) {
-        setHeroHp(100);
-        setHeroTrailingHp(100);
-      }
-      return;
+    if (!isBattling) {
+      setEnemyHp(targetBossHp);
+      setEnemyTrailingHp(targetBossHp);
     }
+  }, [targetBossHp, isBattling]);
 
-    // Only trigger once per quest ID unless replayed
-    if (ambushedQuestId === activeQuest.id) return;
-    setAmbushedQuestId(activeQuest.id);
-
-    // Initial state before ambush strike
-    setHeroHp(100);
-    setHeroTrailingHp(100);
-
-    // 0.3s - Warning Alert & Enemy lunges into APPROACH
-    const t0 = setTimeout(() => {
-      setEnemyState("APPROACH");
-      setCombatAlert("⚠️ ADVERSARY AMBUSH! ⚠️");
-    }, 300);
-
-    // 0.85s - Enemy winds up into ferocious claw/void ATTACK!
-    const t1 = setTimeout(() => {
-      setEnemyState("ATTACK");
-
-      // Impact synchronizes at 450ms when claw reaches the hero
-      const impactTimer = setTimeout(() => {
-        audioManager.playEnemyAttack();
-        setScreenShake(true);
-        setCombatClash("ENEMY_COUNTER");
-        setHeroState("HIT");
-        setHeroHp(70); // User HP drops by 30%!
-        setDamageNumber({
-          text: "-30 HP (MISSED DEADLINE!)",
-          isCrit: true,
-          isHero: true,
-        });
-
-        // Trailing damage bar catches up
-        setTimeout(() => setHeroTrailingHp(70), 450);
-        setTimeout(() => setScreenShake(false), 400);
-      }, 450);
-      timeoutRefs.current.push(impactTimer);
-    }, 850);
-
-    // 2.0s - Settle into active battle-ready stance
-    const t2 = setTimeout(() => {
-      setCombatClash("NONE");
-      setEnemyState("IDLE");
-      setHeroState("READY");
-    }, 2000);
-
-    // 3.4s - Clear alert text
-    const t3 = setTimeout(() => {
-      setCombatAlert(null);
-      setDamageNumber(null);
-    }, 3400);
-
-    return () => {
-      clearTimeout(t0);
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
-  }, [activeQuest, isOverdue, ambushedQuestId, isBattling]);
-
+  // Synchronize with external focusedQuestId from Daily Roadmap
+  useEffect(() => {
+    if (focusedQuestId) {
+      const idx = availableQuests.findIndex((q) => q.id === focusedQuestId);
+      if (idx !== -1) {
+        setActiveIndex(idx);
+      }
+    }
+  }, [focusedQuestId, availableQuests]);
 
   // Clear timers on unmount or reset
   const clearAllBattleTimers = useCallback(() => {
@@ -192,19 +125,11 @@ export function ArenaBattle({
   useEffect(() => {
     return () => {
       clearAllBattleTimers();
-      // If battle was running when leaving, crossfade back to exploration ambient music
       if (audioManager.getCurrentTrack() === "battle") {
         audioManager.startAmbientMusic();
       }
     };
   }, [clearAllBattleTimers]);
-
-  // Keep active index within bounds
-  useEffect(() => {
-    if (activeIndex >= availableQuests.length && availableQuests.length > 0) {
-      setActiveIndex(0);
-    }
-  }, [availableQuests.length, activeIndex]);
 
   // Ensure ambient music plays while browsing
   useEffect(() => {
@@ -213,839 +138,655 @@ export function ArenaBattle({
     }
   }, [isBattling]);
 
-  // Enemy idle attack cadence: attacks every 30-60 seconds at random interval
-  const idleAttackTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (isBattling || isOverdue) {
-      if (idleAttackTimerRef.current) {
-        clearTimeout(idleAttackTimerRef.current);
-        idleAttackTimerRef.current = null;
-      }
-      return;
-    }
-
-    const scheduleNextIdleAttack = () => {
-      // Random delay between 30 and 60 seconds (30,000ms - 60,000ms)
-      const nextDelay = Math.floor(30000 + Math.random() * 30000);
-      idleAttackTimerRef.current = setTimeout(() => {
-        // Only attack if still idle and not in active battle sequence
-        setEnemyState("ATTACK");
-
-        // Precise audio sync at 450ms visual impact
-        const strikeTimer = setTimeout(() => {
-          audioManager.playEnemyAttack();
-          setScreenShake(true);
-          setCombatAlert("⚠️ ADVERSARY PROWLS & PROBES! (PARRIED)");
-          setTimeout(() => setScreenShake(false), 300);
-        }, 450);
-        timeoutRefs.current.push(strikeTimer);
-
-        // Reset to IDLE after attack animation completes (950ms)
-        const recoverTimer = setTimeout(() => {
-          setEnemyState("IDLE");
-        }, 950);
-        timeoutRefs.current.push(recoverTimer);
-
-        // Clear alert and schedule next 30-60s strike
-        const alertClearTimer = setTimeout(() => {
-          setCombatAlert(null);
-          scheduleNextIdleAttack();
-        }, 2500);
-        timeoutRefs.current.push(alertClearTimer);
-      }, nextDelay);
-    };
-
-    scheduleNextIdleAttack();
-
-    return () => {
-      if (idleAttackTimerRef.current) {
-        clearTimeout(idleAttackTimerRef.current);
-        idleAttackTimerRef.current = null;
-      }
-    };
-  }, [isBattling, isOverdue]);
-
-  const heroArchetype = getHeroArchetype(character?.hero_class);
+  const heroArchetype = getHeroArchetype(activeHeroClass);
   const enemyInfo = activeQuest
     ? getEnemyArchetypeInfo(activeQuest.primary_attribute, activeQuest.difficulty)
-    : null;
+    : getEnemyArchetypeInfo("STRENGTH", "MEDIUM");
 
-  // Trigger weapon attack sound based on hero class
-  const playHeroAttackSound = useCallback(() => {
-    const heroId = character?.hero_class || "";
-    if (heroId.includes("assassin") || heroId.includes("rogue") || heroId.includes("dual")) {
-      audioManager.playDualBladeCombo();
-    } else if (heroId.includes("mage") || heroId.includes("mystic") || heroId.includes("sorcerer")) {
+  // Hero Attack Sound Launcher
+  const triggerHeroAttackSound = useCallback(() => {
+    const hid = activeHeroClass.toLowerCase();
+    if (hid.includes("mage") || hid.includes("weaver") || hid.includes("lyra")) {
       audioManager.playMagicCast();
-      setTimeout(() => audioManager.playMagicImpact(), 250);
-    } else if (heroId.includes("ranger") || heroId.includes("hunter") || heroId.includes("bow")) {
+    } else if (hid.includes("ranger") || hid.includes("huntress") || hid.includes("aria") || hid.includes("bow")) {
       audioManager.playBowShot();
-      setTimeout(() => audioManager.playHitSound(), 200);
+    } else if (hid.includes("rogue") || hid.includes("kaelen") || hid.includes("dual")) {
+      audioManager.playDualBladeCombo();
     } else {
-      audioManager.playSwordSlash();
-      setTimeout(() => audioManager.playHitSound(), 180);
+      // Valen Vanguard Solar Greatsword
+      audioManager.playHeavySwordSlash();
     }
-  }, [character?.hero_class]);
+  }, [activeHeroClass]);
 
-  // Complete battle cleanup & result state
-  const finishBattleSequence = useCallback((data: QuestCompleteResponse) => {
-    clearAllBattleTimers();
-    setIsBattling(false);
-    setHeroState("IDLE");
-    setEnemyState("IDLE");
-    setEnemyHp(100);
-    setEnemyTrailingHp(100);
-    setHeroHp(100);
-    setHeroTrailingHp(100);
-    setFocusMeter(0);
-    setRoundTimer(99);
-    setDamageNumber(null);
-    setCombatAlert(null);
-    setCombatClash("NONE");
-    setScreenShake(false);
-    setShowLoot(false);
-
-    // Crossfade back to calm ambient music
-    audioManager.startAmbientMusic();
-
-    // Trigger level up modal if leveled up
-    if (data.has_leveled_up && onLevelUp) {
-      audioManager.playLevelUpSound();
-      onLevelUp({
-        oldLevel: data.old_level,
-        newLevel: data.new_level,
-        levelsGained: data.levels_gained,
-      });
+  // Hero Impact Sound Launcher (at visual contact)
+  const triggerHeroImpactSound = useCallback(() => {
+    const hid = activeHeroClass.toLowerCase();
+    if (hid.includes("mage") || hid.includes("weaver") || hid.includes("lyra")) {
+      audioManager.playMagicImpact();
+    } else if (hid.includes("ranger") || hid.includes("huntress") || hid.includes("aria") || hid.includes("bow")) {
+      audioManager.playArrowImpact();
+    } else if (hid.includes("rogue") || hid.includes("kaelen") || hid.includes("dual")) {
+      audioManager.playHitSound();
+    } else {
+      audioManager.playFinisherImpact();
     }
+  }, [activeHeroClass]);
 
-    // Trigger achievement sound if unlocked
-    if (data.unlocked_achievements && data.unlocked_achievements.length > 0) {
-      audioManager.playAchievementSound();
-    }
-  }, [clearAllBattleTimers, onLevelUp]);
-
-  // 12-Second Choreographed Multi-Exchange Fighting Sequence
-  const startBattleSequence = useCallback((data: QuestCompleteResponse) => {
+  // Choreographed Mini-Combat Scene (4-6 Seconds)
+  const startCombatExchange = useCallback((data: QuestCompleteResponse, calculatedNewHp: number) => {
     clearAllBattleTimers();
     setIsBattling(true);
     setCompletedReward(data);
     setShowLoot(false);
     setDamageNumber(null);
     setCombatAlert(null);
-    setCombatClash("NONE");
-    setEnemyHp(100);
-    setEnemyTrailingHp(100);
-    setHeroHp(100);
-    setHeroTrailingHp(100);
-    setFocusMeter(0);
-    setRoundTimer(99);
-
-    // Announce to screen readers
-    setSrAnnouncement(
-      `Combat initiated against ${enemyInfo?.name || "Encounter"}. Bounty: ${data.quest_title}. Reward: ${data.earned_xp} XP and ${data.earned_gold} Gold.`
-    );
-
-    // 0.0s - Switch to 128 BPM Battle Music & Initial Round Display
     audioManager.startBattleMusic();
-    setHeroState("READY");
-    setEnemyState("IDLE");
-    setCombatAlert("ROUND 1... FIGHT!");
 
-    // Timer countdown interval
-    const timerInterval = setInterval(() => {
-      setRoundTimer((prev) => Math.max(1, prev - 1));
-    }, 1000);
-    intervalRefs.current.push(timerInterval);
+    const hid = activeHeroClass.toLowerCase();
+    const isMage = hid.includes("mage") || hid.includes("lyra");
+    const isRanger = hid.includes("ranger") || hid.includes("aria");
+    const isRogue = hid.includes("rogue") || hid.includes("kaelen");
 
-    if (shouldReduceMotion) {
-      // Accessible reduced motion flow: quick strike and victory
-      const t0 = setTimeout(() => {
-        setHeroState("ATTACK");
-        setEnemyState("HIT");
-        playHeroAttackSound();
-        setEnemyHp(0);
-        setEnemyTrailingHp(0);
-        setDamageNumber({ text: `-${data.earned_xp} XP!`, isCrit: true, isHero: false });
-        setCombatAlert("K.O.!");
-      }, 500);
+    // Damage amount per task
+    const damageAmount = Math.max(1, enemyHp - calculatedNewHp);
 
-      const t1 = setTimeout(() => {
-        setHeroState("VICTORY");
+    // PHASE 1: Hero Prepares & Enters Attack Stance (0.0s - 0.4s)
+    setCombatAlert(`⚔️ ${heroArchetype.name} initiates ${heroArchetype.signatureMove}!`);
+    setHeroState(isRogue ? "APPROACH" : "READY");
+
+    // Launch Attack & Projectile (0.4s)
+    const t0 = setTimeout(() => {
+      triggerHeroAttackSound();
+      setHeroState(isRogue ? "ATTACK_COMBO" : "ATTACK");
+
+      if (isMage) {
+        setActiveProjectile("arcane_orb");
+      } else if (isRanger) {
+        setActiveProjectile("arrow");
+      } else if (isRogue) {
+        setActiveProjectile("dual_slash");
+      } else {
+        setActiveProjectile("sword_arc");
+      }
+    }, 400);
+
+    // PHASE 2: Visual Impact on Enemy (1.4s)
+    const t1 = setTimeout(() => {
+      setActiveProjectile(null);
+      triggerHeroImpactSound();
+      setScreenShake(true);
+      setEnemyState("HIT");
+      setEnemyHp(calculatedNewHp);
+      setCombatAlert(`${damageAmount} DAMAGE DEALT!`);
+      setDamageNumber({
+        text: `-${damageAmount} HP`,
+        isCrit: calculatedNewHp === 0,
+        isHero: false,
+      });
+
+      // Trailing HP catches up
+      setTimeout(() => setEnemyTrailingHp(calculatedNewHp), 350);
+      setTimeout(() => setScreenShake(false), 280);
+    }, 1400);
+
+    // PHASE 3: Hero Recovers & Enemy Prepares Counter (2.2s)
+    const t2 = setTimeout(() => {
+      setHeroState("READY");
+      setCombatAlert(null);
+      setDamageNumber(null);
+
+      if (calculatedNewHp > 0) {
+        // Enemy is still alive: Counterattack initiated!
+        setEnemyState("APPROACH");
+        setCombatAlert(`⚠️ ${enemyInfo.name} COUNTERATTACKS!`);
+      } else {
+        // Enemy defeated: K.O. sequence
         setEnemyState("DEFEATED");
         audioManager.playDefeatSound();
         audioManager.playFanfare();
+        setCombatAlert("★ ENEMY DEFEATED! ★");
         setShowLoot(true);
-      }, 1500);
 
-      const t2 = setTimeout(() => {
-        finishBattleSequence(data);
-      }, 4000);
+        if (data.has_leveled_up && onLevelUp) {
+          audioManager.playLevelUpSound();
+          onLevelUp({
+            oldLevel: data.old_level,
+            newLevel: data.new_level,
+            levelsGained: data.levels_gained,
+          });
+        }
+      }
+    }, 2200);
 
-      timeoutRefs.current.push(t0, t1, t2);
-      return;
-    }
-
-    // EXCHANGE 1: Hero Approaches & First Rapid Combo (0.8s - 2.5s)
-    const t1 = setTimeout(() => {
-      setCombatAlert(null);
-      setHeroState("APPROACH");
-      setFocusMeter(25);
-    }, 800);
-
-    const t2 = setTimeout(() => {
-      setHeroState("ATTACK_COMBO");
-      playHeroAttackSound();
-      setScreenShake(true);
-      setCombatClash("HERO_HIT");
-      setEnemyState("HIT");
-      setEnemyHp(65);
-      setCombatAlert("3-HIT COMBO!");
-      setDamageNumber({
-        text: `-${Math.round(data.earned_xp * 0.35)} DMG`,
-        isCrit: false,
-        isHero: false,
-      });
-
-      // Trailing HP bar catches up smoothly after 300ms
-      setTimeout(() => setEnemyTrailingHp(65), 350);
-      setTimeout(() => setScreenShake(false), 250);
-    }, 1700);
-
-    // EXCHANGE 2: Mutual Trade - Enemy Recovers, Lunges & Counter-Slams (3.0s - 4.8s)
+    // PHASE 4: Enemy Counterattack Strike Lands (3.1s)
     const t3 = setTimeout(() => {
-      setCombatClash("NONE");
-      setCombatAlert(null);
-      setDamageNumber(null);
-      setHeroState("READY");
-      setEnemyState("APPROACH");
-    }, 3000);
+      if (calculatedNewHp > 0) {
+        setEnemyState("ATTACK");
 
+        // Precise sync at 450ms into claw strike
+        const contactTimer = setTimeout(() => {
+          audioManager.playEnemyAttack();
+          setScreenShake(true);
+          setRedScreenFlash(true);
+          setHeroState("HIT");
+          setHeroHp((prev) => Math.max(40, prev - 15));
+          setDamageNumber({
+            text: "-15 RESIST",
+            isCrit: false,
+            isHero: true,
+          });
+
+          setTimeout(() => setHeroTrailingHp((prev) => Math.max(40, prev - 15)), 350);
+          setTimeout(() => setScreenShake(false), 300);
+          setTimeout(() => setRedScreenFlash(false), 350);
+        }, 400);
+        timeoutRefs.current.push(contactTimer);
+      }
+    }, 3100);
+
+    // PHASE 5: Combat Concludes & Enemy Remains Alive in Arena (4.6s)
     const t4 = setTimeout(() => {
-      setEnemyState("ATTACK");
-
-      // Impact synchronizes at 450ms when weapon/claw connects
-      const counterImpactTimer = setTimeout(() => {
-        audioManager.playEnemyAttack();
-        setScreenShake(true);
-        setCombatClash("ENEMY_COUNTER");
-        setHeroState("HIT");
-        setHeroHp(75);
-        setFocusMeter(70); // Counter attack charges hero's Super meter!
-        setCombatAlert("COUNTER ATTACK!");
-        setDamageNumber({
-          text: "-250 RESIST",
-          isCrit: false,
-          isHero: true,
-        });
-
-        setTimeout(() => setHeroTrailingHp(75), 400);
-        setTimeout(() => setScreenShake(false), 300);
-      }, 450);
-      timeoutRefs.current.push(counterImpactTimer);
-    }, 3900);
-
-    // EXCHANGE 3: Hero Rebounds, Focus Hits MAX! (5.2s - 6.2s)
-    const t5 = setTimeout(() => {
-      setCombatClash("NONE");
+      setHeroState("IDLE");
       setDamageNumber(null);
-      setHeroState("READY");
-      setEnemyState("IDLE");
-      setFocusMeter(100);
-      setCombatAlert("★ MAX FOCUS READY! ★");
-    }, 5200);
-
-    // EXCHANGE 4: Lethal Finisher Unleashed! (6.5s - 8.2s)
-    const t6 = setTimeout(() => {
-      setHeroState("ATTACK_FINISHER");
-      audioManager.playFinisherImpact();
-      setScreenShake(true);
-      setCombatClash("FINISHER");
-      setEnemyState("HIT");
-      setEnemyHp(0);
-      setCombatAlert("CRITICAL FINISHER!");
-      setDamageNumber({
-        text: `-${data.earned_xp} XP CRITICAL!`,
-        isCrit: true,
-        isHero: false,
-      });
-
-      setTimeout(() => setEnemyTrailingHp(0), 400);
-      setTimeout(() => setScreenShake(false), 450);
-    }, 6600);
-
-    // EXCHANGE 5: K.O. & Enemy Defeat (8.4s - 9.8s)
-    const t7 = setTimeout(() => {
-      setCombatClash("NONE");
-      setDamageNumber(null);
-      setCombatAlert("K.O.!");
-      setEnemyState("DEFEATED");
-      audioManager.playDefeatSound();
-    }, 8400);
-
-    // EXCHANGE 6: Victory Fanfare & Reward Showcase (10.0s)
-    const t8 = setTimeout(() => {
       setCombatAlert(null);
-      setHeroState("VICTORY");
-      audioManager.playFanfare();
-      audioManager.playCoinSound();
-      setShowLoot(true);
-    }, 10000);
 
-    timeoutRefs.current.push(t1, t2, t3, t4, t5, t6, t7, t8);
-  }, [clearAllBattleTimers, shouldReduceMotion, enemyInfo?.name, playHeroAttackSound, finishBattleSequence]);
+      if (calculatedNewHp > 0) {
+        setEnemyState("IDLE");
+        setCombatAlert(`✦ Boss HP: ${calculatedNewHp}/100 • Enemy Wounded!`);
+        setIsBattling(false);
+        audioManager.startAmbientMusic();
 
-  // Skip battle shortcut
-  const handleSkipBattle = () => {
-    if (completedReward) {
-      finishBattleSequence(completedReward);
-    }
-  };
+        // Clear alert after 2.5s
+        setTimeout(() => setCombatAlert(null), 2500);
+      } else {
+        // Battle finished completely
+        setTimeout(() => {
+          setIsBattling(false);
+          audioManager.startAmbientMusic();
+        }, 3000);
+      }
+    }, 4600);
 
-  // Trigger quest completion with backend verification
-  const handleEngageEncounter = async () => {
-    if (!activeQuest || isCompleting || isBattling) return;
+    timeoutRefs.current.push(t0, t1, t2, t3, t4);
+  }, [
+    activeHeroClass,
+    enemyHp,
+    heroArchetype,
+    enemyInfo,
+    triggerHeroAttackSound,
+    triggerHeroImpactSound,
+    clearAllBattleTimers,
+    onLevelUp,
+  ]);
+
+  // Execute quest completion via API
+  const handleExecuteQuest = async (quest: Quest) => {
+    if (isBattling || isCompleting) return;
     setActionError(null);
 
+    // Calculate new HP based on completing this task
+    const damagePerTask = totalDailyTasks > 0 ? Math.round(100 / totalDailyTasks) : 25;
+    const calculatedNewHp = completedDailyTasks + 1 >= totalDailyTasks ? 0 : Math.max(0, enemyHp - damagePerTask);
+
     try {
-      const response = await onCompleteQuest(activeQuest.id);
-      startBattleSequence(response);
+      const response = await onCompleteQuest(quest.id);
+      startCombatExchange(response, calculatedNewHp);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to complete quest bounty. Please try again.";
+      const msg = err instanceof Error ? err.message : "Failed to claim victory. Check connection.";
       setActionError(msg);
     }
   };
 
-  // Mute / Unmute
-  const toggleAudio = () => {
-    const nextMute = !isAudioMuted;
-    setIsAudioMuted(nextMute);
-    audioManager.setMuted(nextMute);
+  // Showcase Demo: Complete Next Task or Simulate
+  const handleQuickDemoComplete = async () => {
+    const nextIncomplete = availableQuests.find((q) => !q.is_completed_for_period);
+    if (nextIncomplete) {
+      await handleExecuteQuest(nextIncomplete);
+    } else {
+      // All done or simulated quick strike
+      const simulatedResponse: QuestCompleteResponse = {
+        quest_id: "demo",
+        quest_title: "Hackathon Showcase Bounty",
+        earned_xp: 150,
+        earned_gold: 50,
+        xp_multiplier: 1.0,
+        attribute_increased: "STRENGTH",
+        attribute_gain: 1,
+        streak_extended: true,
+        current_streak: (character?.current_streak || 1) + 1,
+        has_leveled_up: false,
+        old_level: character?.current_level || 1,
+        new_level: character?.current_level || 1,
+        levels_gained: 0,
+        character: character || ({} as unknown as Character),
+      };
+      startCombatExchange(simulatedResponse, 0);
+    }
+  };
+
+  // Showcase Demo: Reset Boss HP to 100
+  const handleResetBossDemo = () => {
+    clearAllBattleTimers();
+    setIsBattling(false);
+    setEnemyHp(100);
+    setEnemyTrailingHp(100);
+    setHeroHp(100);
+    setHeroTrailingHp(100);
+    setEnemyState("IDLE");
+    setHeroState("IDLE");
+    setActiveProjectile(null);
+    setCombatAlert("✦ Daily Boss HP Reset to 100/100 for Demonstration!");
+    audioManager.startAmbientMusic();
+    setTimeout(() => setCombatAlert(null), 2500);
+  };
+
+  // Showcase Demo: Cycle Champion
+  const handleCycleChampion = () => {
+    const champions = ["vanguard_male", "rogue_male", "mage_female", "ranger_female"];
+    const currentIdx = champions.indexOf(activeHeroClass);
+    const nextClass = champions[(currentIdx + 1) % champions.length];
+    setDemoHeroClass(nextClass);
+    const heroInfo = getHeroArchetype(nextClass);
+    setCombatAlert(`⚔️ Champion Switched: ${heroInfo.name} (${heroInfo.weapon})`);
+    setTimeout(() => setCombatAlert(null), 2200);
   };
 
   return (
-    <div
-      className={cn(
-        "relative w-full rounded-2xl overflow-hidden border-2 border-amber-900/60 bg-slate-950 shadow-[0_20px_50px_rgba(0,0,0,0.9)] flex flex-col select-none transition-transform duration-75",
-        screenShake && "translate-x-1 -translate-y-1"
-      )}
-    >
-      {/* Screen Reader Announcement */}
-      <div className="sr-only" aria-live="polite">
-        {srAnnouncement}
+    <div className="relative w-full flex flex-col gap-5 select-none">
+      {/* 1. TOP STATUS & SHOWCASE DEMO TOOLBAR */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-slate-950/90 border border-amber-500/40 backdrop-blur-md shadow-lg">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400 font-bold">
+            ⚔️
+          </div>
+          <div>
+            <span className="text-xs font-cinzel font-black text-amber-200 tracking-wide uppercase block">
+              Daily Boss Arena Encounter
+            </span>
+            <span className="text-[11px] font-rajdhani text-slate-400">
+              Every completed task deals proportional damage to today&apos;s adversary
+            </span>
+          </div>
+        </div>
+
+        {/* Showcase Fast Controls for 90-180s Hackathon Video */}
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={handleCycleChampion}
+            disabled={isBattling}
+            variant="outline"
+            className="h-8 px-2.5 text-xs font-rajdhani border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/50 hover:text-cyan-200"
+            title="Cycle Champion to preview all unique hero animations & projectiles"
+          >
+            <Swords className="w-3.5 h-3.5 mr-1 text-cyan-400" />
+            <span>Hero: {heroArchetype.name}</span>
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={handleQuickDemoComplete}
+            disabled={isBattling}
+            className="h-8 px-3 text-xs font-rajdhani font-bold bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]"
+          >
+            <Play className="w-3.5 h-3.5 mr-1 fill-black" />
+            <span>⚡ Strike Task</span>
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={handleResetBossDemo}
+            disabled={isBattling}
+            variant="outline"
+            className="h-8 px-2.5 text-xs font-rajdhani border-slate-700 text-slate-300 hover:bg-slate-800"
+            title="Reset Daily Boss HP to 100"
+          >
+            <RotateCcw className="w-3.5 h-3.5 mr-1 text-amber-400" />
+            <span>Reset (100 HP)</span>
+          </Button>
+        </div>
       </div>
 
-      {/* 1. AUTHENTIC FIGHTING GAME TOP HUD (Street Fighter / Frame-Fighter aesthetic) */}
-      <div className="relative z-30 px-3 sm:px-6 pt-3 pb-2 bg-gradient-to-b from-black/90 via-slate-950/80 to-transparent backdrop-blur-md flex flex-col gap-2">
-        {/* OVERDUE AMBUSH ATTACK BANNER */}
-        {isOverdue && !isBattling && (
-          <div className="flex items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-red-950 via-rose-900/80 to-red-950 border-2 border-red-500/70 shadow-[0_0_20px_rgba(239,68,68,0.4)] animate-pulse">
-            <div className="flex items-center gap-2 min-w-0">
-              <Skull className="w-4 h-4 text-red-400 shrink-0 animate-bounce" />
-              <div className="min-w-0">
-                <span className="text-xs font-black font-cinzel text-yellow-300 block tracking-wide truncate">
-                  CONTRACT MISSED ({overdueDetails.timeTag})
-                </span>
-                <span className="text-[11px] font-rajdhani text-rose-200 block truncate">
-                  The adversary ambushed your champion for -30 HP! Claim bounty now to counter-attack!
-                </span>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setAmbushedQuestId(null)}
-              className="h-7 px-2.5 text-[10px] font-rajdhani font-black uppercase tracking-wider border-red-400/60 text-red-200 bg-red-950/80 hover:bg-red-900 hover:text-white shrink-0"
-            >
-              Replay Ambush
-            </Button>
-          </div>
+      {/* 2. THE MAIN REAL FANTASY ARENA STAGE */}
+      <div
+        className={cn(
+          "relative w-full h-[480px] sm:h-[540px] rounded-2xl overflow-hidden border-2 border-amber-500/50 shadow-[0_0_60px_rgba(0,0,0,0.85)] flex flex-col justify-between transition-transform",
+          screenShake && "animate-[bounce_0.2s_infinite]"
         )}
-        {/* Authoritative Daily XP Goal Bar */}
-        {dailyProgress && (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 px-3 py-1 rounded-lg bg-black/60 border border-amber-900/40">
-            <div className="flex items-center gap-2">
-              <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-pulse" />
-              <span className="text-[11px] font-bold font-cinzel text-amber-300">
-                Daily Adventure Goal
-              </span>
-              <span className="text-[11px] font-rajdhani font-semibold text-slate-300">
-                {dailyProgress.daily_xp_earned} / {dailyProgress.daily_xp_goal} XP
-              </span>
-            </div>
+      >
+        {/* Real Fantasy Arena Background Artwork */}
+        <img
+          src={GAME_ASSETS.backgrounds.arena}
+          alt="Battle Arena Colosseum"
+          className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 brightness-[0.95] contrast-[1.05]"
+        />
 
-            <div className="flex items-center gap-2 flex-1 sm:max-w-xs">
-              <div className="relative w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
-                <motion.div
-                  className={cn(
-                    "h-full rounded-full transition-all duration-500",
-                    dailyProgress.is_goal_reached
-                      ? "bg-gradient-to-r from-emerald-500 to-amber-400"
-                      : "bg-gradient-to-r from-amber-600 to-amber-400"
-                  )}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${dailyProgress.progress_percentage}%` }}
-                />
-              </div>
-              <span className="text-[10px] font-rajdhani font-bold text-amber-400 min-w-[32px]">
-                {dailyProgress.progress_percentage}%
-              </span>
-            </div>
+        {/* Ambient Atmosphere Vignette (Does NOT cover the artwork) */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/45 pointer-events-none z-0" />
 
-            {dailyProgress.is_goal_reached && (
-              <span className="text-[10px] font-bold text-emerald-400 font-rajdhani uppercase tracking-wider bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40">
-                ★ Day Goal Complete!
-              </span>
-            )}
-          </div>
+        {/* Red Screen Flash on Player Damage */}
+        {redScreenFlash && (
+          <div className="absolute inset-0 bg-rose-600/25 pointer-events-none z-20 animate-pulse" />
         )}
 
-        {/* Dual Fighter HP Bars + Center Round Timer Emblem */}
-        <div className="grid grid-cols-12 items-center gap-1 sm:gap-4 mt-1">
-          {/* HERO HEALTH METER (Left) */}
-          <div className="col-span-5 flex items-center gap-2">
-            {/* Fighter Crest / Level Badge */}
-            <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-lg border-2 border-amber-400 bg-gradient-to-br from-amber-600 via-amber-900 to-slate-950 flex items-center justify-center font-black text-xs sm:text-sm text-amber-200 font-cinzel shadow-[0_0_12px_rgba(245,158,11,0.5)]">
-              {character?.current_level || 1}
-              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border border-black flex items-center justify-center">
-                <Shield className="w-2 h-2 text-black fill-black" />
-              </div>
-            </div>
-
-            <div className="flex-1 flex flex-col gap-0.5 min-w-0">
-              <div className="flex justify-between items-baseline">
-                <span className="font-black text-xs sm:text-sm text-amber-100 font-cinzel tracking-wide truncate">
+        {/* ============================================================= */}
+        {/* HUD LAYER: BOSS & HERO HEALTH BARS                            */}
+        {/* ============================================================= */}
+        <div className="relative z-30 p-4 sm:p-6 flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-4">
+            {/* Left: Hero Vitality Gauge */}
+            <div className="flex-1 max-w-xs sm:max-w-sm flex flex-col gap-1.5">
+              <div className="flex items-center justify-between text-xs font-rajdhani">
+                <span className="font-bold text-cyan-300 flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-cyan-400" />
                   {character?.username || "Hero"} ({heroArchetype.name})
                 </span>
-                <span className="text-[10px] sm:text-xs font-mono font-bold text-emerald-400">
-                  {heroHp} / 100
+                <span className="font-mono font-bold text-slate-200">{heroHp} / 100 HP</span>
+              </div>
+              <div className="relative h-4 w-full rounded-full bg-slate-950/80 border border-cyan-500/50 overflow-hidden shadow-inner p-0.5">
+                <motion.div
+                  className="h-full rounded-full bg-cyan-400/30"
+                  animate={{ width: `${heroTrailingHp}%` }}
+                  transition={{ duration: 0.4 }}
+                />
+                <motion.div
+                  className="absolute inset-y-0.5 left-0.5 rounded-full bg-gradient-to-r from-cyan-600 to-sky-400 shadow-[0_0_12px_rgba(6,182,212,0.8)]"
+                  animate={{ width: `${heroHp}%` }}
+                  transition={{ duration: 0.2 }}
+                />
+              </div>
+            </div>
+
+            {/* Center: Stage Emblem */}
+            <div className="hidden sm:flex flex-col items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-black/70 border-2 border-amber-500/60 flex items-center justify-center shadow-lg">
+                <Swords className="w-5 h-5 text-amber-400" />
+              </div>
+            </div>
+
+            {/* Right: Daily Boss Health Gauge */}
+            <div className="flex-1 max-w-xs sm:max-w-sm flex flex-col gap-1.5 items-end">
+              <div className="flex items-center justify-between w-full text-xs font-rajdhani">
+                <span className="font-mono font-bold text-rose-300">{enemyHp} / 100 HP</span>
+                <span className="font-bold text-rose-400 flex items-center gap-1.5">
+                  {enemyInfo.name}
+                  <Skull className="w-3.5 h-3.5 text-rose-500" />
                 </span>
               </div>
-
-              {/* Segmented HP Bar with Delayed Trailing Damage Bar */}
-              <div className="relative w-full h-3 sm:h-4 bg-slate-900 rounded border border-amber-900/60 overflow-hidden shadow-inner">
-                {/* Delayed Trailing Red Bar */}
-                <div
-                  className="absolute inset-y-0 left-0 bg-red-600/80 transition-all duration-700 ease-out"
-                  style={{ width: `${heroTrailingHp}%` }}
+              <div className="relative h-4 w-full rounded-full bg-slate-950/80 border border-rose-500/50 overflow-hidden shadow-inner p-0.5">
+                <motion.div
+                  className="h-full rounded-full bg-rose-400/30 ml-auto"
+                  animate={{ width: `${enemyTrailingHp}%` }}
+                  transition={{ duration: 0.4 }}
                 />
-                {/* Active Health Bar */}
-                <div
-                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-400 transition-all duration-300 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
-                  style={{ width: `${heroHp}%` }}
+                <motion.div
+                  className="absolute inset-y-0.5 right-0.5 rounded-full bg-gradient-to-l from-rose-600 to-amber-500 shadow-[0_0_12px_rgba(244,63,94,0.8)]"
+                  animate={{ width: `${enemyHp}%` }}
+                  transition={{ duration: 0.2 }}
                 />
-                {/* Slash segments overlay */}
-                <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_19%,rgba(0,0,0,0.4)_20%)] bg-[length:20%_100%] pointer-events-none" />
-              </div>
-
-              {/* Super / Focus Meter */}
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-[9px] font-black font-rajdhani text-amber-400 uppercase tracking-widest flex items-center gap-0.5">
-                  <Zap className="w-2.5 h-2.5 text-amber-400" /> FOCUS
-                </span>
-                <div className="flex-1 h-1.5 bg-slate-950 rounded-full border border-amber-950 overflow-hidden">
-                  <motion.div
-                    className={cn(
-                      "h-full rounded-full transition-all duration-300",
-                      focusMeter >= 100
-                        ? "bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-200 animate-pulse"
-                        : "bg-gradient-to-r from-blue-600 to-cyan-400"
-                    )}
-                    style={{ width: `${focusMeter}%` }}
-                  />
-                </div>
-                {focusMeter >= 100 && (
-                  <span className="text-[8px] font-black font-cinzel text-amber-300 animate-bounce">
-                    MAX
-                  </span>
-                )}
               </div>
             </div>
           </div>
 
-          {/* CENTER ROUND TIMER / VS EMBLEM */}
-          <div className="col-span-2 flex flex-col items-center justify-center -mt-1">
-            <div className="relative flex items-center justify-center">
-              <div className="w-10 h-10 sm:w-13 sm:h-13 rounded-full bg-gradient-to-b from-amber-500 via-amber-700 to-amber-950 border-2 border-amber-300 p-0.5 shadow-[0_0_15px_rgba(245,158,11,0.6)] flex items-center justify-center">
-                <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center">
-                  <span className="font-black text-amber-300 font-rajdhani text-base sm:text-xl tracking-tight">
-                    {isBattling ? roundTimer : 99}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <span className="text-[8px] sm:text-[9px] font-black text-amber-400 font-cinzel tracking-widest uppercase mt-0.5">
-              {isBattling ? "BATTLE" : "ENCOUNTER"}
-            </span>
-          </div>
-
-          {/* ENEMY HEALTH METER (Right) */}
-          <div className="col-span-5 flex items-center gap-2 justify-end">
-            <div className="flex-1 flex flex-col gap-0.5 min-w-0 text-right">
-              <div className="flex justify-between items-baseline flex-row-reverse">
-                <span className="font-black text-xs sm:text-sm text-rose-100 font-cinzel tracking-wide truncate">
-                  {enemyInfo ? enemyInfo.name : "Wild Encounter"}
-                </span>
-                <span className="text-[10px] sm:text-xs font-mono font-bold text-rose-400">
-                  {enemyHp} / 100
-                </span>
-              </div>
-
-              {/* Segmented HP Bar with Delayed Trailing Damage Bar (Right-aligned) */}
-              <div className="relative w-full h-3 sm:h-4 bg-slate-900 rounded border border-rose-900/60 overflow-hidden shadow-inner">
-                {/* Delayed Trailing Red Bar */}
-                <div
-                  className="absolute inset-y-0 right-0 bg-red-600/80 transition-all duration-700 ease-out"
-                  style={{ width: `${enemyTrailingHp}%` }}
-                />
-                {/* Active Health Bar */}
-                <div
-                  className="absolute inset-y-0 right-0 bg-gradient-to-l from-rose-600 via-red-500 to-amber-500 transition-all duration-300 shadow-[0_0_8px_rgba(244,63,94,0.5)]"
-                  style={{ width: `${enemyHp}%` }}
-                />
-                {/* Slash segments overlay */}
-                <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_19%,rgba(0,0,0,0.4)_20%)] bg-[length:20%_100%] pointer-events-none" />
-              </div>
-
-              {/* Archetype & Difficulty Badge */}
-              <div className="flex items-center justify-end gap-1.5 mt-0.5">
-                {activeQuest && (
-                  <span className="text-[9px] font-bold font-rajdhani text-rose-400 uppercase tracking-wider">
-                    {activeQuest.primary_attribute} • {activeQuest.difficulty}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Enemy Skull Crest */}
-            <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-lg border-2 border-rose-500 bg-gradient-to-br from-rose-700 via-rose-950 to-slate-950 flex items-center justify-center font-black text-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.4)]">
-              <Skull className="w-5 h-5 text-rose-400" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. LIVING ARENA BATTLEGROUND */}
-      <div className="relative w-full h-[330px] sm:h-[400px] overflow-hidden flex items-end justify-between px-6 sm:px-20 pb-8">
-        {/* Layered Fantasy Environment Backdrop (Ref Images 2 & 3) */}
-        <ArenaBackground attribute={activeQuest?.primary_attribute} />
-
-        {/* Dynamic Combat Alerts ("ROUND 1... FIGHT!", "3-HIT COMBO!", "K.O.!") */}
-        <AnimatePresence>
-          {combatAlert && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5, y: -20 }}
-              animate={{ opacity: 1, scale: 1.1, y: 0 }}
-              exit={{ opacity: 0, scale: 1.4 }}
-              transition={{ duration: 0.3, type: "spring", stiffness: 300 }}
-              className="absolute z-40 inset-x-0 top-1/4 flex justify-center pointer-events-none"
-            >
-              <div className="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-600/90 via-red-600/90 to-amber-600/90 border-2 border-yellow-300 shadow-[0_0_30px_rgba(234,179,8,0.8)] backdrop-blur-md">
-                <span className="font-black font-cinzel text-xl sm:text-3xl text-yellow-100 tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-                  {combatAlert}
-                </span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Ambient Clash Screen Flare */}
-        <AnimatePresence>
-          {combatClash !== "NONE" && (
-            <motion.div
-              initial={{ opacity: 0.85 }}
-              animate={{ opacity: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className={cn(
-                "absolute inset-0 z-20 pointer-events-none",
-                combatClash === "FINISHER"
-                  ? "bg-amber-300/50"
-                  : combatClash === "ENEMY_COUNTER"
-                  ? "bg-rose-600/40"
-                  : "bg-white/40"
-              )}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Floating Combat Damage Numbers */}
-        <AnimatePresence>
-          {damageNumber && (
-            <motion.div
-              initial={{ opacity: 0, y: 15, scale: 0.6 }}
-              animate={{ opacity: 1, y: -50, scale: damageNumber.isCrit ? 1.4 : 1.1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.75, ease: "easeOut" }}
-              className={cn(
-                "absolute z-40 top-1/3 font-black font-rajdhani pointer-events-none tracking-tight",
-                damageNumber.isHero ? "left-1/4 text-rose-400 drop-shadow-[0_4px_12px_rgba(244,63,94,0.9)]" : "right-1/4 text-yellow-300 drop-shadow-[0_4px_12px_rgba(234,179,8,0.9)]",
-                damageNumber.isCrit ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl"
-              )}
-            >
-              {damageNumber.text}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* LEFT FIGHTER: Hero Character (Ground aligned with depth shadow) */}
-        <div className="relative z-20 flex flex-col items-center">
-          <HeroCharacter
-            heroId={character?.hero_class || "vanguard_male"}
-            state={heroState}
-            equippedTheme={character?.equipped_theme}
-            username={character?.username}
-            size="lg"
-          />
-          {/* Ground Contact Shadow */}
-          <div className="w-28 sm:w-36 h-4 -mt-2 bg-black/60 rounded-full blur-sm" />
-        </div>
-
-        {/* CENTER BOUNTY CARD & NOTICE (When idle) */}
-        {activeQuest && !isBattling && (
-          <div className="relative z-20 max-w-[240px] sm:max-w-xs px-4 py-3 rounded-xl bg-slate-950/85 border border-amber-500/50 backdrop-blur-md shadow-2xl text-center hidden md:flex flex-col items-center gap-1.5 mb-10">
-            <span className="text-[10px] font-bold tracking-widest text-amber-400 uppercase font-rajdhani flex items-center gap-1.5">
-              <Sword className="w-3.5 h-3.5 text-amber-400" /> Active Bounty Contract
-            </span>
-            <h4 className="text-sm font-bold text-slate-100 font-cinzel line-clamp-2">
-              {activeQuest.title}
-            </h4>
-            {activeQuest.due_time && (
-              <span className="text-[10px] text-sky-400 font-semibold flex items-center gap-1">
-                <Clock className="w-3 h-3" /> Due {activeQuest.due_time}
-              </span>
+          {/* Dynamic Combat Alert Text Banner */}
+          <AnimatePresence>
+            {combatAlert && (
+              <motion.div
+                initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                className="self-center px-4 py-1.5 rounded-full bg-black/85 border border-amber-500/70 shadow-[0_0_20px_rgba(245,158,11,0.4)] text-xs sm:text-sm font-cinzel font-black text-amber-300 tracking-wider text-center"
+              >
+                {combatAlert}
+              </motion.div>
             )}
-            <div className="flex items-center gap-3 text-xs font-rajdhani font-bold text-amber-300 pt-1 border-t border-amber-900/40 w-full justify-center">
-              <span className="flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-amber-400" /> +{activeQuest.base_xp} XP
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <Coins className="w-3 h-3 text-yellow-400" /> +{activeQuest.base_gold} Gold
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* RIGHT FIGHTER: Enemy Archetype (Ground aligned with depth shadow) */}
-        <div className="relative z-20 flex flex-col items-center">
-          {activeQuest && enemyInfo ? (
-            <>
-              <EnemySprite
-                state={enemyState}
-                attribute={activeQuest.primary_attribute}
-                difficulty={activeQuest.difficulty}
-                name={enemyInfo.name}
-              />
-              {/* Ground Contact Shadow */}
-              <div className="w-28 sm:w-36 h-4 -mt-2 bg-black/60 rounded-full blur-sm" />
-            </>
-          ) : (
-            <div className="w-36 h-48 sm:w-44 sm:h-56 flex flex-col items-center justify-center border-2 border-dashed border-slate-700/50 rounded-2xl bg-black/50 text-center p-4">
-              <Trophy className="w-10 h-10 text-amber-500/40 mb-2" />
-              <span className="text-xs font-cinzel text-slate-400">All Bounties Cleared</span>
-            </div>
-          )}
+          </AnimatePresence>
         </div>
-      </div>
 
-      {/* 3. AUTHENTIC VICTORY REWARDS REVEAL (Ref Image 3: Frame-Fighter / RPG Victory Screen) */}
-      <AnimatePresence>
-        {showLoot && completedReward && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.8, y: 30 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.8, y: 30 }}
-              transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              className="relative max-w-md w-full p-6 sm:p-8 rounded-2xl bg-gradient-to-b from-slate-900 via-slate-950 to-black border-2 border-amber-500 shadow-[0_0_60px_rgba(245,158,11,0.4)] text-center flex flex-col items-center gap-4"
-            >
-              <button
-                onClick={() => finishBattleSequence(completedReward)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
-                aria-label="Close victory report"
-              >
-                <X className="w-5 h-5" />
-              </button>
+        {/* ============================================================= */}
+        {/* COMBAT CHARACTERS & PROJECTILE ARENA STAGE (Z-10 / Z-20)     */}
+        {/* ============================================================= */}
+        <div className="relative z-10 w-full px-8 sm:px-16 flex items-end justify-between pb-8">
+          {/* Left: Player Champion Sprite */}
+          <div className="relative flex flex-col items-center">
+            <HeroCharacter
+              heroId={activeHeroClass}
+              state={heroState}
+              username={character?.username}
+              size="lg"
+            />
 
-              {/* Golden Laurel Victory Crest */}
-              <div className="relative">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-amber-600 via-yellow-400 to-amber-200 border-2 border-yellow-200 flex items-center justify-center shadow-[0_0_30px_rgba(234,179,8,0.7)] animate-pulse">
-                  <Award className="w-10 h-10 sm:w-12 sm:h-12 text-slate-950" />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <span className="text-xs font-black font-rajdhani tracking-widest text-amber-400 uppercase">
-                  Encounter Overcome
-                </span>
-                <h3 className="text-2xl sm:text-3xl font-black font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-500">
-                  VICTORY ACHIEVED!
-                </h3>
-                <p className="text-xs text-slate-300 font-rajdhani">
-                  Deed Fulfilled: <span className="text-white font-bold">{completedReward.quest_title}</span>
-                </p>
-              </div>
-
-              {/* Reward Showcase Badges */}
-              <div className="grid grid-cols-3 gap-2 w-full my-2">
-                <div className="p-3 rounded-xl bg-amber-950/70 border border-amber-500/50 flex flex-col items-center justify-center gap-1 shadow-md">
-                  <Sparkles className="w-5 h-5 text-amber-400" />
-                  <span className="text-sm sm:text-base font-black font-rajdhani text-amber-300">
-                    +{completedReward.earned_xp}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-400 font-cinzel">XP</span>
-                </div>
-
-                <div className="p-3 rounded-xl bg-yellow-950/70 border border-yellow-500/50 flex flex-col items-center justify-center gap-1 shadow-md">
-                  <Coins className="w-5 h-5 text-yellow-400" />
-                  <span className="text-sm sm:text-base font-black font-rajdhani text-yellow-300">
-                    +{completedReward.earned_gold}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-400 font-cinzel">GOLD</span>
-                </div>
-
-                <div className="p-3 rounded-xl bg-purple-950/70 border border-purple-500/50 flex flex-col items-center justify-center gap-1 shadow-md">
-                  <Shield className="w-5 h-5 text-purple-400" />
-                  <span className="text-sm sm:text-base font-black font-rajdhani text-purple-300">
-                    +{completedReward.attribute_gain}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-400 font-cinzel truncate max-w-full">
-                    {completedReward.attribute_increased}
-                  </span>
-                </div>
-              </div>
-
-              {/* Level Up Notice if Applicable */}
-              {completedReward.has_leveled_up && (
-                <div className="w-full px-4 py-2 rounded-lg bg-emerald-950/80 border border-emerald-500/60 text-emerald-300 text-xs font-bold font-cinzel flex items-center justify-center gap-2 animate-bounce">
-                  <Sparkles className="w-4 h-4 text-emerald-400" />
-                  LEVEL UP! Reached Level {completedReward.new_level}!
-                </div>
+            {/* Floating Damage Number over Hero */}
+            <AnimatePresence>
+              {damageNumber && damageNumber.isHero && (
+                <motion.div
+                  initial={{ opacity: 0, y: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, y: -45, scale: 1.25 }}
+                  exit={{ opacity: 0, y: -70 }}
+                  className="absolute -top-12 z-30 font-display font-black text-lg text-rose-400 drop-shadow-[0_0_10px_rgba(244,63,94,1)]"
+                >
+                  {damageNumber.text}
+                </motion.div>
               )}
+            </AnimatePresence>
+          </div>
 
-              {/* Continue Expedition Button */}
-              <Button
-                onClick={() => finishBattleSequence(completedReward)}
-                className="w-full h-11 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black font-cinzel text-sm sm:text-base tracking-wider shadow-[0_0_20px_rgba(245,158,11,0.5)]"
+          {/* =========================================================== */}
+          {/* TRAVELING VISIBLE PROJECTILE & WEAPON SLICE ENTITIES        */}
+          {/* =========================================================== */}
+          <div className="absolute inset-x-24 bottom-24 h-32 pointer-events-none z-20 flex items-center">
+            {/* Lyra: Arcane Orb Traveling Projectile */}
+            {activeProjectile === "arcane_orb" && (
+              <motion.div
+                initial={{ x: 20, y: -10, opacity: 0, scale: 0.5 }}
+                animate={{
+                  x: [20, 240, 480],
+                  y: [-10, -35, -5],
+                  opacity: [0, 1, 1, 0],
+                  scale: [0.6, 1.4, 1.8],
+                }}
+                transition={{ duration: 0.95, ease: "easeInOut" }}
+                className="absolute"
               >
-                Claim Spoils & Advance
+                <div className="relative w-14 h-14 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-300 animate-spin shadow-[0_0_35px_rgba(168,85,247,1)]" />
+                  <div className="absolute -left-6 w-8 h-8 rounded-full bg-cyan-400/60 blur-sm animate-pulse" />
+                  <div className="absolute -left-12 w-5 h-5 rounded-full bg-purple-500/40 blur-md" />
+                </div>
+              </motion.div>
+            )}
+
+            {/* Aria: Energy Arrow Traveling Projectile */}
+            {activeProjectile === "arrow" && (
+              <motion.div
+                initial={{ x: 20, y: 5, opacity: 0, scale: 0.6 }}
+                animate={{
+                  x: [20, 260, 490],
+                  y: [5, -12, 0],
+                  opacity: [0, 1, 1, 0],
+                  scale: [0.8, 1.1, 1.3],
+                }}
+                transition={{ duration: 0.85, ease: "easeIn" }}
+                className="absolute"
+              >
+                <div className="relative w-20 h-6 flex items-center">
+                  <div className="w-5 h-5 rotate-45 bg-amber-300 shadow-[0_0_20px_rgba(245,158,11,1)]" />
+                  <div className="w-16 h-1.5 bg-gradient-to-r from-transparent via-emerald-400 to-amber-300 shadow-[0_0_12px_rgba(16,185,129,0.9)]" />
+                </div>
+              </motion.div>
+            )}
+
+            {/* Valen: Sunfire Cleave Giant Golden Arc */}
+            {activeProjectile === "sword_arc" && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5, x: 280 }}
+                animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1.4, 1.7] }}
+                transition={{ duration: 0.6 }}
+                className="absolute"
+              >
+                <svg className="w-36 h-36 text-amber-400 drop-shadow-[0_0_25px_rgba(245,158,11,1)]" viewBox="0 0 100 100">
+                  <path d="M 15 85 A 50 50 0 0 1 85 15" fill="none" stroke="currentColor" strokeWidth="10" strokeLinecap="round" />
+                </svg>
+              </motion.div>
+            )}
+
+            {/* Kaelen: Volt Tempest Twin Cross Slices */}
+            {activeProjectile === "dual_slash" && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.4, x: 280 }}
+                animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1.3, 1.6] }}
+                transition={{ duration: 0.55 }}
+                className="absolute"
+              >
+                <svg className="w-32 h-32 text-cyan-400 drop-shadow-[0_0_25px_rgba(6,182,212,1)]" viewBox="0 0 100 100">
+                  <line x1="20" y1="20" x2="80" y2="80" stroke="currentColor" strokeWidth="7" strokeLinecap="round" />
+                  <line x1="80" y1="20" x2="20" y2="80" stroke="currentColor" strokeWidth="7" strokeLinecap="round" />
+                </svg>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Right: Daily Adversary Sprite with Fatigue */}
+          <div className="relative flex flex-col items-center">
+            <EnemySprite
+              state={enemyState}
+              attribute={activeQuest?.primary_attribute || "STRENGTH"}
+              difficulty={activeQuest?.difficulty || "MEDIUM"}
+              hp={enemyHp}
+            />
+
+            {/* Floating Damage Number over Enemy */}
+            <AnimatePresence>
+              {damageNumber && !damageNumber.isHero && (
+                <motion.div
+                  initial={{ opacity: 0, y: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, y: -50, scale: 1.3 }}
+                  exit={{ opacity: 0, y: -80 }}
+                  className="absolute -top-12 z-30 font-display font-black text-xl text-amber-300 drop-shadow-[0_0_12px_rgba(245,158,11,1)]"
+                >
+                  {damageNumber.text}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Victory Showcase Banner */}
+        <AnimatePresence>
+          {showLoot && completedReward && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-40 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/20 border-2 border-amber-500 flex items-center justify-center text-3xl shadow-[0_0_30px_rgba(245,158,11,0.5)] mb-3">
+                👑
+              </div>
+              <h3 className="text-2xl font-black font-cinzel text-amber-200">
+                DAILY ENCOUNTER CLEARED!
+              </h3>
+              <p className="text-sm font-rajdhani text-slate-300 max-w-sm mt-1">
+                All daily tasks conquered. Realm tranquility restored!
+              </p>
+              <div className="flex items-center gap-4 mt-4 px-5 py-2.5 rounded-xl bg-slate-900/90 border border-amber-500/40">
+                <span className="text-amber-400 font-bold font-mono">+{completedReward.earned_xp} XP</span>
+                <span className="text-slate-600">|</span>
+                <span className="text-yellow-400 font-bold font-mono">+{completedReward.earned_gold} GOLD</span>
+                <span className="text-slate-600">|</span>
+                <span className="text-rose-400 font-bold font-mono">{completedReward.current_streak} DAY STREAK</span>
+              </div>
+              <Button
+                onClick={() => setShowLoot(false)}
+                className="mt-6 bg-amber-500 hover:bg-amber-400 text-black font-cinzel font-bold px-6"
+              >
+                Claim Realm Spoils
               </Button>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* 4. BOTTOM COMMAND ACTION BAR */}
-      <div className="relative z-30 px-4 py-3 bg-slate-950/95 border-t border-amber-900/40 flex flex-col sm:flex-row items-center justify-between gap-3">
-        {/* Bounty Navigation */}
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={activeIndex === 0 || isBattling}
-            onClick={() => {
-              const newIdx = Math.max(0, activeIndex - 1);
-              setActiveIndex(newIdx);
-              if (availableQuests[newIdx]) onSelectQuest?.(availableQuests[newIdx]);
-            }}
-            className="h-8 border-slate-700 bg-slate-900 text-slate-300 hover:text-white"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <span className="text-xs font-rajdhani font-semibold text-slate-300 min-w-[75px] text-center">
-            {availableQuests.length > 0
-              ? `${activeIndex + 1} of ${availableQuests.length} Bounties`
-              : "0 Bounties"}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={activeIndex >= availableQuests.length - 1 || isBattling}
-            onClick={() => {
-              const newIdx = Math.min(availableQuests.length - 1, activeIndex + 1);
-              setActiveIndex(newIdx);
-              if (availableQuests[newIdx]) onSelectQuest?.(availableQuests[newIdx]);
-            }}
-            className="h-8 border-slate-700 bg-slate-900 text-slate-300 hover:text-white"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
-
-        {/* Primary Engagement Button */}
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          {isBattling && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSkipBattle}
-              className="h-9 px-3 border-amber-700/60 bg-slate-900/80 text-xs text-amber-300 hover:text-white flex items-center gap-1.5 shadow-md"
-            >
-              <FastForward className="w-3.5 h-3.5" /> Skip Animation
-            </Button>
           )}
-
-          <Button
-            onClick={handleEngageEncounter}
-            disabled={!activeQuest || isCompleting || isBattling}
-            className={cn(
-              "flex-1 sm:flex-none h-10 px-7 font-black font-cinzel text-xs sm:text-sm tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all",
-              activeQuest
-                ? "bg-gradient-to-r from-rose-600 via-amber-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-slate-950 shadow-[0_0_20px_rgba(245,158,11,0.4)]"
-                : "bg-slate-800 text-slate-500 cursor-not-allowed"
-            )}
-          >
-            {isCompleting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
-                <span>Verifying Deed...</span>
-              </>
-            ) : isBattling ? (
-              <>
-                <Swords className="w-4 h-4 animate-spin text-slate-950" />
-                <span>In Combat...</span>
-              </>
-            ) : (
-              <>
-                <Swords className="w-4 h-4 text-slate-950" />
-                <span>Claim Bounty (Engage)</span>
-              </>
-            )}
-          </Button>
-        </div>
-
-        {/* Audio Mute & Sound Controls */}
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleAudio}
-            aria-label={isAudioMuted ? "Unmute game audio" : "Mute game audio"}
-            className="h-8 w-8 p-0 text-slate-400 hover:text-amber-400 hover:bg-slate-900"
-          >
-            {isAudioMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </Button>
-        </div>
+        </AnimatePresence>
       </div>
 
-      {/* Error Banner */}
-      {actionError && (
-        <div className="px-4 py-2 bg-rose-950/90 border-t border-rose-800 text-xs text-rose-300 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-400" />
-            <span>{actionError}</span>
+      {/* 3. TODAY'S BOSS & TASK MANIFEST CHECKLIST (Mental Model Communicator) */}
+      <div className="w-full rounded-2xl bg-slate-950/95 border-2 border-amber-900/60 p-5 shadow-xl flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-900/40 pb-3">
+          <div>
+            <h4 className="text-base font-cinzel font-black text-amber-200 tracking-wide flex items-center gap-2">
+              <span>Today&apos;s Boss Manifest: {enemyInfo.name}</span>
+              <span className="text-xs px-2 py-0.5 rounded-md bg-rose-950/80 border border-rose-500/50 text-rose-300 font-mono font-bold">
+                {enemyHp} / 100 HP
+              </span>
+            </h4>
+            <p className="text-xs font-rajdhani text-slate-400 mt-0.5">
+              Complete each real-life task to strike and weaken the adversary.
+            </p>
           </div>
-          <button onClick={() => setActionError(null)} className="text-rose-400 hover:text-white">
-            <X className="w-4 h-4" />
-          </button>
+
+          <div className="text-xs font-rajdhani font-bold px-3 py-1.5 rounded-lg bg-black/60 border border-amber-900/50 text-amber-300 self-start sm:self-auto">
+            Tasks Completed: {completedDailyTasks} / {totalDailyTasks} ({100 - enemyHp}% Boss HP Depleted)
+          </div>
         </div>
-      )}
+
+        {/* Task Checklist Items */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {quests.map((quest) => {
+            const isDone = quest.is_completed_for_period;
+            return (
+              <div
+                key={quest.id}
+                className={cn(
+                  "flex items-center justify-between p-3 rounded-xl border transition-all",
+                  isDone
+                    ? "bg-emerald-950/20 border-emerald-500/40 text-slate-400 opacity-80"
+                    : "bg-slate-900/80 border-amber-500/30 hover:border-amber-500/60 text-slate-200 shadow-md"
+                )}
+              >
+                <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                  {isDone ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                  ) : (
+                    <Circle className="w-5 h-5 text-amber-400 shrink-0" />
+                  )}
+                  <div className="min-w-0">
+                    <p className={cn("text-xs font-bold font-rajdhani truncate", isDone && "line-through text-slate-500")}>
+                      {quest.title}
+                    </p>
+                    <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono">
+                      <span>+{quest.base_xp} XP</span>
+                      <span>•</span>
+                      <span>+{quest.base_gold} Gold</span>
+                      {quest.due_time && (
+                        <>
+                          <span>•</span>
+                          <span className="text-amber-400">Due {quest.due_time}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {!isDone && (
+                  <Button
+                    size="sm"
+                    disabled={isBattling || isCompleting}
+                    onClick={() => handleExecuteQuest(quest)}
+                    className="shrink-0 h-8 px-3 text-xs font-rajdhani font-bold bg-amber-500 hover:bg-amber-400 text-black shadow-sm"
+                  >
+                    {isCompleting ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <>
+                        <Sword className="w-3.5 h-3.5 mr-1 fill-black" />
+                        <span>Strike!</span>
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
