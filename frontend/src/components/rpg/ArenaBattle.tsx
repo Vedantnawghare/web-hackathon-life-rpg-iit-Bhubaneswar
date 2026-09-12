@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Quest, QuestCompleteResponse } from "@/types/quest";
 import { Character, DailyProgress } from "@/types/character";
@@ -10,6 +11,7 @@ import { EnemySprite, EnemyBattleState, getEnemyArchetypeInfo } from "@/componen
 import { audioManager } from "@/lib/audio-manager";
 import { getHeroArchetype } from "@/lib/hero-data";
 import { GAME_ASSETS } from "@/lib/game-assets";
+import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import {
   Sword,
@@ -50,6 +52,7 @@ export function ArenaBattle({
   onLevelUp,
   focusedQuestId,
 }: ArenaBattleProps) {
+  const queryClient = useQueryClient();
   const [activeIndex, setActiveIndex] = useState(0);
 
   // Showcase Demo Overrides
@@ -536,8 +539,8 @@ export function ArenaBattle({
     handleQuickDemoComplete,
   ]);
 
-  // Showcase Demo: Reset Boss HP to 100
-  const handleResetBossDemo = () => {
+  // Showcase Demo: Reset Boss HP to 100 (0 of 4 tasks cleared)
+  const handleResetBossDemo = async () => {
     clearAllBattleTimers();
     setIsBattling(false);
     setEnemyHp(100);
@@ -549,8 +552,40 @@ export function ArenaBattle({
     setEnemyState("IDLE");
     setHeroState("IDLE");
     setActiveProjectile(null);
-    setCombatAlert(" Daily Boss HP Reset to 100/100!");
+    setCombatAlert("⚔️ Daily Boss HP Reset to 100/100 (All tasks active)!");
     audioManager.startAmbientMusic();
+    try {
+      await apiClient("/quests/demo-reset?mode=fresh", { method: "POST" });
+      await queryClient.invalidateQueries({ queryKey: ["quests"] });
+      await queryClient.invalidateQueries({ queryKey: ["character"] });
+    } catch {
+      // Offline fallback
+    }
+    setTimeout(() => setCombatAlert(null), 2500);
+  };
+
+  // Showcase Demo: Restore Mid-Raid State (50 HP - 2 tasks cleared)
+  const handleRestoreMidBossDemo = async () => {
+    clearAllBattleTimers();
+    setIsBattling(false);
+    setEnemyHp(50);
+    setEnemyTrailingHp(50);
+    setHeroHp(100);
+    setHeroTrailingHp(100);
+    setHeroPosX(0);
+    setCameraZoom(false);
+    setEnemyState("IDLE");
+    setHeroState("IDLE");
+    setActiveProjectile(null);
+    setCombatAlert("⚡ Restored Demo Raid State: 2 Tasks Cleared (Boss at 50/100 HP)!");
+    audioManager.startAmbientMusic();
+    try {
+      await apiClient("/quests/demo-reset?mode=mid", { method: "POST" });
+      await queryClient.invalidateQueries({ queryKey: ["quests"] });
+      await queryClient.invalidateQueries({ queryKey: ["character"] });
+    } catch {
+      // Offline fallback
+    }
     setTimeout(() => setCombatAlert(null), 2500);
   };
 
@@ -609,14 +644,26 @@ export function ArenaBattle({
 
           <Button
             size="sm"
+            onClick={handleRestoreMidBossDemo}
+            disabled={isBattling}
+            variant="outline"
+            className="h-8 px-2.5 text-xs font-rajdhani font-semibold border-amber-500/40 text-amber-300 bg-amber-950/40 hover:bg-amber-900/60"
+            title="Restore Hackathon Demo State: 2 of 4 tasks cleared, Boss at 50/100 HP"
+          >
+            <Zap className="w-3.5 h-3.5 mr-1 text-amber-400" />
+            <span>50 HP Demo</span>
+          </Button>
+
+          <Button
+            size="sm"
             onClick={handleResetBossDemo}
             disabled={isBattling}
             variant="outline"
             className="h-8 px-2.5 text-xs font-rajdhani font-semibold border-indigo-400/40 text-indigo-200 bg-indigo-950/40 hover:bg-indigo-900/60"
-            title="Reset Daily Boss HP to 100"
+            title="Reset Daily Boss HP to 100/100 (0 of 4 tasks cleared)"
           >
-            <RotateCcw className="w-3.5 h-3.5 mr-1 text-amber-300" />
-            <span>Reset</span>
+            <RotateCcw className="w-3.5 h-3.5 mr-1 text-indigo-300" />
+            <span>Reset (100 HP)</span>
           </Button>
         </div>
       </div>

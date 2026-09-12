@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import delete
+from sqlalchemy import select, delete
 from app.models.quest_completion import QuestCompletion
 from app.models.enums import QuestDifficulty, CharacterAttribute, QuestRecurrence
 import uuid
@@ -214,18 +214,108 @@ async def seed_demo_quests(
     return created
 
 
-@router.post("/demo-reset", summary="Reset today's demo boss HP to 100")
+@router.post("/demo-reset", summary="Reset today's demo boss HP safely without touching history")
 async def reset_demo_boss(
+    mode: str = Query("fresh", description="Reset mode: 'fresh' (100 HP - 0 completed) or 'mid' (50 HP - 2 completed)"),
     current_character: Character = Depends(get_current_character),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Deletes today's completion records for this character so all daily tasks are incomplete,
-    resetting the Daily Boss HP back to 100/100 for hackathon demonstrations.
+    Safely resets today's daily boss state for hackathon presentations.
+    CRITICAL: Only deletes completion records for today (completion_date == local_date).
+    Never deletes multi-day historical data (graphs, streaks, past days remain intact).
     """
-    stmt = delete(QuestCompletion).where(
+    from datetime import datetime, time, timezone
+    from app.models.quest import Quest
+    from app.services.streak_service import get_local_date_for_timezone, get_local_iso_calendar, calculate_streak_multiplier
+    from app.services.rpg_engine import get_difficulty_rewards
+
+    local_date = get_local_date_for_timezone(current_character.timezone)
+    iso_year, iso_week = get_local_iso_calendar(current_character.timezone)
+
+    # 1. Delete ONLY today's completion records for this character
+    del_stmt = delete(QuestCompletion).where(
         QuestCompletion.character_id == current_character.id,
+        QuestCompletion.completion_date == local_date,
     )
-    await db.execute(stmt)
+    await db.execute(del_stmt)
+
+    # 2. Ensure the standard 4 daily demo quests exist for today
+    stmt = (
+        select(Quest)
+        .where(
+            Quest.character_id == current_character.id,
+            Quest.recurrence == QuestRecurrence.DAILY,
+            Quest.status == QuestStatus.ACTIVE,
+        )
+        .order_by(Quest.created_at.asc())
+    )
+    res = await db.execute(stmt)
+    today_quests = list(res.scalars().all())
+
+    # If user doesn't have 4 daily quests, provision the standard hackathon demo quests
+    if len(today_quests) < 4:
+        standard_tasks = [
+            ("Study Deep Learning & Transformers (1 Hour)", "Academics", QuestDifficulty.HARD, CharacterAttribute.INTELLECT),
+            ("Gym Heavy Squat & Core Circuit", "Health", QuestDifficulty.HARD, CharacterAttribute.STRENGTH),
+            ("Drink 3 Liters Mineral Water & Electrolytes", "Health", QuestDifficulty.MEDIUM, CharacterAttribute.VITALITY),
+            ("Deep Focus Code Review & Refactoring", "Engineering", QuestDifficulty.MEDIUM, CharacterAttribute.DISCIPLINE),
+        ]
+        existing_titles = {q.title for q in today_quests}
+        for title, cat, diff, attr in standard_tasks:
+            if title not in existing_titles:
+                rew = get_difficulty_rewards(diff)
+                new_q = Quest(
+                    character_id=current_character.id,
+                    title=title,
+                    description=f"Standard demo quest for {cat}.",
+                    category=cat,
+                    difficulty=diff,
+                    primary_attribute=attr,
+                    base_xp=rew["base_xp"],
+                    base_gold=rew["base_gold"],
+                    recurrence=QuestRecurrence.DAILY,
+                    status=QuestStatus.ACTIVE,
+                )
+                db.add(new_q)
+                await db.flush()
+                today_quests.append(new_q)
+
+    # 3. If mode == 'mid', mark tasks 1 and 2 as completed for today
+    if mode == "mid" and len(today_quests) >= 2:
+        multiplier = calculate_streak_multiplier(current_character.current_streak or 8)
+        for i in range(2):
+            q = today_quests[i]
+            rew = get_difficulty_rewards(q.difficulty)
+            comp = QuestCompletion(
+                quest_id=q.id,
+                character_id=current_character.id,
+                completion_date=local_date,
+                completion_period_iso_year=iso_year,
+                completion_period_iso_week=iso_week,
+                earned_xp=int(rew["base_xp"] * multiplier),
+                earned_gold=rew["base_gold"],
+                attribute_gain=rew["attribute_gain"],
+                idempotency_key=f"daily_{q.id}_{current_character.id}_{local_date.isoformat()}",
+                completed_at=datetime.combine(local_date, time(10 + i * 4, 0), tzinfo=timezone.utc),
+            )
+            db.add(comp)
+
     await db.commit()
-    return {"message": "Daily Boss HP reset to 100/100"}
+
+    if mode == "mid":
+        return {
+            "message": "Daily Boss HP restored to 50/100",
+            "mode": "mid",
+            "boss_hp": 50,
+            "completed_daily_tasks": 2,
+            "total_daily_tasks": len(today_quests),
+        }
+    else:
+        return {
+            "message": "Daily Boss HP reset to 100/100",
+            "mode": "fresh",
+            "boss_hp": 100,
+            "completed_daily_tasks": 0,
+            "total_daily_tasks": len(today_quests),
+        }

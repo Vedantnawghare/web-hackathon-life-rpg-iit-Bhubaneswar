@@ -19,6 +19,39 @@ Every completed real-life task damages the day's boss.
 
 ---
 
+## 🎭 Hackathon Presentation Demo Account & Dataset
+
+To evaluate **Life RPG** with realistic, long-term player progression without needing to manually grind for days, a dedicated production demo account is seeded with **8 days of authentic historical quest activity, XP progression, streaks, inventory relics, and unlocked achievements**:
+
+- **Demo User Email**: `demo_hero@liferpg.dev`
+- **Demo User Role**: Internal hackathon demonstration account (*credentials provided in submission portal notes*)
+- **Character**: `ValenIronheart` — Level 5 Vanguard Hero (`vanguard_male`), Title: *The Unbroken Vanguard*
+- **Auth Provider**: Real Supabase Authentication + Real Supabase PostgreSQL database (*no mock/fake frontend data*)
+
+### 🎬 Recommended Demo Flow for Judges & Video Walkthrough
+
+1. **Log In** via `/login` using the demo account.
+2. **Hero Dashboard (`/dashboard`)**:
+   - Observe today's **3D Boss Battle Arena** with the daily boss at **50 / 100 HP** (2 of 4 daily quests completed today).
+   - Click **Strike Task** on an active daily quest (e.g., *"Drink 3 Liters Mineral Water"*) to trigger the real-time 3D combat choreography (projectile flight, camera shake, boss counterattack, sound effects) and watch the boss HP drop in real time!
+   - Use the **50 HP Demo** or **Reset (100 HP)** buttons in the arena header to seamlessly reset today's demonstration state for repeat video takes without ever deleting historical data.
+3. **Chronicles & Analytics (`/history`)**:
+   - **Cumulative XP Progression**: Inspect the multi-day growth curve tracking lifetime experience across 8 consecutive days.
+   - **Weekly Adventure Activity**: View the completed task distribution across every day of the week (Monday through Sunday).
+   - **Attribute Profile & Domains**: Review the balanced faculty distribution across Intellect, Strength, Discipline, Vitality, and Creativity.
+   - **Difficulty Breakdown**: Inspect Easy, Medium, Hard, and Epic contract completion metrics.
+4. **Hero Sanctum (`/character`)**:
+   - Review the authoritative 8-day quest streak (+16% XP bonus multiplier).
+   - View the interactive 5-axis **Astrolabe Radar Matrix** powered by live attributes (STR 36, INT 42, DIS 17, VIT 19, CRE 16).
+5. **Relic Vault & Trophies (`/inventory` & `/achievements`)**:
+   - Review owned and equipped cosmetics (*Abyssal Dark Theme*, *Bronze Laurel Frame*, *Founder Sigil Badge*, and *Phoenix Crest*).
+   - Review 5 unlocked achievement milestones (*First Step*, *Path of Mastery [Lvl 5]*, *Unwavering Will [7-day Streak]*, *Tenacious Slayer [10 Quests]*, *Novice Awakening [1000 XP]*).
+
+> **Developer Seeder**: Developers can re-run or inspect the authoritative multi-day seeder script anytime via:  
+> `python backend/app/scripts/seed_demo_user.py`
+
+---
+
 ## 🖼️ Project Preview
 
 ### 🌍 Game World
