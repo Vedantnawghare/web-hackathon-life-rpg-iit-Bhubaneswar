@@ -1,18 +1,52 @@
-# ⚔️ Life RPG — Turn Your Real Life Into a Game
-
 > **Complete real-life tasks. Defeat your daily boss. Level up your character. Build your streak.**
 
 Life RPG is a full-stack gamified productivity platform that transforms everyday responsibilities into an interactive fantasy RPG experience.
 
-Instead of simply checking off tasks, users enter a persistent game world where their daily tasks become part of a combat and progression system.
+Instead of simply checking tasks off a list, users enter a persistent game world where their daily responsibilities become **quests, battles, progression, rewards, and character development**.
 
 Every completed real-life task damages the day's boss.
 
-**Complete your tasks → defeat the boss → earn XP, Gold and progression.**
+**Complete your tasks → defeat the boss → earn XP + Gold → level up.**
 
 ---
 
-## 🎮 Core Idea
+## 🚀 Quick Access
+
+🎮 **[Play the Live Game](https://life-rpg-pi-silk.vercel.app/)**  
+💻 **[View GitHub Repository](https://github.com/Vedantnawghare/web-hackathon-life-rpg-iit-Bhubaneswar)**  
+⚙️ **[Open Backend](https://life-rpg-backend-1wuv.onrender.com/)**  
+❤️ **[Backend Health Check](https://life-rpg-backend-1wuv.onrender.com/api/v1/health)**
+
+---
+
+## 🖼️ Project Preview
+
+### 🌍 Game World
+
+<p align="center">
+  <img src="docs/images/game-home.png" alt="Life RPG Game World" width="90%">
+</p>
+
+### ⚔️ Daily Boss Battle
+
+<p align="center">
+  <img src="docs/images/boss-arena.png" alt="Life RPG Daily Boss Battle" width="90%">
+</p>
+
+### 🗺️ Fantasy World Map
+
+<p align="center">
+  <img src="docs/images/world-map.png" alt="Life RPG Fantasy World Map" width="90%">
+</p>
+
+> **Screenshot files:**  
+> `docs/images/game-home.png`  
+> `docs/images/boss-arena.png`  
+> `docs/images/world-map.png`
+
+---
+
+# 🎮 Core Idea
 
 Traditional productivity apps usually look like:
 
@@ -26,7 +60,7 @@ Traditional productivity apps usually look like:
 Life RPG turns the same tasks into a game:
 
 ```text
-             TODAY'S BOSS
+              TODAY'S BOSS
           ┌─────────────────┐
           │    ARCANE WOLF  │
           │     75 / 100 HP │
@@ -58,7 +92,7 @@ Life RPG turns the same tasks into a game:
       XP + Gold
 ```
 
-The goal is to make productivity feel **interactive, rewarding and memorable**.
+The objective is to make productivity feel **interactive, rewarding, and memorable**.
 
 ---
 
@@ -66,7 +100,7 @@ The goal is to make productivity feel **interactive, rewarding and memorable**.
 
 ## ⚔️ Daily Boss Combat
 
-Each day has one persistent boss with a maximum of:
+Each day has one persistent boss with:
 
 ```text
 100 / 100 HP
@@ -96,11 +130,15 @@ Task 4      →   0 / 100
               BOSS DEFEATED
 ```
 
-The enemy remains alive throughout the day and progressively weakens as the user completes more real-life tasks.
+This creates a simple relationship:
+
+> **Every completed real-life task damages the boss.**
+
+The enemy remains alive throughout the day and progressively weakens as the user completes more tasks.
 
 ---
 
-## 🥊 Cinematic Combat
+# 🥊 Cinematic Combat
 
 Completing a task triggers a short combat sequence rather than instantly changing a number.
 
@@ -126,13 +164,26 @@ HP Update
 Recovery
 ```
 
-The combat system is designed to visually communicate progress and make each completed task feel meaningful.
+Each exchange is designed to feel like an actual game encounter.
+
+Combat includes:
+
+* Character movement
+* Attack animation
+* Weapon movement
+* Projectile travel
+* Hit reactions
+* Enemy counterattacks
+* HP animations
+* Impact particles
+* Camera feedback
+* Combat sound effects
 
 ---
 
 # 🧙 Playable Heroes
 
-Players can select one of four heroes.
+Players can choose from four distinct heroes.
 
 ## 🛡️ Valen — Vanguard
 
@@ -171,7 +222,7 @@ A ranged magical fighter.
 * Magic projectiles
 * Long-range attacks
 
-The projectile visibly travels across the arena before hitting the enemy.
+Magic projectiles visibly travel across the arena before hitting the enemy.
 
 ---
 
@@ -202,7 +253,7 @@ The boss changes visually as its health decreases.
 | 25–1   | Critical condition / desperate posture |
 | 0      | Defeated                               |
 
-This creates a visual connection between real-world productivity and in-game progression.
+This creates a visible connection between real-world productivity and in-game progression.
 
 ---
 
@@ -257,7 +308,7 @@ Examples include:
 * Creative work
 * Personal goals
 
-Each quest may contain:
+Each quest can contain:
 
 * Title
 * Description
@@ -355,13 +406,13 @@ Maintaining a streak contributes to progression and reward calculations and enco
 
 ---
 
-# 🎵 Dynamic Audio
+# 🎵 Dynamic Game Audio
 
-Life RPG includes a game-style audio system.
+Life RPG includes a dedicated game audio system.
 
 ## Exploration Audio
 
-Calm fantasy background music across the game world.
+Calm fantasy background music across normal gameplay.
 
 ## Combat Audio
 
@@ -379,6 +430,7 @@ Includes:
 * Projectile impact
 * Heavy attacks
 * Victory effects
+* Defeat effects
 
 Combat sounds are synchronized with visual attack and impact events.
 
@@ -386,7 +438,7 @@ Combat sounds are synchronized with visual attack and impact events.
 
 # 🖼️ Image-Based Game Environments
 
-Major game environments use dedicated fantasy artwork instead of relying entirely on CSS-generated backgrounds.
+Major game environments use dedicated fantasy artwork rather than relying entirely on CSS-generated backgrounds.
 
 Background assets are centralized through:
 
@@ -394,7 +446,7 @@ Background assets are centralized through:
 frontend/src/lib/game-assets.ts
 ```
 
-Current examples include:
+Example:
 
 ```text
 GAME_ASSETS.backgrounds.worldMap
@@ -407,7 +459,7 @@ Assets are stored under:
 frontend/public/assets/world/
 ```
 
-This allows background artwork to be replaced manually without rewriting the React components.
+This allows background artwork to be replaced manually without rewriting React components.
 
 For example:
 
@@ -422,7 +474,7 @@ Replace an image using the same filename and the new artwork will be used automa
 
 # 🎮 Game HUD
 
-The game uses a dedicated HUD instead of a conventional productivity dashboard.
+The game uses a dedicated game HUD instead of a conventional productivity dashboard.
 
 Combat UI can display:
 
@@ -435,7 +487,7 @@ Combat UI can display:
 * Rewards
 * Character state
 
-The visual goal is to make the application feel like a browser RPG.
+The objective is to make the application feel like a browser RPG.
 
 ---
 
@@ -615,6 +667,12 @@ web-hackathon-life-rpg-iit-Bhubaneswar/
 │   ├── package.json
 │   └── ...
 │
+├── docs/
+│   └── images/
+│       ├── game-home.png
+│       ├── boss-arena.png
+│       └── world-map.png
+│
 ├── README.md
 └── ...
 ```
@@ -623,7 +681,7 @@ web-hackathon-life-rpg-iit-Bhubaneswar/
 
 # 🚀 Local Development
 
-## 1. Clone the repository
+## 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Vedantnawghare/web-hackathon-life-rpg-iit-Bhubaneswar.git
@@ -633,13 +691,13 @@ cd web-hackathon-life-rpg-iit-Bhubaneswar
 
 ---
 
-## 2. Backend Setup
+# 2. Backend Setup
 
 ```bash
 cd backend
 ```
 
-Create a virtual environment:
+Create a virtual environment.
 
 ### Windows
 
@@ -688,7 +746,7 @@ HOST=0.0.0.0
 PORT=8000
 ```
 
-### ⚠️ Never commit secrets
+### ⚠️ Never Commit Secrets
 
 Do not commit:
 
@@ -779,11 +837,7 @@ cd backend
 pytest
 ```
 
-The current implementation has:
-
-```text
-58/58 backend tests passing
-```
+The current implementation has **58/58 backend tests passing**.
 
 ## Frontend TypeScript Check
 
@@ -808,31 +862,21 @@ npm run build
 
 # 🌍 Production Deployment
 
-## Frontend
+## 🎮 Live Game
 
-Deployed using **Vercel**.
+👉 **[Open Life RPG](https://life-rpg-pi-silk.vercel.app/)**
 
-Production URL:
+## ⚙️ Backend
 
-```text
-https://life-rpg-pi-silk.vercel.app
-```
+👉 **[Open Backend](https://life-rpg-backend-1wuv.onrender.com/)**
 
-## Backend
+## ❤️ Backend Health
 
-Deployed using **Render**.
+👉 **[Check Backend Health](https://life-rpg-backend-1wuv.onrender.com/api/v1/health)**
 
-Backend URL:
+## 💻 GitHub Repository
 
-```text
-https://life-rpg-backend-1wuv.onrender.com
-```
-
-Health endpoint:
-
-```text
-https://life-rpg-backend-1wuv.onrender.com/api/v1/health
-```
+👉 **[View Source Code](https://github.com/Vedantnawghare/web-hackathon-life-rpg-iit-Bhubaneswar)**
 
 ---
 
@@ -925,7 +969,7 @@ Potential future improvements include:
 
 Life RPG demonstrates how a standard productivity workflow can be transformed into an immersive game loop.
 
-Traditional productivity:
+### Traditional Productivity
 
 ```text
 TASK
@@ -933,7 +977,7 @@ TASK
 CHECK COMPLETE
 ```
 
-Life RPG:
+### Life RPG
 
 ```text
 QUEST
@@ -959,11 +1003,12 @@ Built as a hackathon project for:
 
 **IIT Bhubaneswar Hackathon**
 
-Repository:
+### Links
 
-```text
-https://github.com/Vedantnawghare/web-hackathon-life-rpg-iit-Bhubaneswar
-```
+* 🎮 [Live Game](https://life-rpg-pi-silk.vercel.app/)
+* 💻 [GitHub Repository](https://github.com/Vedantnawghare/web-hackathon-life-rpg-iit-Bhubaneswar)
+* ⚙️ [Backend](https://life-rpg-backend-1wuv.onrender.com/)
+* ❤️ [Backend Health Check](https://life-rpg-backend-1wuv.onrender.com/api/v1/health)
 
 ---
 
@@ -981,3 +1026,6 @@ Add an open-source license if the team decides to publish the project under one.
 > **Your habits are your stats.**
 > **Your tasks are your battles.**
 > **And every completed day is a boss defeated.**
+
+```
+
