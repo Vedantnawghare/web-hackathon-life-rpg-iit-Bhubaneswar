@@ -6,6 +6,7 @@ import { Quest } from "@/types/quest";
 import { DailyProgress } from "@/types/character";
 import { getEnemyArchetypeInfo } from "@/components/rpg/EnemySprite";
 import { audioManager } from "@/lib/audio-manager";
+import { isQuestOverdue } from "@/lib/quest-utils";
 import {
   Clock,
   CheckCircle2,
@@ -117,6 +118,7 @@ export function DailyRoadmap({
           <div className="flex flex-col gap-3 relative z-10">
             {roadmapNodes.map((quest, index) => {
               const isCompleted = quest.is_completed_for_period;
+              const isOverdue = isQuestOverdue(quest);
               const isCurrent = index === currentActiveIndex;
               const isFocused = activeQuestId === quest.id;
               const enemy = getEnemyArchetypeInfo(quest.primary_attribute, quest.difficulty);
@@ -128,7 +130,9 @@ export function DailyRoadmap({
                   onClick={() => handleNodeClick(quest)}
                   className={cn(
                     "group relative flex items-start gap-4 p-3.5 rounded-xl border-2 transition-all duration-200 cursor-pointer select-none",
-                    isFocused
+                    isOverdue
+                      ? "bg-gradient-to-r from-red-950/60 via-slate-900/90 to-slate-950 border-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.3)] ring-1 ring-rose-500/50"
+                      : isFocused
                       ? "bg-gradient-to-r from-amber-950/70 via-slate-900/90 to-slate-950 border-amber-400 shadow-[0_0_25px_rgba(245,158,11,0.35)]"
                       : isCurrent
                       ? "bg-gradient-to-r from-slate-900 via-slate-950 to-slate-950 border-amber-500/70 hover:border-amber-400 shadow-lg"
@@ -205,12 +209,14 @@ export function DailyRoadmap({
                           "text-[10px] font-black font-cinzel uppercase tracking-wider px-2 py-0.5 rounded",
                           isCompleted
                             ? "text-emerald-400 bg-emerald-950/70 border border-emerald-500/40"
+                            : isOverdue
+                            ? "text-rose-200 bg-red-950/90 border border-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)] animate-pulse"
                             : isCurrent
                             ? "text-amber-300 bg-amber-950/80 border border-amber-400/60 shadow-[0_0_8px_rgba(245,158,11,0.3)]"
                             : "text-slate-500 bg-slate-900"
                         )}
                       >
-                        {isCompleted ? "Defeated" : isCurrent ? "Active Encounter" : "Upcoming"}
+                        {isCompleted ? "Defeated" : isOverdue ? "⚠️ Overdue Ambush!" : isCurrent ? "Active Encounter" : "Upcoming"}
                       </span>
                     </div>
 

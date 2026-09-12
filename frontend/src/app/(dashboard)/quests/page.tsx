@@ -154,11 +154,14 @@ export default function QuestsPage() {
       return false;
     }
 
-    // Search query
+    // Search query: matches title, description, category, or attribute
     if (searchQuery.trim()) {
+      const qLower = searchQuery.toLowerCase().trim();
       const match =
-        q.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (q.description && q.description.toLowerCase().includes(searchQuery.toLowerCase()));
+        q.title.toLowerCase().includes(qLower) ||
+        (q.description && q.description.toLowerCase().includes(qLower)) ||
+        q.category.toLowerCase().includes(qLower) ||
+        q.primary_attribute.toLowerCase().includes(qLower);
       if (!match) return false;
     }
 
@@ -336,17 +339,26 @@ export default function QuestsPage() {
               <option value="EPIC">Legendary (Rank IV)</option>
             </select>
 
-            {/* Search Input */}
-            <div className="relative flex-1 sm:w-48">
-              <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
+            {/* Search Input with Clear Button */}
+            <div className="relative flex-1 sm:w-56">
+              <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-amber-500/70" />
               <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search contracts..."
                 aria-label="Search active quests"
-                className="h-8 pl-8 text-xs bg-slate-900 border-slate-800 focus:border-amber-500 text-slate-200 font-mono"
+                className="h-8 pl-8 pr-7 text-xs bg-slate-900 border-slate-800 focus:border-amber-500 text-slate-200 font-mono"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  aria-label="Clear search"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
             </div>
           </div>
         </div>

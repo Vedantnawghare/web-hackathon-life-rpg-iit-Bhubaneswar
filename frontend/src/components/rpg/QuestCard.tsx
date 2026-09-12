@@ -20,7 +20,9 @@ import {
   Loader2,
   Clock,
   Scroll,
+  Skull,
 } from "lucide-react";
+import { isQuestOverdue, getQuestOverdueDetails } from "@/lib/quest-utils";
 import { cn } from "@/lib/utils";
 
 interface QuestCardProps {
@@ -131,6 +133,8 @@ export function QuestCard({
 }: QuestCardProps) {
   const [confirmArchive, setConfirmArchive] = useState(false);
   const theme = difficultyThemes[quest.difficulty] || difficultyThemes.EASY;
+  const isOverdue = isQuestOverdue(quest);
+  const overdueDetails = getQuestOverdueDetails(quest);
   const attrInfo = attributeDetails[quest.primary_attribute] || attributeDetails.INTELLECT;
   const AttrIcon = attrInfo.icon;
   const attrBonus = attributeBonusByDifficulty[quest.difficulty] || 1;
@@ -258,15 +262,24 @@ export function QuestCard({
             {/* Due date & time timestamp if present */}
             {(quest.due_date || quest.due_time) && (
               <div
-                className="flex items-center gap-1 text-[11px] font-mono text-slate-400"
+                className="flex items-center gap-1.5 text-[11px] font-mono"
                 title={`Contract due: ${quest.due_date || ""} ${quest.due_time || ""}`}
               >
-                <Clock className="h-3 w-3 text-slate-500" />
-                <span>
-                  {quest.due_time ? `@ ${quest.due_time}` : ""}
-                  {quest.due_date && quest.due_time ? " • " : ""}
-                  {quest.due_date ? quest.due_date : ""}
-                </span>
+                {isOverdue ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-950/90 border border-rose-500 text-rose-200 text-[10px] font-black uppercase font-rajdhani shadow-[0_0_10px_rgba(244,63,94,0.5)] animate-pulse">
+                    <Skull className="h-3 w-3 text-rose-400" />
+                    <span>Adversary Ambush ({overdueDetails.timeTag})</span>
+                  </span>
+                ) : (
+                  <div className="flex items-center gap-1 text-slate-400">
+                    <Clock className="h-3 w-3 text-slate-500" />
+                    <span>
+                      {quest.due_time ? `@ ${quest.due_time}` : ""}
+                      {quest.due_date && quest.due_time ? " • " : ""}
+                      {quest.due_date ? quest.due_date : ""}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </div>

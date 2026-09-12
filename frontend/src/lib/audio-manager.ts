@@ -121,7 +121,7 @@ class AudioManager {
   }
 
   // =========================================================================
-  // CALM AMBIENT MUSIC
+  // CALM AMBIENT MUSIC (Rich, Peaceful, Multi-Track Fantasy Soundtrack)
   // =========================================================================
 
   public startAmbientMusic() {
@@ -132,70 +132,240 @@ class AudioManager {
     this.currentState = "AMBIENT";
     const now = this.ctx.currentTime;
 
-    // Crossfade: bring ambient gain up to 0.45, bring battle gain down to 0
+    // Smooth warm fade in for ambient music
     this.ambientGain.gain.cancelScheduledValues(now);
-    this.ambientGain.gain.linearRampToValueAtTime(0.45, now + 0.8);
+    this.ambientGain.gain.linearRampToValueAtTime(0.5, now + 1.2);
 
     if (this.battleGain) {
       this.battleGain.gain.cancelScheduledValues(now);
-      this.battleGain.gain.linearRampToValueAtTime(0, now + 0.8);
+      this.battleGain.gain.linearRampToValueAtTime(0, now + 1.0);
     }
 
     if (!this.ambientTimer) {
-      this.scheduleAmbientChordProgression();
+      this.schedulePeacefulFantasySuite();
       this.ambientTimer = setInterval(() => {
-        this.scheduleAmbientChordProgression();
-      }, 7200);
+        this.schedulePeacefulFantasySuite();
+      }, 16000); // 8-bar progression @ 2.0s per bar = 16 seconds loop
     }
   }
 
-  private scheduleAmbientChordProgression() {
+  /**
+   * 8-Bar Peaceful Fantasy Suite:
+   * Layer 1: Lush warm string/pad chords (A Minor 9, F Maj 9, C Maj add9, G Sus, Dm 9, Em 7, F Maj 7, Am 7)
+   * Layer 2: Plucked Celtic harp arpeggios flowing through chord tones
+   * Layer 3: Serene high-register wind flute / ocarina melody with subtle vibrato
+   * Layer 4: Soft celestial chime harmonics on key downbeats
+   */
+  private schedulePeacefulFantasySuite() {
     if (!this.ctx || !this.ambientGain || this.currentState !== "AMBIENT") return;
 
-    // Pentatonic chord steps in D Dorian / F Major (soothing, warm, magical)
-    const chords = [
-      [220.0, 261.63, 329.63, 392.0], // A3, C4, E4, G4
-      [174.61, 220.0, 261.63, 329.63], // F3, A3, C4, E4
-      [196.0, 246.94, 293.66, 392.0], // G3, B3, D4, G4
-      [146.83, 220.0, 293.66, 349.23], // D3, A3, D4, F4
+    const startTime = this.ctx.currentTime;
+    const barDuration = 2.0;
+
+    // 8-Bar Chord Definitions (frequencies in Hz)
+    const chordProgression = [
+      // Bar 0: A minor 9 (Melancholic & Noble)
+      { bass: 110.0, pad: [220.0, 261.63, 329.63, 493.88], harp: [220.0, 261.63, 329.63, 493.88] },
+      // Bar 1: F Major 9 (Expansive & Warm)
+      { bass: 87.31, pad: [174.61, 220.0, 261.63, 392.0], harp: [174.61, 220.0, 261.63, 392.0] },
+      // Bar 2: C Major add9 (Bright & Peaceful)
+      { bass: 130.81, pad: [196.0, 261.63, 329.63, 587.33], harp: [261.63, 329.63, 392.0, 587.33] },
+      // Bar 3: G Suspended 4 / B (Flowing Resolution)
+      { bass: 98.0, pad: [196.0, 246.94, 293.66, 392.0], harp: [196.0, 246.94, 293.66, 493.88] },
+      // Bar 4: D Minor 9 (Contemplative)
+      { bass: 146.83, pad: [220.0, 293.66, 349.23, 523.25], harp: [220.0, 293.66, 349.23, 523.25] },
+      // Bar 5: E Minor 7 (Quiet Sanctuary)
+      { bass: 82.41, pad: [164.81, 196.0, 246.94, 293.66], harp: [164.81, 196.0, 246.94, 329.63] },
+      // Bar 6: F Major 7 (Gentle Sunrise)
+      { bass: 87.31, pad: [174.61, 220.0, 261.63, 329.63], harp: [174.61, 220.0, 261.63, 329.63] },
+      // Bar 7: A Minor 7 / C (Serene Horizon)
+      { bass: 110.0, pad: [220.0, 261.63, 329.63, 392.0], harp: [220.0, 261.63, 329.63, 440.0] },
     ];
 
-    const startTime = this.ctx.currentTime;
-    chords.forEach((chord, chordIdx) => {
-      const chordTime = startTime + chordIdx * 1.8;
+    // Flute Melody Phrases (timeOffset in seconds, freq in Hz, duration in seconds)
+    const fluteMelody = [
+      // Phrase 1 (Bars 0-1): Gentle upward aspiration
+      { time: 0.2, freq: 659.25, dur: 0.9 }, // E5
+      { time: 1.1, freq: 783.99, dur: 0.8 }, // G5
+      { time: 2.0, freq: 880.0, dur: 1.4 },  // A5
+      { time: 3.5, freq: 987.77, dur: 0.5 }, // B5
 
-      chord.forEach((freq, noteIdx) => {
-        if (!this.ctx || !this.ambientGain) return;
-        const osc = this.ctx.createOscillator();
-        const noteGain = this.ctx.createGain();
-        const filter = this.ctx.createBiquadFilter();
+      // Phrase 2 (Bars 2-3): Soothing descent
+      { time: 4.1, freq: 1046.5, dur: 1.2 }, // C6
+      { time: 5.4, freq: 987.77, dur: 0.7 }, // B5
+      { time: 6.2, freq: 783.99, dur: 0.9 }, // G5
+      { time: 7.2, freq: 659.25, dur: 1.5 }, // E5
 
-        // Warm triangle and sine oscillators
-        osc.type = noteIdx % 2 === 0 ? "sine" : "triangle";
-        osc.frequency.setValueAtTime(freq, chordTime);
+      // Phrase 3 (Bars 4-5): Lyrical flourish
+      { time: 8.3, freq: 587.33, dur: 0.7 }, // D5
+      { time: 9.1, freq: 698.46, dur: 0.8 }, // F5
+      { time: 10.0, freq: 880.0, dur: 1.2 }, // A5
+      { time: 11.3, freq: 1046.5, dur: 0.7 },// C6
 
-        // Low-pass filter for cozy, gentle presence
-        filter.type = "lowpass";
-        filter.frequency.setValueAtTime(550, chordTime);
-        filter.frequency.linearRampToValueAtTime(750, chordTime + 0.9);
-        filter.frequency.linearRampToValueAtTime(500, chordTime + 1.8);
+      // Phrase 4 (Bars 6-7): Calming homecoming
+      { time: 12.1, freq: 987.77, dur: 0.8 },// B5
+      { time: 13.0, freq: 880.0, dur: 0.9 }, // A5
+      { time: 14.0, freq: 659.25, dur: 0.9 },// E5
+      { time: 15.0, freq: 440.0, dur: 1.8 }, // A4
+    ];
 
-        // Soft envelope: slow attack, warm sustain, gentle release
-        noteGain.gain.setValueAtTime(0, chordTime);
-        noteGain.gain.linearRampToValueAtTime(0.045, chordTime + 0.4);
-        noteGain.gain.exponentialRampToValueAtTime(0.001, chordTime + 1.75);
+    // Celestial Chimes (Bell harmonics on bars 0, 2, 4, 6)
+    const bellChimes = [
+      { time: 0.05, freq: 1046.5 }, // C6
+      { time: 4.05, freq: 1318.51 }, // E6
+      { time: 8.05, freq: 1174.66 }, // D6
+      { time: 12.05, freq: 880.0 },  // A5
+    ];
 
-        osc.connect(filter);
-        filter.connect(noteGain);
-        noteGain.connect(this.ambientGain);
+    // --- 1. RENDER PAD & BASS CHORDS ---
+    chordProgression.forEach((bar, barIdx) => {
+      const barTime = startTime + barIdx * barDuration;
 
-        osc.start(chordTime);
-        osc.stop(chordTime + 1.8);
+      // Bass Drone
+      this.playWarmTone(bar.bass, barTime, barDuration + 0.2, 0.035, "sine", 350);
+
+      // Warm Pad Chords
+      bar.pad.forEach((freq) => {
+        this.playWarmTone(freq, barTime, barDuration + 0.3, 0.022, "triangle", 600);
       });
+
+      // --- 2. RENDER CELTIC HARP ARPEGGIO (4 plucked notes per bar) ---
+      bar.harp.forEach((freq, harpIdx) => {
+        const harpTime = barTime + harpIdx * 0.48;
+        this.playPluckedHarp(freq, harpTime, 0.03);
+      });
+    });
+
+    // --- 3. RENDER PEACEFUL FLUTE MELODY ---
+    fluteMelody.forEach((note) => {
+      this.playPeacefulFlute(note.freq, startTime + note.time, note.dur, 0.038);
+    });
+
+    // --- 4. RENDER CELESTIAL BELL CHIMES ---
+    bellChimes.forEach((bell) => {
+      this.playBellChime(bell.freq, startTime + bell.time, 0.02);
     });
   }
 
-  // =========================================================================
+  /**
+   * Helper: Warm Synth Tone (for Pads and Bass)
+   */
+  private playWarmTone(freq: number, start: number, duration: number, peakGain: number, type: OscillatorType, filterFreq: number) {
+    if (!this.ctx || !this.ambientGain) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, start);
+
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(filterFreq, start);
+    filter.frequency.linearRampToValueAtTime(filterFreq + 150, start + duration * 0.5);
+    filter.frequency.linearRampToValueAtTime(filterFreq, start + duration);
+
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(peakGain, start + 0.4);
+    gain.gain.exponentialRampToValueAtTime(0.0008, start + duration);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ambientGain);
+
+    osc.start(start);
+    osc.stop(start + duration);
+  }
+
+  /**
+   * Helper: Plucked Celtic Harp (Short attack, soft wooden pluck decay)
+   */
+  private playPluckedHarp(freq: number, start: number, peakGain: number) {
+    if (!this.ctx || !this.ambientGain) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, start);
+
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(1400, start);
+    filter.frequency.exponentialRampToValueAtTime(400, start + 0.9);
+
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(peakGain, start + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.0005, start + 0.95);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ambientGain);
+
+    osc.start(start);
+    osc.stop(start + 1.0);
+  }
+
+  /**
+   * Helper: Peaceful Wind Flute with gentle vibrato (LFO)
+   */
+  private playPeacefulFlute(freq: number, start: number, duration: number, peakGain: number) {
+    if (!this.ctx || !this.ambientGain) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+
+    // Subtle LFO vibrato (4.8 Hz gentle modulation)
+    const lfo = this.ctx.createOscillator();
+    const lfoGain = this.ctx.createGain();
+    lfo.frequency.setValueAtTime(4.8, start);
+    lfoGain.gain.setValueAtTime(3.5, start); // 3.5 Hz vibrato depth
+    lfo.connect(lfoGain);
+    lfoGain.connect(osc.frequency);
+
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(freq, start);
+
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(freq * 1.5, start);
+    filter.Q.setValueAtTime(1.8, start);
+
+    // Soft breath attack & lyrical decay
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(peakGain, start + 0.15);
+    gain.gain.setValueAtTime(peakGain * 0.9, start + duration - 0.2);
+    gain.gain.exponentialRampToValueAtTime(0.0005, start + duration);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ambientGain);
+
+    lfo.start(start);
+    osc.start(start);
+    lfo.stop(start + duration);
+    osc.stop(start + duration);
+  }
+
+  /**
+   * Helper: Celestial Glass Bell Chime
+   */
+  private playBellChime(freq: number, start: number, peakGain: number) {
+    if (!this.ctx || !this.ambientGain) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, start);
+
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(peakGain, start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0002, start + 1.8);
+
+    osc.connect(gain);
+    gain.connect(this.ambientGain);
+
+    osc.start(start);
+    osc.stop(start + 1.9);
+  }
+
   // BATTLE COMBAT MUSIC
   // =========================================================================
 

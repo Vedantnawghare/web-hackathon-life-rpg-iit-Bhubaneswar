@@ -9,6 +9,7 @@ import { EnemySprite, EnemyBattleState, getEnemyArchetypeInfo } from "@/componen
 import { ArenaBackground } from "@/components/rpg/ArenaBackground";
 import { audioManager } from "@/lib/audio-manager";
 import { getHeroArchetype } from "@/lib/hero-data";
+import { isQuestOverdue, getQuestOverdueDetails } from "@/lib/quest-utils";
 import { Button } from "@/components/ui/button";
 import {
   Sword,
@@ -77,6 +78,9 @@ export function ArenaBattle({
   const [focusMeter, setFocusMeter] = useState(0); // 0 to 100%
   const [roundTimer, setRoundTimer] = useState(99);
 
+  // Overdue Enemy Ambush Attack State
+  const [ambushedQuestId, setAmbushedQuestId] = useState<string | null>(null);
+
   // Dynamic Fighting Game Alerts
   const [combatAlert, setCombatAlert] = useState<string | null>(null);
   const [damageNumber, setDamageNumber] = useState<{ text: string; isCrit: boolean; isHero: boolean } | null>(null);
@@ -102,6 +106,75 @@ export function ArenaBattle({
   }, [quests]);
 
   const activeQuest = availableQuests[activeIndex] || availableQuests[0] || null;
+
+  // Check if current active quest is overdue (e.g. morning due_time passed and incomplete)
+  const isOverdue = useMemo(() => isQuestOverdue(activeQuest), [activeQuest]);
+  const overdueDetails = useMemo(() => getQuestOverdueDetails(activeQuest), [activeQuest]);
+
+  // Trigger Overdue Enemy Ambush Attack when viewing a missed deadline quest
+  useEffect(() => {
+    if (!activeQuest || !isOverdue || isBattling) {
+      if (!isOverdue && !isBattling) {
+        setHeroHp(100);
+        setHeroTrailingHp(100);
+      }
+      return;
+    }
+
+    // Only trigger once per quest ID unless replayed
+    if (ambushedQuestId === activeQuest.id) return;
+    setAmbushedQuestId(activeQuest.id);
+
+    // Initial state before ambush strike
+    setHeroHp(100);
+    setHeroTrailingHp(100);
+
+    // 0.3s - Warning Alert & Enemy lunges into APPROACH
+    const t0 = setTimeout(() => {
+      setEnemyState("APPROACH");
+      setCombatAlert("⚠️ ADVERSARY AMBUSH! ⚠️");
+    }, 300);
+
+    // 0.85s - Enemy executes ferocious claw/void ATTACK!
+    const t1 = setTimeout(() => {
+      setEnemyState("ATTACK");
+      audioManager.playEnemyAttack();
+      setScreenShake(true);
+      setCombatClash("ENEMY_COUNTER");
+      setHeroState("HIT");
+      setHeroHp(70); // User HP drops by 30%!
+      setDamageNumber({
+        text: "-30 HP (MISSED DEADLINE!)",
+        isCrit: true,
+        isHero: true,
+      });
+
+      // Trailing damage bar catches up
+      setTimeout(() => setHeroTrailingHp(70), 450);
+      setTimeout(() => setScreenShake(false), 400);
+    }, 850);
+
+    // 2.0s - Settle into active battle-ready stance
+    const t2 = setTimeout(() => {
+      setCombatClash("NONE");
+      setEnemyState("IDLE");
+      setHeroState("READY");
+    }, 2000);
+
+    // 3.4s - Clear alert text
+    const t3 = setTimeout(() => {
+      setCombatAlert(null);
+      setDamageNumber(null);
+    }, 3400);
+
+    return () => {
+      clearTimeout(t0);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [activeQuest, isOverdue, ambushedQuestId, isBattling]);
+
 
   // Clear timers on unmount or reset
   const clearAllBattleTimers = useCallback(() => {
@@ -398,6 +471,30 @@ export function ArenaBattle({
 
       {/* 1. AUTHENTIC FIGHTING GAME TOP HUD (Street Fighter / Frame-Fighter aesthetic) */}
       <div className="relative z-30 px-3 sm:px-6 pt-3 pb-2 bg-gradient-to-b from-black/90 via-slate-950/80 to-transparent backdrop-blur-md flex flex-col gap-2">
+        {/* OVERDUE AMBUSH ATTACK BANNER */}
+        {isOverdue && !isBattling && (
+          <div className="flex items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-red-950 via-rose-900/80 to-red-950 border-2 border-red-500/70 shadow-[0_0_20px_rgba(239,68,68,0.4)] animate-pulse">
+            <div className="flex items-center gap-2 min-w-0">
+              <Skull className="w-4 h-4 text-red-400 shrink-0 animate-bounce" />
+              <div className="min-w-0">
+                <span className="text-xs font-black font-cinzel text-yellow-300 block tracking-wide truncate">
+                  CONTRACT MISSED ({overdueDetails.timeTag})
+                </span>
+                <span className="text-[11px] font-rajdhani text-rose-200 block truncate">
+                  The adversary ambushed your champion for -30 HP! Claim bounty now to counter-attack!
+                </span>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setAmbushedQuestId(null)}
+              className="h-7 px-2.5 text-[10px] font-rajdhani font-black uppercase tracking-wider border-red-400/60 text-red-200 bg-red-950/80 hover:bg-red-900 hover:text-white shrink-0"
+            >
+              Replay Ambush
+            </Button>
+          </div>
+        )}
         {/* Authoritative Daily XP Goal Bar */}
         {dailyProgress && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 px-3 py-1 rounded-lg bg-black/60 border border-amber-900/40">

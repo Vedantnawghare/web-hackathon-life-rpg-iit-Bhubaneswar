@@ -333,16 +333,25 @@ export default function ShopPage() {
           })}
         </div>
 
-        <div className="relative flex-1 sm:w-56">
-          <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
+        <div className="relative flex-1 sm:w-64">
+          <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-amber-500/70" />
           <Input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search relics..."
             aria-label="Search relics"
-            className="h-8 pl-8 text-xs bg-slate-900 border-slate-800 focus:border-amber-500 text-slate-200 font-mono"
+            className="h-8 pl-8 pr-7 text-xs bg-slate-900 border-slate-800 focus:border-amber-500 text-slate-200 font-mono"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+              aria-label="Clear search"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
         </div>
       </div>
 
